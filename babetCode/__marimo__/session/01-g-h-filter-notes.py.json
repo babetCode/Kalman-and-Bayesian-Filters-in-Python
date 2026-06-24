@@ -1,0 +1,107 @@
+{
+  "version": "1",
+  "metadata": {
+    "marimo_version": "0.23.10",
+    "script_metadata_hash": "f94825164d0bde9ca61ad3af39b852f5"
+  },
+  "cells": [
+    {
+      "id": "Hbol",
+      "code_hash": "e92573c59b63fdac8e90b10b56e05f88",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "MJUe",
+      "code_hash": "76ef454d86cb86c3a2e534537e0ef108",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"alogithm\">Alogithm</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vblA",
+      "code_hash": "62884b76467df82a18033ebf5a6a60d9",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\"><strong>Initialization</strong></span>\n<ol>\n<li>Initialize the state of the filter</li>\n<li>Initialize our belief in the state</li>\n</ol>\n<span class=\"paragraph\"><strong>Predict</strong></span>\n<ol>\n<li>Use system behavior to predict state at the next time step</li>\n<li>Adjust belief to account for the uncertainty in prediction</li>\n</ol>\n<span class=\"paragraph\"><strong>Update</strong></span>\n<ol>\n<li>Get a measurement and associated belief about its accuracy</li>\n<li>Compute residual between estimated state and measurement</li>\n<li>New estimate is somewhere on the residual line</li>\n</ol></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "bkHC",
+      "code_hash": "5bda126533b815903a9531beaa77b546",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"exercise-write-generic-algorithm\">Exercise: Write generic algorithm</h3></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "lEQa",
+      "code_hash": "06950802515a1eacff345e0d7fd2a1ba",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Xref",
+      "code_hash": "fc8f5fb600ee737b99f3d214bba4509a",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "tFMB",
+      "code_hash": "df3c5f17d8bb372aa6a909672a5ad348",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<div style='display: flex;flex: 1;flex-direction: column;justify-content: flex-start;align-items: normal;flex-wrap: nowrap;gap: 0.5rem'><marimo-ui-element object-id='Xref-1' random-id='e9b4b296-5ba6-c479-9e11-5840cd8b9b89'><marimo-button data-initial-value='0' data-label='&quot;&#92;u003cspan class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&#92;u003e&#92;u003cspan class=&#92;&quot;paragraph&#92;&quot;&#92;u003e&amp;gt;&#92;u003c/span&#92;u003e&#92;u003c/span&#92;u003e&quot;' data-kind='&quot;neutral&quot;' data-disabled='false' data-full-width='false'></marimo-button></marimo-ui-element><marimo-ui-element object-id='Xref-0' random-id='e8df938f-6d55-c265-1497-9fc7fce27b0e'><marimo-code-editor data-initial-value='&quot;def g_h_filter(data, x0, dx, g, h, dt):&#92;n    &#92;&quot;&#92;&quot;&#92;&quot;&#92;n    Performs g-h filter on 1 state variable with a fixed g and h.&#92;n&#92;n    &#x27;data&#x27; contains the data to be filtered.&#92;n    &#x27;x0&#x27; is the initial value for our state variable&#92;n    &#x27;dx&#x27; is the initial change rate for our state variable&#92;n    &#x27;g&#x27; is the g-h&#x27;s g scale factor&#92;n    &#x27;h&#x27; is the g-h&#x27;s h scale factor&#92;n    &#x27;dt&#x27; is the length of the time step &#92;n    &#92;&quot;&#92;&quot;&#92;&quot;&quot;' data-label='null' data-language='&quot;python&quot;' data-placeholder='&quot;&quot;' data-disabled='false' data-show-copy-button='true' data-debounce='false'></marimo-code-editor></marimo-ui-element><span>unexpected character after line continuation character (&lt;string&gt;, line 11)</span></div>"
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "def g_h_filter(data, x0, dx, g, h, dt):\n    \"\"\"\n    Performs g-h filter on 1 state variable with a fixed g and h.\n\n    'data' contains the data to be filtered.\n    'x0' is the initial value for our state variable\n    'dx' is the initial change rate for our state variable\n    'g' is the g-h's g scale factor\n    'h' is the g-h's h scale factor\n    'dt' is the length of the time step \n    \"\"\"\\n\\nprint(foobar)\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    }
+  ]
+}

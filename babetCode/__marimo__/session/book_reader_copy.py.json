@@ -1,0 +1,54 @@
+{
+  "version": "1",
+  "metadata": {
+    "marimo_version": "0.23.10",
+    "script_metadata_hash": "f94825164d0bde9ca61ad3af39b852f5"
+  },
+  "cells": [
+    {
+      "id": "Hbol",
+      "code_hash": "1d0db38904205bec4d6f6f6a1f6cec3e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "cffn",
+      "code_hash": "9975f3a6b2895b949ff53915c51f67e4",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vblA",
+      "code_hash": "60e4b8f1719b78bcb5befc34f5424808",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<marimo-sidebar data-width='&quot;25em&quot;'><marimo-ui-element object-id='vblA-0' random-id='3b0e250c-cc69-ad50-c9ea-6e9a447d3d3c'><marimo-tabs data-initial-value='&quot;&quot;' data-label='null' data-tabs='[&quot;&#92;u003cspan class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&#92;u003e&#92;u003cspan class=&#92;&quot;paragraph&#92;&quot;&#92;u003e00-Preface&#92;u003c/span&#92;u003e&#92;u003c/span&#92;u003e&quot;,&quot;&#92;u003cspan class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&#92;u003e&#92;u003cspan class=&#92;&quot;paragraph&#92;&quot;&#92;u003e01-g-h-filter&#92;u003c/span&#92;u003e&#92;u003c/span&#92;u003e&quot;,&quot;&#92;u003cspan class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&#92;u003e&#92;u003cspan class=&#92;&quot;paragraph&#92;&quot;&#92;u003e02-Discrete-Bayes&#92;u003c/span&#92;u003e&#92;u003c/span&#92;u003e&quot;,&quot;&#92;u003cspan class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&#92;u003e&#92;u003cspan class=&#92;&quot;paragraph&#92;&quot;&#92;u003e03-Gaussians&#92;u003c/span&#92;u003e&#92;u003c/span&#92;u003e&quot;,&quot;&#92;u003cspan class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&#92;u003e&#92;u003cspan class=&#92;&quot;paragraph&#92;&quot;&#92;u003e04-One-Dimensional-Kalman-Filters&#92;u003c/span&#92;u003e&#92;u003c/span&#92;u003e&quot;,&quot;&#92;u003cspan class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&#92;u003e&#92;u003cspan class=&#92;&quot;paragraph&#92;&quot;&#92;u003e05-Multivariate-Gaussians&#92;u003c/span&#92;u003e&#92;u003c/span&#92;u003e&quot;,&quot;&#92;u003cspan class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&#92;u003e&#92;u003cspan class=&#92;&quot;paragraph&#92;&quot;&#92;u003e06-Multivariate-Kalman-Filters&#92;u003c/span&#92;u003e&#92;u003c/span&#92;u003e&quot;,&quot;&#92;u003cspan class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&#92;u003e&#92;u003cspan class=&#92;&quot;paragraph&#92;&quot;&#92;u003e07-Kalman-Filter-Math&#92;u003c/span&#92;u003e&#92;u003c/span&#92;u003e&quot;,&quot;&#92;u003cspan class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&#92;u003e&#92;u003cspan class=&#92;&quot;paragraph&#92;&quot;&#92;u003e08-Designing-Kalman-Filters&#92;u003c/span&#92;u003e&#92;u003c/span&#92;u003e&quot;,&quot;&#92;u003cspan class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&#92;u003e&#92;u003cspan class=&#92;&quot;paragraph&#92;&quot;&#92;u003e09-Nonlinear-Filtering&#92;u003c/span&#92;u003e&#92;u003c/span&#92;u003e&quot;,&quot;&#92;u003cspan class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&#92;u003e&#92;u003cspan class=&#92;&quot;paragraph&#92;&quot;&#92;u003e10-Unscented-Kalman-Filter&#92;u003c/span&#92;u003e&#92;u003c/span&#92;u003e&quot;,&quot;&#92;u003cspan class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&#92;u003e&#92;u003cspan class=&#92;&quot;paragraph&#92;&quot;&#92;u003e11-Extended-Kalman-Filters&#92;u003c/span&#92;u003e&#92;u003c/span&#92;u003e&quot;,&quot;&#92;u003cspan class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&#92;u003e&#92;u003cspan class=&#92;&quot;paragraph&#92;&quot;&#92;u003e12-Particle-Filters&#92;u003c/span&#92;u003e&#92;u003c/span&#92;u003e&quot;,&quot;&#92;u003cspan class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&#92;u003e&#92;u003cspan class=&#92;&quot;paragraph&#92;&quot;&#92;u003e13-Smoothing&#92;u003c/span&#92;u003e&#92;u003c/span&#92;u003e&quot;,&quot;&#92;u003cspan class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&#92;u003e&#92;u003cspan class=&#92;&quot;paragraph&#92;&quot;&#92;u003e14-Adaptive-Filtering&#92;u003c/span&#92;u003e&#92;u003c/span&#92;u003e&quot;,&quot;&#92;u003cspan class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&#92;u003e&#92;u003cspan class=&#92;&quot;paragraph&#92;&quot;&#92;u003eAppendix-A-Installation&#92;u003c/span&#92;u003e&#92;u003c/span&#92;u003e&quot;,&quot;&#92;u003cspan class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&#92;u003e&#92;u003cspan class=&#92;&quot;paragraph&#92;&quot;&#92;u003eAppendix-B-Symbols-and-Notations&#92;u003c/span&#92;u003e&#92;u003c/span&#92;u003e&quot;,&quot;&#92;u003cspan class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&#92;u003e&#92;u003cspan class=&#92;&quot;paragraph&#92;&quot;&#92;u003eAppendix-D-HInfinity-Filters&#92;u003c/span&#92;u003e&#92;u003c/span&#92;u003e&quot;,&quot;&#92;u003cspan class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&#92;u003e&#92;u003cspan class=&#92;&quot;paragraph&#92;&quot;&#92;u003eAppendix-E-Ensemble-Kalman-Filters&#92;u003c/span&#92;u003e&#92;u003c/span&#92;u003e&quot;,&quot;&#92;u003cspan class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&#92;u003e&#92;u003cspan class=&#92;&quot;paragraph&#92;&quot;&#92;u003eAppendix-G-Designing-Nonlinear-Kalman-Filters&#92;u003c/span&#92;u003e&#92;u003c/span&#92;u003e&quot;,&quot;&#92;u003cspan class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&#92;u003e&#92;u003cspan class=&#92;&quot;paragraph&#92;&quot;&#92;u003eAppendix-H-Least-Squares-Filters&#92;u003c/span&#92;u003e&#92;u003c/span&#92;u003e&quot;,&quot;&#92;u003cspan class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&#92;u003e&#92;u003cspan class=&#92;&quot;paragraph&#92;&quot;&#92;u003eAppendix-I-Analytic-Evaluation-of-Performance&#92;u003c/span&#92;u003e&#92;u003c/span&#92;u003e&quot;]' data-orientation='&quot;vertical&quot;'><div data-kind='tab'><span class=\"markdown prose dark:prose-invert contents\"></span></div><div data-kind='tab'><span class=\"markdown prose dark:prose-invert contents\"></span></div><div data-kind='tab'><span class=\"markdown prose dark:prose-invert contents\"></span></div><div data-kind='tab'><span class=\"markdown prose dark:prose-invert contents\"></span></div><div data-kind='tab'><span class=\"markdown prose dark:prose-invert contents\"></span></div><div data-kind='tab'><span class=\"markdown prose dark:prose-invert contents\"></span></div><div data-kind='tab'><span class=\"markdown prose dark:prose-invert contents\"></span></div><div data-kind='tab'><span class=\"markdown prose dark:prose-invert contents\"></span></div><div data-kind='tab'><span class=\"markdown prose dark:prose-invert contents\"></span></div><div data-kind='tab'><span class=\"markdown prose dark:prose-invert contents\"></span></div><div data-kind='tab'><span class=\"markdown prose dark:prose-invert contents\"></span></div><div data-kind='tab'><span class=\"markdown prose dark:prose-invert contents\"></span></div><div data-kind='tab'><span class=\"markdown prose dark:prose-invert contents\"></span></div><div data-kind='tab'><span class=\"markdown prose dark:prose-invert contents\"></span></div><div data-kind='tab'><span class=\"markdown prose dark:prose-invert contents\"></span></div><div data-kind='tab'><span class=\"markdown prose dark:prose-invert contents\"></span></div><div data-kind='tab'><span class=\"markdown prose dark:prose-invert contents\"></span></div><div data-kind='tab'><span class=\"markdown prose dark:prose-invert contents\"></span></div><div data-kind='tab'><span class=\"markdown prose dark:prose-invert contents\"></span></div><div data-kind='tab'><span class=\"markdown prose dark:prose-invert contents\"></span></div><div data-kind='tab'><span class=\"markdown prose dark:prose-invert contents\"></span></div><div data-kind='tab'><span class=\"markdown prose dark:prose-invert contents\"></span></div></marimo-tabs></marimo-ui-element></marimo-sidebar>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "lEQa",
+      "code_hash": "1c8272e5d25b5b5659eb3654fcf3ce25",
+      "outputs": [],
+      "console": []
+    }
+  ]
+}

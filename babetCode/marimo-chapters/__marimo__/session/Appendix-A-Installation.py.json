@@ -1,0 +1,478 @@
+{
+  "version": "1",
+  "metadata": {
+    "marimo_version": "0.23.10",
+    "script_metadata_hash": null
+  },
+  "cells": [
+    {
+      "id": "Hbol",
+      "code_hash": "1d0db38904205bec4d6f6f6a1f6cec3e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "MJUe",
+      "code_hash": "aae9eb2d3ea3a449680bedd58a67c8f0",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\"><a href=\"./table_of_contents.ipynb\">Table of Contents</a></span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vblA",
+      "code_hash": "dfcd6bab995b3bc34073c31d32797e52",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "bkHC",
+      "code_hash": "0fd9132296119e361f2a0c6c582e37c0",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h1 id=\"installation\">Installation</h1></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "lEQa",
+      "code_hash": "6cb76ec3562bad141e85566c605ff3e1",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">This book is written in Jupyter Notebook, a browser based interactive Python environment that mixes Python, text, and math. I choose it because of the interactive features - I found Kalman filtering nearly impossible to learn until I started working in an interactive environment. It is difficult to form an intuition about many of the parameters until you can change them and immediately see the output. An interactive environment also allows you to play 'what if' scenarios. \"What if I set <marimo-tex class=\"arithmatex\">||(\\mathbf{Q}||)</marimo-tex> to zero?\" It is trivial to find out with Jupyter Notebook.</span>\n<span class=\"paragraph\">Another reason I choose it is because most textbooks leaves many things opaque. For example, there might be a beautiful plot next to some pseudocode. That plot was produced by software, but software that is not available to the reader. I want everything that went into producing this book to be available to you. How do you plot a covariance ellipse? You won't know if you read most books. With Jupyter Notebook all you have to do is look at the source code.</span>\n<span class=\"paragraph\">Even if you choose to read the book online you will want Python and the SciPy stack installed so that you can write your own Kalman filters. There are many different ways to install these libraries, and I cannot cover them all, but I will cover a few typical scenarios.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "PKri",
+      "code_hash": "76cc7013b6850fca9620be1794ee7e82",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"installing-the-scipy-stack\">Installing the SciPy Stack</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Xref",
+      "code_hash": "03b0ffad55f63389590f97a0d23b956e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">This book requires IPython, Jupyter, NumPy, SciPy, SymPy, and Matplotlib. The SciPy stack of NumPy, SciPy, and Matplotlib depends on third party Fortran and C code, and is not trivial to install from source code. The SciPy website strongly urges using a pre-built installation, and I concur with this advice.</span>\n<span class=\"paragraph\">Jupyter notebook is the software that allows you to run Python inside of the browser - the book is a collection of Jupyter notebooks. IPython provides the infrastructure for Jupyter and data visualization. NumPy and Scipy are packages which provide the linear algebra implementation that the filters use. Sympy performs symbolic math - I use it to find derivatives of algebraic equations. Finally, Matplotlib provides plotting capability.</span>\n<span class=\"paragraph\">I use the Anaconda distribution from Continuum Analytics. This is an excellent distribution that combines all of the packages listed above, plus many others. IPython recommends this package to install Ipython. Installation is very straightforward, and it can be done alongside other Python installations you might already have on your machine. It is free to use. You may download it from here: <a href=\"http://continuum.io/downloads\" rel=\"noopener noreferrer\" target=\"_blank\">http://continuum.io/downloads</a> I strongly recommend using the latest Python 3 version that they provide, but this book and FilterPy is compatible with Python 3.6 or later.</span>\n<span class=\"paragraph\">There are other choices for installing the SciPy stack. You can find instructions here: <a href=\"http://scipy.org/install.html\" rel=\"noopener noreferrer\" target=\"_blank\">http://scipy.org/install.html</a> It can be very cumbersome, and I do not support it or provide any instructions on how to do it.</span>\n<span class=\"paragraph\">Many Linux distributions come with these packages pre-installed. However, they are often somewhat dated and they will need to be updated as the book depends on recent versions of all. Updating a specific Linux installation is beyond the scope of this book. An advantage of the Anaconda distribution is that it does not modify your local Python installation, so you can install it and not break your linux distribution. Some people have been tripped up by this. They install Anaconda, but the installed Python remains the default version and then the book's software doesn't run correctly.</span>\n<span class=\"paragraph\">I do not run regression tests on old versions of these libraries. In fact, I know the code will not run on older versions (say, from 2014-2015). I do not want to spend my life doing tech support for a book, thus I put the burden on you to install a recent version of Python and the SciPy stack.</span>\n<span class=\"paragraph\">You will need Python 3.6 or later installed.</span>\n<span class=\"paragraph\">Please submit a bug report at the book's <a href=\"https://github.com/rlabbe/Kalman-and-Bayesian-Filters-in-Python\" rel=\"noopener noreferrer\" target=\"_blank\">github repository</a> if you have installed the latest Anaconda and something does not work - I will continue to ensure the book will run with the latest Anaconda release. I'm rather indifferent if the book will not run on an older installation. I'm sorry, but I just don't have time to provide support for everyone's different setups. Packages like <code>jupyter notebook</code> are evolving rapidly, and I cannot keep up with all the changes <em>and</em> remain backwards compatible as well.</span>\n<span class=\"paragraph\">If you need older versions of the software for other projects, note that Anaconda allows you to install multiple versions side-by-side. Documentation for this is here:</span>\n<span class=\"paragraph\"><a href=\"https://conda.io/docs/user-guide/tasks/manage-python.html\" rel=\"noopener noreferrer\" target=\"_blank\">https://conda.io/docs/user-guide/tasks/manage-python.html</a></span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "SFPL",
+      "code_hash": "e9cc36b7b27f5f8c42e505065d27563f",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"installing-filterpy\">Installing FilterPy</h2>\n<span class=\"paragraph\">FilterPy is a Python library that implements all of the filters used in this book, and quite a few others. Installation is easy using <code>pip</code>. Issue the following from the command prompt:</span>\n<div class=\"language-text highlight\"><pre><span></span><code> pip install filterpy\n</code></pre></div>\n<span class=\"paragraph\">FilterPy is written by me, and the latest development version is always available at <a href=\"https://github.com/rlabbe/filterpy\" rel=\"noopener noreferrer\" target=\"_blank\">https://github.com/rlabbe/filterpy</a>.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "BYtC",
+      "code_hash": "d1145828fbf06700539dcb8646822d89",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"downloading-and-running-the-book\">Downloading and Running the Book</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "RGSE",
+      "code_hash": "351c47e4ec7ea566e97e49c69612bd06",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">The book is stored in a github repository. From the command line type the following:</span>\n<div class=\"language-text highlight\"><pre><span></span><code>git clone --depth=1 https://github.com/rlabbe/Kalman-and-Bayesian-Filters-in-Python.git\n</code></pre></div>\n<span class=\"paragraph\">This will create a directory named Kalman-and-Bayesian-Filters-in-Python. The <code>depth</code> parameter just gets you the latest version. Unless you need to see my entire commit history this is a lot faster and saves space.</span>\n<span class=\"paragraph\">If you do not have git installed, browse to <a href=\"https://github.com/rlabbe/Kalman-and-Bayesian-Filters-in-Python\" rel=\"noopener noreferrer\" target=\"_blank\">https://github.com/rlabbe/Kalman-and-Bayesian-Filters-in-Python</a> where you can download the book via your browser.</span>\n<span class=\"paragraph\">Now, from the command prompt change to the directory that was just created, and then run Jupyter notebook:</span>\n<div class=\"language-text highlight\"><pre><span></span><code>cd Kalman-and-Bayesian-Filters-in-Python\njupyter notebook\n</code></pre></div>\n<span class=\"paragraph\">A browser window should launch showing you all of the chapters in the book. Browse to the first chapter by clicking on it, then open the notebook in that subdirectory by clicking on the link.</span>\n<span class=\"paragraph\">More information about running the notebook can be found here:</span>\n<span class=\"paragraph\"><a href=\"http://jupyter-notebook-beginner-guide.readthedocs.org/en/latest/execute.html\" rel=\"noopener noreferrer\" target=\"_blank\">http://jupyter-notebook-beginner-guide.readthedocs.org/en/latest/execute.html</a></span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Kclp",
+      "code_hash": "4fc2f561c20e445da4f2cd2b19ae843b",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"companion-software\">Companion Software</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "emfo",
+      "code_hash": "102c9a0636aa23032c6b5de6521c380b",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Code that is specific to the book is stored with the book in the subdirectory <em>./kf_book</em>. This code is in a state of flux; I do not wish to document it here yet. I do mention in the book when I use code from this directory, so it should not be a mystery.</span>\n<span class=\"paragraph\">In the <em>kf_book</em> subdirectory there are Python files with a name like <em>xxx</em>_internal.py. I use these to store functions that are useful for a specific chapter. This allows me to hide away Python code that is not particularly interesting to read - I may be generating a plot or chart, and I want you to focus on the contents of the chart, not the mechanics of how I generate that chart with Python. If you are curious as to the mechanics of that, just go and browse the source.</span>\n<span class=\"paragraph\">Some chapters introduce functions that are useful for the rest of the book. Those functions are initially defined within the Notebook itself, but the code is also stored in a Python file that is imported if needed in later chapters. I do document when I do this where the function is first defined, but this is still a work in progress. I try to avoid this because then I always face the issue of code in the directory becoming out of sync with the code in the book. However, IPython Notebook does not give us a way to refer to code cells in other notebooks, so this is the only mechanism I know of to share functionality across notebooks.</span>\n<span class=\"paragraph\">There is an undocumented directory called <strong>experiments</strong>. This is where I write and test code prior to putting it in the book. There is some interesting stuff in there, and feel free to look at it. As the book evolves I plan to create examples and projects, and a lot of this material will end up there. Small experiments will eventually just be deleted. If you are just interested in reading the book you can safely ignore this directory.</span>\n<span class=\"paragraph\">The subdirectory <em>./kf_book</em> contains a css file containing the style guide for the book. The default look and feel of IPython Notebook is rather plain. Work is being done on this. I have followed the examples set by books such as <a href=\"http://nbviewer.ipython.org/github/CamDavidsonPilon/Probabilistic-Programming-and-Bayesian-Methods-for-Hackers/blob/master/Chapter1_Introduction/Chapter1.ipynb\" rel=\"noopener noreferrer\" target=\"_blank\">Probabilistic Programming and Bayesian Methods for Hackers</a>. I have also been very influenced by Professor Lorena Barba's fantastic work, <a href=\"https://github.com/barbagroup/CFDPython\" rel=\"noopener noreferrer\" target=\"_blank\">available here</a>. I owe all of my look and feel to the work of these projects.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Hstk",
+      "code_hash": "de672d9fdca18a0eb50f1392a67525e6",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"using-jupyter-notebook\">Using Jupyter Notebook</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "nWHF",
+      "code_hash": "2d5fff51fbdd1fb400df144ce27d3e5e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">A complete tutorial on Jupyter Notebook is beyond the scope of this book. Many are available online. In short, Python code is placed in cells. These are prefaced with text like <code>In [1]:</code>, and the code itself is in a boxed area. If you press CTRL-ENTER while focus is inside the box the code will run and the results will be displayed below the box. Like this:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "iLit",
+      "code_hash": "fdd40747febb2cc63375b256d61b3ff8",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "10.2\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "ZHCJ",
+      "code_hash": "84cca489a2145ddb65981d2a14f1ac71",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">If you have this open in Jupyter Notebook now, go ahead and modify that code by changing the expression inside the print statement and pressing CTRL+ENTER. The output should be changed to reflect what you typed in the code cell.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ROlb",
+      "code_hash": "9504bcbf7c66f4981c7a2aee9427d6e4",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"sympy\">SymPy</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "qnkX",
+      "code_hash": "1df00477a9d004e4f8ead79963d37e45",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">SymPy is a Python package for performing symbolic mathematics. The full scope of its abilities are beyond this book, but it can perform algebra, integrate and differentiate equations, find solutions to differential equations, and much more. For example, we use use it to compute the Jacobian of matrices and expected value integral computations.</span>\n<span class=\"paragraph\">First, a simple example. We will import SymPy, initialize its pretty print functionality (which will print equations using LaTeX). We will then declare a symbol for SymPy to use.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "TqIu",
+      "code_hash": "71138890e64da96540b46bcca408332c",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<span class=\"markdown prose dark:prose-invert contents\"><marimo-tex class=\"arithmatex\">||[\n\\phi\n||]</marimo-tex></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Vxnm",
+      "code_hash": "044b5dfee76e1106154526c2a13322ab",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Notice how it prints the symbol <code>phi</code> using LaTeX. Now let's do some math. What is the derivative of <marimo-tex class=\"arithmatex\">||(\\sqrt{\\phi}||)</marimo-tex>?</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "DnEU",
+      "code_hash": "4f9f8d14a7dea07008998749b0e3a2c6",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<span class=\"markdown prose dark:prose-invert contents\"><marimo-tex class=\"arithmatex\">||[\n\\frac{1}{2 \\sqrt{\\phi}}\n||]</marimo-tex></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ulZA",
+      "code_hash": "626788d801b8fe815734120633f8e8c8",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">We can factor equations</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ecfG",
+      "code_hash": "bfe78177afb223186ca58e33486620cf",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<span class=\"markdown prose dark:prose-invert contents\"><marimo-tex class=\"arithmatex\">||[\n\\left(\\phi - 1\\right) \\left(\\phi^{2} + 1\\right)\n||]</marimo-tex></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Pvdt",
+      "code_hash": "df50ae39b28852e44c9c04957db63e3c",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">and we can expand them.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ZBYS",
+      "code_hash": "e8aff4ee115848b5ffd2f1711983306b",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<span class=\"markdown prose dark:prose-invert contents\"><marimo-tex class=\"arithmatex\">||[\n\\phi^{2} - 3 \\phi - 4\n||]</marimo-tex></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "aLJB",
+      "code_hash": "80a7278570df36edf0cd4ba1d20d10a4",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">You can evauate an equation for specific values of its variables:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "nHfw",
+      "code_hash": "56638dcecbe892098a262bdc228fdee1",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "8\n112\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "xXTn",
+      "code_hash": "7b8d3a92906fecccb2bdc9c986d175da",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">You can also use strings for equations that use symbols that you have not defined:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "AjVT",
+      "code_hash": "76cba5a9d6da5986a2591ead93a14543",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<span class=\"markdown prose dark:prose-invert contents\"><marimo-tex class=\"arithmatex\">||[\n2 t + 2\n||]</marimo-tex></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "pHFh",
+      "code_hash": "17a6aa84949e461bce7b578a5c3aefa5",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Now let's use SymPy to compute the Jacobian of a matrix. Given the function</span>\n<marimo-tex class=\"arithmatex\">||[h=\\sqrt{(x^2 + z^2)}||]</marimo-tex><span class=\"paragraph\">find the Jacobian with respect to x, y, and z.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "NCOB",
+      "code_hash": "09174a86ecb6669d309151c7fddef539",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<span class=\"markdown prose dark:prose-invert contents\"><marimo-tex class=\"arithmatex\">||[\n\\left[\\begin{matrix}\\frac{x}{\\sqrt{x^{2} + z^{2}}} &amp; 0 &amp; \\frac{z}{\\sqrt{x^{2} + z^{2}}}\\end{matrix}\\right]\n||]</marimo-tex></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "aqbW",
+      "code_hash": "db0a768d7932bf6bb008b854d67eea06",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Now let's compute the discrete process noise matrix <marimo-tex class=\"arithmatex\">||(\\mathbf Q||)</marimo-tex> given the continuous process noise matrix</span>\n<marimo-tex class=\"arithmatex\">||[\\mathbf Q = \\Phi_s \\begin{bmatrix}0&amp;0&amp;0\\\\0&amp;0&amp;0\\\\0&amp;0&amp;1\\end{bmatrix}||]</marimo-tex><span class=\"paragraph\">The integral is</span>\n<marimo-tex class=\"arithmatex\">||[\\mathbf Q = \\int_0^{\\Delta t} \\mathbf F(t)\\mathbf Q\\mathbf F^T(t)\\, dt||]</marimo-tex><span class=\"paragraph\">where</span>\n<marimo-tex class=\"arithmatex\">||[\\mathbf F(\\Delta t) = \\begin{bmatrix}1 &amp; \\Delta t &amp; {\\Delta t}^2/2 \\\\ 0 &amp; 1 &amp; \\Delta t\\\\ 0&amp; 0&amp; 1\\end{bmatrix}||]</marimo-tex></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "TRpd",
+      "code_hash": "e193221d4c8a984b7a1a941dfd957e50",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<span class=\"markdown prose dark:prose-invert contents\"><marimo-tex class=\"arithmatex\">||[\n\\left[\\begin{matrix}\\frac{\\Delta{t}^{5}}{20} &amp; \\frac{\\Delta{t}^{4}}{8} &amp; \\frac{\\Delta{t}^{3}}{6}\\\\\\frac{\\Delta{t}^{4}}{8} &amp; \\frac{\\Delta{t}^{3}}{3} &amp; \\frac{\\Delta{t}^{2}}{2}\\\\\\frac{\\Delta{t}^{3}}{6} &amp; \\frac{\\Delta{t}^{2}}{2} &amp; \\Delta{t}\\end{matrix}\\right]\n||]</marimo-tex></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "TXez",
+      "code_hash": "31e859ce751aa8e5152c93dd1115806c",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"various-links\">Various Links</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "dNNg",
+      "code_hash": "24da6316675c7b552c5bd2f58ebffd76",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\"><a href=\"https://ipython.org/\" rel=\"noopener noreferrer\" target=\"_blank\">https://ipython.org/</a></span>\n<span class=\"paragraph\"><a href=\"https://jupyter.org/\" rel=\"noopener noreferrer\" target=\"_blank\">https://jupyter.org/</a></span>\n<span class=\"paragraph\"><a href=\"https://www.scipy.org/\" rel=\"noopener noreferrer\" target=\"_blank\">https://www.scipy.org/</a></span></span>"
+          }
+        }
+      ],
+      "console": []
+    }
+  ]
+}

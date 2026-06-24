@@ -1,0 +1,1314 @@
+{
+  "version": "1",
+  "metadata": {
+    "marimo_version": "0.23.10",
+    "script_metadata_hash": null
+  },
+  "cells": [
+    {
+      "id": "Hbol",
+      "code_hash": "1d0db38904205bec4d6f6f6a1f6cec3e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "RZss",
+      "code_hash": "b35bdc40f2177738c7fd7e18de8fbee8",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "MJUe",
+      "code_hash": "aae9eb2d3ea3a449680bedd58a67c8f0",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\"><a href=\"./table_of_contents.ipynb\">Table of Contents</a></span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vblA",
+      "code_hash": "92cec863101ae74f415550c13cc72c38",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h1 id=\"discrete-bayes-filter\">Discrete Bayes Filter</h1></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "bkHC",
+      "code_hash": "e8538e1461e4aa6f23e893d65c7f11e3",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "lEQa",
+      "code_hash": "eafb355248acc454199a7ab51eddc522",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "\n        <style>\n        .output_wrapper, .output {\n            height:auto !important;\n            max-height:100000px;\n        }\n        .output_scroll {\n            box-shadow:none !important;\n            webkit-box-shadow:none !important;\n        }\n        </style>\n    "
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "PKri",
+      "code_hash": "f88d7299176280d8b77f02998ce757f8",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">The Kalman filter belongs to a family of filters called <em>Bayesian filters</em>. Most textbook treatments of the Kalman filter present the Bayesian formula, perhaps shows how it factors into the Kalman filter equations, but mostly keeps the discussion at a very abstract level.</span>\n<span class=\"paragraph\">That approach requires a fairly sophisticated understanding of several fields of mathematics, and it still leaves much of the work of understanding and forming an intuitive grasp of the situation in the hands of the reader.</span>\n<span class=\"paragraph\">I will use a different way to develop the topic, to which I owe the work of Dieter Fox and Sebastian Thrun a great debt. It depends on building an intuition on how Bayesian statistics work by tracking an object through a hallway - they use a robot, I use a dog. I like dogs, and they are less predictable than robots which imposes interesting difficulties for filtering. The first published example of this that I can find seems to be Fox 1999 [1], with a fuller example in Fox 2003 [2]. Sebastian Thrun also uses this formulation in his excellent Udacity course Artificial Intelligence for Robotics [3]. In fact, if you like watching videos, I highly recommend pausing reading this book in favor of first few lessons of that course, and then come back to this book for a deeper dive into the topic.</span>\n<span class=\"paragraph\">Let's now use a simple thought experiment, much like we did with the g-h filter, to see how we might reason about the use of probabilities for filtering and tracking.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Xref",
+      "code_hash": "321bfdb752001875734c2191c570f149",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"tracking-a-dog\">Tracking a Dog</h2>\n<span class=\"paragraph\">Let's begin with a simple problem. We have a dog friendly workspace, and so people bring their dogs to work. Occasionally the dogs wander out of offices and down the halls. We want to be able to track them. So during a hackathon somebody invented a sonar sensor to attach to the dog's collar. It emits a signal, listens for the echo, and based on how quickly an echo comes back we can tell whether the dog is in front of an open doorway or not. It also senses when the dog walks, and reports in which direction the dog has moved. It connects to the network via wifi and sends an update once a second.</span>\n<span class=\"paragraph\">I want to track my dog Simon, so I attach the device to his collar and then fire up Python, ready to write code to track him through the building. At first blush this may appear impossible. If I start listening to the sensor of Simon's collar I might read <strong>door</strong>, <strong>hall</strong>, <strong>hall</strong>, and so on. How can I use that information to determine where Simon is?</span>\n<span class=\"paragraph\">To keep the problem small enough to plot easily we will assume that there are only 10 positions in the hallway, which we will number 0 to 9, where 1 is to the right of 0. For reasons that will be clear later, we will also assume that the hallway is circular or rectangular. If you move right from position 9, you will be at position 0.</span>\n<span class=\"paragraph\">When I begin listening to the sensor I have no reason to believe that Simon is at any particular position in the hallway. From my perspective he is equally likely to be in any position. There are 10 positions, so the probability that he is in any given position is 1/10.</span>\n<span class=\"paragraph\">Let's represent our belief of his position in a NumPy array. I could use a Python list, but NumPy arrays offer functionality that we will be using soon.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "SFPL",
+      "code_hash": "2af2c88b036fbdb5a1bfbd254501efa0",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "[0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1]\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "BYtC",
+      "code_hash": "561ad40516c8f35563699821e71daeaa",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">In <a href=\"https://en.wikipedia.org/wiki/Bayesian_probability\" rel=\"noopener noreferrer\" target=\"_blank\">Bayesian statistics</a> this is called a <a href=\"https://en.wikipedia.org/wiki/Prior_probability\" rel=\"noopener noreferrer\" target=\"_blank\"><em>prior</em></a>. It is the probability prior to incorporating measurements or other information. More completely, this is called the <em>prior probability distribution</em>. A <a href=\"https://en.wikipedia.org/wiki/Probability_distribution\" rel=\"noopener noreferrer\" target=\"_blank\"><em>probability distribution</em></a> is a collection of all possible probabilities for an event. Probability distributions always sum to 1 because something had to happen; the distribution lists all possible events and the probability of each.</span>\n<span class=\"paragraph\">I'm sure you've used probabilities before - as in \"the probability of rain today is 30%\". The last paragraph sounds like more of that. But Bayesian statistics was a revolution in probability because it treats probability as a belief about a single event. Let's take an example. I know that if I flip a fair coin infinitely many times I will get 50% heads and 50% tails. This is called <a href=\"https://en.wikipedia.org/wiki/Frequentist_inference\" rel=\"noopener noreferrer\" target=\"_blank\"><em>frequentist statistics</em></a> to distinguish it from Bayesian statistics. Computations are based on the frequency in which events occur.</span>\n<span class=\"paragraph\">I flip the coin one more time and let it land. Which way do I believe it landed? Frequentist probability has nothing to say about that; it will merely state that 50% of coin flips land as heads. In some ways it is meaningless to assign a probability to the current state of the coin. It is either heads or tails, we just don't know which. Bayes treats this as a belief about a single event - the strength of my belief or knowledge that this specific coin flip is heads is 50%. Some object to the term \"belief\"; belief can imply holding something to be true without evidence. In this book it always is a measure of the strength of our knowledge. We'll learn more about this as we go.</span>\n<span class=\"paragraph\">Bayesian statistics takes past information (the prior) into account. We observe that it rains 4 times every 100 days. From this I could state that the chance of rain tomorrow is 1/25. This is not how weather prediction is done. If I know it is raining today and the storm front is stalled, it is likely to rain tomorrow. Weather prediction is Bayesian.</span>\n<span class=\"paragraph\">In practice statisticians use a mix of frequentist and Bayesian techniques. Sometimes finding the prior is difficult or impossible, and frequentist techniques rule. In this book we can find the prior. When I talk about the probability of something I am referring to the probability that some specific thing is true given past events. When I do that I'm taking the Bayesian approach.</span>\n<span class=\"paragraph\">Now let's create a map of the hallway. We'll place the first two doors close together, and then another door further away. We will use 1 for doors, and 0 for walls:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "RGSE",
+      "code_hash": "3beb0cf2d52a4bb2fa651c9fb62a205c",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Kclp",
+      "code_hash": "f410ed481405db38f116a14a61e184ea",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">I start listening to Simon's transmissions on the network, and the first data I get from the sensor is <strong>door</strong>. For the moment assume the sensor always returns the correct answer. From this I conclude that he is in front of a door, but which one? I have no reason to believe he is in front of the first, second, or third door. What I can do is assign a probability to each door. All doors are equally likely, and there are three of them, so I assign a probability of 1/3 to each door.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "emfo",
+      "code_hash": "4e9cd8bc084d578ec165686a6b8f8892",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Hstk",
+      "code_hash": "8d9fa2732d09eb04dbf830b04e5a0cea",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">This distribution is called a <a href=\"https://en.wikipedia.org/wiki/Categorical_distribution\" rel=\"noopener noreferrer\" target=\"_blank\"><em>categorical distribution</em></a>, which is a discrete distribution describing the probability of observing <marimo-tex class=\"arithmatex\">||(n||)</marimo-tex> outcomes. It is a <a href=\"https://en.wikipedia.org/wiki/Multimodal_distribution\" rel=\"noopener noreferrer\" target=\"_blank\"><em>multimodal distribution</em></a> because we have multiple beliefs about the position of our dog. Of course we are not saying that we think he is simultaneously in three different locations, merely that we have narrowed down our knowledge to one of these three locations. My (Bayesian) belief is that there is a 33.3% chance of being at door 0, 33.3% at door 1, and a 33.3% chance of being at door 8.</span>\n<span class=\"paragraph\">This is an improvement in two ways. I've rejected a number of hallway positions as impossible, and the strength of my belief in the remaining positions has increased from 10% to 33%. This will always happen. As our knowledge improves the probabilities will get closer to 100%.</span>\n<span class=\"paragraph\">A few words about the <a href=\"https://en.wikipedia.org/wiki/Mode_%28statistics%29\" rel=\"noopener noreferrer\" target=\"_blank\"><em>mode</em></a>\nof a distribution. Given a list of numbers, such as {1, 2, 2, 2, 3, 3, 4}, the <em>mode</em> is the number that occurs most often. For this set the mode is 2. A distribution can contain more than one mode. The list {1, 2, 2, 2, 3, 3, 4, 4, 4} contains the modes 2 and 4, because both occur three times. We say the former list is <a href=\"https://en.wikipedia.org/wiki/Unimodality\" rel=\"noopener noreferrer\" target=\"_blank\"><em>unimodal</em></a>, and the latter is <em>multimodal</em>.</span>\n<span class=\"paragraph\">Another term used for this distribution is a <a href=\"https://en.wikipedia.org/wiki/Histogram\" rel=\"noopener noreferrer\" target=\"_blank\"><em>histogram</em></a>. Histograms graphically depict the distribution of a set of numbers. The bar chart above is a histogram.</span>\n<span class=\"paragraph\">I hand coded the <code>belief</code> array in the code above. How would we implement this in code? We represent doors with 1, and walls as 0, so we will multiply the hallway variable by the percentage, like so;</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "nWHF",
+      "code_hash": "6c71479764d6791c4e8f70d2f699e2aa",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "[0.333 0.333 0.    0.    0.    0.    0.    0.    0.333 0.   ]\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "iLit",
+      "code_hash": "2050aa04fc6f36e460a26f607e00e371",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"extracting-information-from-sensor-readings\">Extracting Information from Sensor Readings</h2>\n<span class=\"paragraph\">Let's put Python aside and think about the problem a bit. Suppose we were to read the following from Simon's sensor:</span>\n<div class=\"language-scdoc highlight\"><pre><span></span><code><span class=\"k\">*</span> door\n\n<span class=\"k\">*</span> move right\n\n<span class=\"k\">*</span> door\n</code></pre></div>\n<span class=\"paragraph\">Can we deduce Simon's location? Of course! Given the hallway's layout there is only one place from which you can get this sequence, and that is at the left end. Therefore we can confidently state that Simon is in front of the second doorway. If this is not clear, suppose Simon had started at the second or third door. After moving to the right, his sensor would have returned 'wall'. That doesn't match the sensor readings, so we know he didn't start there. We can continue with that logic for all the remaining starting positions. The only possibility is that he is now in front of the second door. Our belief is:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ZHCJ",
+      "code_hash": "641e39f027f0b93e3ad5161bcaddea98",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ROlb",
+      "code_hash": "6fc231d9fd8c336213a39279473cd0d1",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">I designed the hallway layout and sensor readings to give us an exact answer quickly. Real problems are not so clear cut. But this should trigger your intuition - the first sensor reading only gave us low probabilities (0.333) for Simon's location, but after a position update and another sensor reading we know more about where he is. You might suspect, correctly, that if you had a very long hallway with a large number of doors that after several sensor readings and positions updates we would either be able to know where Simon was, or have the possibilities narrowed down to a small number of possibilities. This is possible when a set of sensor readings only matches one to a few starting locations.</span>\n<span class=\"paragraph\">We could implement this solution now, but instead let's consider a real world complication to the problem.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "qnkX",
+      "code_hash": "4dcadf09858435b6a1c831887cf39978",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"noisy-sensors\">Noisy Sensors</h2>\n<span class=\"paragraph\">Perfect sensors are rare. Perhaps the sensor would not detect a door if Simon sat in front of it while scratching himself, or misread if he is not facing down the hallway. Thus when I get <strong>door</strong> I cannot use 1/3 as the probability. I have to assign less than 1/3 to each door, and assign a small probability to each blank wall position. Something like</span>\n<div class=\"language-Python codehilite\"><pre><span></span><code><span class=\"p\">[</span><span class=\"mf\">.31</span><span class=\"p\">,</span> <span class=\"mf\">.31</span><span class=\"p\">,</span> <span class=\"mf\">.01</span><span class=\"p\">,</span> <span class=\"mf\">.01</span><span class=\"p\">,</span> <span class=\"mf\">.01</span><span class=\"p\">,</span> <span class=\"mf\">.01</span><span class=\"p\">,</span> <span class=\"mf\">.01</span><span class=\"p\">,</span> <span class=\"mf\">.01</span><span class=\"p\">,</span> <span class=\"mf\">.31</span><span class=\"p\">,</span> <span class=\"mf\">.01</span><span class=\"p\">]</span>\n</code></pre></div>\n<span class=\"paragraph\">At first this may seem insurmountable. If the sensor is noisy it casts doubt on every piece of data. How can we conclude anything if we are always unsure?</span>\n<span class=\"paragraph\">The answer, as for the problem above, is with probabilities. We are already comfortable assigning a probabilistic belief to the location of the dog; now we have to incorporate the additional uncertainty caused by the sensor noise.</span>\n<span class=\"paragraph\">Say we get a reading of <strong>door</strong>, and suppose that testing shows that the sensor is 3 times more likely to be right than wrong. We should scale the probability distribution by 3 where there is a door. If we do that the result will no longer be a probability distribution, but we will learn how to fix that in a moment.</span>\n<span class=\"paragraph\">Let's look at that in Python code. Here I use the variable <code>z</code> to denote the measurement. <code>z</code> or <code>y</code> are customary choices in the literature for the measurement. As a programmer I prefer meaningful variable names, but I want you to be able to read the literature and/or other filtering code, so I will start introducing these abbreviated names now.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "TqIu",
+      "code_hash": "75ce20bef376aef2dc278fcdeb216d80",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "belief: [0.3 0.3 0.1 0.1 0.1 0.1 0.1 0.1 0.3 0.1]\nsum = 1.6000000000000003\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "Vxnm",
+      "code_hash": "9592cd08dde17d6e51b9e8a3400bcf12",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">This is not a probability distribution because it does not sum to 1.0. But the code is doing mostly the right thing - the doors are assigned a number (0.3) that is 3 times higher than the walls (0.1). All we need to do is normalize the result so that the probabilities correctly sum to 1.0. Normalization is done by dividing each element by the sum of all elements in the list. That is easy with NumPy:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "DnEU",
+      "code_hash": "42eb835e4c29d4ec08035f8d0e80c7a2",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<pre class='text-xs'>array([0.188, 0.188, 0.062, 0.062, 0.062, 0.062, 0.062, 0.062, 0.188,\n       0.062])</pre>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ulZA",
+      "code_hash": "2b08c3e1aad8dafffca489fc1c42ef00",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">FilterPy implements this with the <code>normalize</code> function:</span>\n<div class=\"language-Python codehilite\"><pre><span></span><code><span class=\"kn\">from</span><span class=\"w\"> </span><span class=\"nn\">filterpy.discrete_bayes</span><span class=\"w\"> </span><span class=\"kn\">import</span> <span class=\"n\">normalize</span>\n<span class=\"n\">normalize</span><span class=\"p\">(</span><span class=\"n\">belief</span><span class=\"p\">)</span>\n</code></pre></div>\n<span class=\"paragraph\">It is a bit odd to say \"3 times as likely to be right as wrong\". We are working in probabilities, so let's specify the probability of the sensor being correct, and compute the scale factor from that. The equation for that is</span>\n<marimo-tex class=\"arithmatex\">||[scale =  \\frac{prob_{correct}}{prob_{incorrect}} = \\frac{prob_{correct}} {1-prob_{correct}}||]</marimo-tex><span class=\"paragraph\">Also, the <code>for</code> loop is cumbersome. As a general rule you will want to avoid using <code>for</code> loops in NumPy code. NumPy is implemented in C and Fortran, so if you avoid for loops the result often runs 100x faster than the equivalent loop.</span>\n<span class=\"paragraph\">How do we get rid of this <code>for</code> loop? NumPy lets you index arrays with boolean arrays. You create a boolean array with logical operators. We can find all the doors in the hallway with:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ecfG",
+      "code_hash": "edbe318f5a0af1053f7a90df0c34116f",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<pre class='text-xs'>array([ True,  True, False, False, False, False, False, False,  True,\n       False])</pre>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Pvdt",
+      "code_hash": "266cf0fb5a6c0a9ead3883ffcabe10d3",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">When you use the boolean array as an index to another array it returns only the elements where the index is <code>True</code>. Thus we can replace the <code>for</code> loop with</span>\n<span class=\"paragraph\"><div class=\"language-python codehilite\"><pre><span></span><code><span class=\"n\">belief</span><span class=\"p\">[</span><span class=\"n\">hall</span><span class=\"o\">==</span><span class=\"n\">z</span><span class=\"p\">]</span> <span class=\"o\">*=</span> <span class=\"n\">scale</span>\n</code></pre></div>\nand only the elements which equal <code>z</code> will be multiplied by <code>scale</code>.</span>\n<span class=\"paragraph\">Teaching you NumPy is beyond the scope of this book. I will use idiomatic NumPy constructs and explain them the first time I present them. If you are new to NumPy there are many blog posts and videos on how to use NumPy efficiently and idiomatically.</span>\n<span class=\"paragraph\">Here is our improved version:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ZBYS",
+      "code_hash": "ae2c3b43307f091c1d6e312ec6f4a9e8",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "sum = 1.0\nprobability of door = 0.1875\nprobability of wall = 0.06249999999999999\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "aLJB",
+      "code_hash": "51396b2bfef70ab93d81d9b598cfd80b",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">We can see from the output that the sum is now 1.0, and that the probability of a door vs wall is still three times larger. The result also fits our intuition that the probability of a door must be less than 0.333, and that the probability of a wall must be greater than 0.0. Finally, it should fit our intuition that we have not yet been given any information that would allow us to distinguish between any given door or wall position, so all door positions should have the same value, and the same should be true for wall positions.</span>\n<span class=\"paragraph\">This result is called the <a href=\"https://en.wikipedia.org/wiki/Posterior_probability\" rel=\"noopener noreferrer\" target=\"_blank\"><em>posterior</em></a>, which is short for <em>posterior probability distribution</em>. All this means is a probability distribution <em>after</em> incorporating the measurement information (posterior means 'after' in this context). To review, the <em>prior</em> is the probability distribution before including the measurement's information.</span>\n<span class=\"paragraph\">Another term is the <a href=\"https://en.wikipedia.org/wiki/Likelihood_function\" rel=\"noopener noreferrer\" target=\"_blank\"><em>likelihood</em></a>. When we computed <code>belief[hall==z] *= scale</code> we were computing how <em>likely</em> each position was given the measurement. The likelihood is not a probability distribution because it does not sum to one.</span>\n<span class=\"paragraph\">The combination of these gives the equation</span>\n<marimo-tex class=\"arithmatex\">||[\\mathtt{posterior} = \\frac{\\mathtt{likelihood} \\times \\mathtt{prior}}{\\mathtt{normalization}}||]</marimo-tex><span class=\"paragraph\">When we talk about the filter's output we typically call the state after performing the prediction the <em>prior</em> or <em>prediction</em>, and we call the state after the update either the <em>posterior</em> or the <em>estimated state</em>.</span>\n<span class=\"paragraph\">It is very important to learn and internalize these terms as most of the literature uses them extensively.</span>\n<span class=\"paragraph\">Does <code>scaled_update()</code> perform this computation? It does. Let me recast it into this form:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "nHfw",
+      "code_hash": "27bde2b041f0a072321186f05fd47f67",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "xXTn",
+      "code_hash": "9dc9be7a9549664c17fec095f92f3188",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">This function is not fully general. It contains knowledge about the hallway, and how we match measurements to it. We always strive to write general functions. Here we will remove the computation of the likelihood from the function, and require the caller to compute the likelihood themselves.</span>\n<span class=\"paragraph\">Here is a full implementation of the algorithm:</span>\n<div class=\"language-python codehilite\"><pre><span></span><code><span class=\"k\">def</span><span class=\"w\"> </span><span class=\"nf\">update</span><span class=\"p\">(</span><span class=\"n\">likelihood</span><span class=\"p\">,</span> <span class=\"n\">prior</span><span class=\"p\">):</span>\n    <span class=\"k\">return</span> <span class=\"n\">normalize</span><span class=\"p\">(</span><span class=\"n\">likelihood</span> <span class=\"o\">*</span> <span class=\"n\">prior</span><span class=\"p\">)</span>\n</code></pre></div>\n<span class=\"paragraph\">Computation of the likelihood varies per problem. For example, the sensor might not return  just 1 or 0, but a <code>float</code> between 0 and 1 indicating the probability of being in front of a door. It might use computer vision and report a blob shape that you then probabilistically match to a door. It might use sonar and return a distance reading. In each case the computation of the likelihood will be different. We will see many examples of this throughout the book, and learn how to perform these calculations.</span>\n<span class=\"paragraph\">FilterPy implements <code>update</code>. Here is the previous example in a fully general form:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "AjVT",
+      "code_hash": "2779fea2e618904aae1d19595e649dbd",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<pre class='text-xs'>array([0.188, 0.188, 0.062, 0.062, 0.062, 0.062, 0.062, 0.062, 0.188,\n       0.062])</pre>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "pHFh",
+      "code_hash": "7c917a2417486426e61f02de282f21a0",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"incorporating-movement\">Incorporating Movement</h2>\n<span class=\"paragraph\">Recall how quickly we were able to find an exact solution when we incorporated a series of measurements and movement updates. However, that occurred in a fictional world of perfect sensors. Might we be able to find an exact solution with noisy sensors?</span>\n<span class=\"paragraph\">Unfortunately, the answer is no. Even if the sensor readings perfectly match an extremely complicated hallway map, we cannot be 100% certain that the dog is in a specific position - there is, after all, a tiny possibility that every sensor reading was wrong! Naturally, in a more typical situation most sensor readings will be correct, and we might be close to 100% sure of our answer, but never 100% sure. This may seem complicated, but let's go ahead and program the math.</span>\n<span class=\"paragraph\">First let's deal with the simple case - assume the movement sensor is perfect, and it reports that the dog has moved one space to the right. How would we alter our <code>belief</code> array?</span>\n<span class=\"paragraph\">I hope that after a moment's thought it is clear that we should shift all the values one space to the right. If we previously thought there was a 50% chance of Simon being at position 3, then after he moved one position to the right we should believe that there is a 50% chance he is at position 4. The hallway is circular, so we will use modulo arithmetic to perform the shift.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "NCOB",
+      "code_hash": "4af4921f5db803906e6fab9c91c65e24",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "aqbW",
+      "code_hash": "ae41c04d11d80b89b2fc8cb12e0af7d3",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">We can see that we correctly shifted all values one position to the right, wrapping from the end of the array back to the beginning.</span>\n<span class=\"paragraph\">The next cell animates this so you can see it in action. Use the slider to move forwards and backwards in time. This simulates Simon walking around and around the hallway. It does not yet incorporate new measurements so the probability distribution does not change shape, only position.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "TRpd",
+      "code_hash": "ce454151eca73c6cde0ca69ed1667470",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<div style='border-radius: 6px; overflow: hidden; background-color: var(--slate-1); display: inline-block; min-width: 0; max-width: 100%;'><div style='padding: 10px 12px 8px 12px; display: flex; align-items: center;'><span style='background-color: var(--green-3); color: var(--green-11);padding: 2px 8px; border-radius: 4px; font-family: monospace; font-size: 0.75rem; font-weight: 600; margin-right: 8px; display: inline-block;'>function</span><span style='font-family: monospace; font-size: 0.875rem; color: var(--slate-12);'>simulate</span></div><div style='height: 1px; background-color: var(--slate-3); margin: 0 12px 8px 12px;'></div><div style='font-family: monospace; font-size: 0.875rem; color: var(--slate-12); margin: 0 12px 8px 12px;'><span>def simulate(time_step):</span></div><div style='overflow-x: auto; font-size: 0.875rem; padding: 0 0 8px 0;'><table><tbody><tr><td style='padding: 2px 8px 2px 12px; vertical-align: top; text-align: right; font-family: monospace; font-size: 0.75rem; white-space: nowrap; line-height: 1.5; color: var(--slate-10);'>widget</td><td style='padding: 2px 4px; color: var(--slate-9); vertical-align: top; font-family: monospace; font-size: 0.75rem; line-height: 1.5;'>=</td><td style='color: var(--foreground); vertical-align: top; line-height: 1.5; padding: 2px 12px 2px 4px;'><span style='display: inline-block;'><marimo-mime-renderer data-mime='&quot;application/vnd.marimo+mimebundle&quot;' data-data='{&quot;application/vnd.jupyter.widget-view+json&quot;:{&quot;version_major&quot;:2,&quot;version_minor&quot;:0,&quot;model_id&quot;:&quot;8fed4bce5f2244ef96da1e247332f1b8&quot;}}'></marimo-mime-renderer></span></td></tr></tbody></table></div></div>"
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "\u001b[2K\r\u001b[2K\r",
+          "mimetype": "text/plain"
+        },
+        {
+          "type": "streamMedia",
+          "name": "media",
+          "mimetype": "application/vnd.marimo+mimebundle",
+          "data": "{\"image/png\": \"data:image/png;base64,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\", \"__metadata__\": {\"image/png\": {\"width\": 758, \"height\": 356}}}"
+        }
+      ]
+    },
+    {
+      "id": "TXez",
+      "code_hash": "40f844751e5b37244e85081d3d50f7a1",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"terminology\">Terminology</h2>\n<span class=\"paragraph\">Let's pause a moment to review terminology. I introduced this terminology in the last chapter, but let's take a second to help solidify your knowledge.</span>\n<span class=\"paragraph\">The <em>system</em> is what we are trying to model or filter. Here the system is our dog. The <em>state</em> is its current configuration or value. In this chapter the state is our dog's position. We rarely know the actual state, so we say our filters produce the <em>estimated state</em> of the system. In practice this often gets called the state, so be careful to understand the context.</span>\n<span class=\"paragraph\">One cycle of prediction and updating with a measurement is called the state or system <em>evolution</em>, which is short for <em>time evolution</em> [7]. Another term is <em>system propagation</em>. It refers to how the state of the system changes over time. For filters, time is usually a discrete step, such as 1 second. For our dog tracker the system state is the position of the dog, and the state evolution is the position after a discrete amount of time has passed.</span>\n<span class=\"paragraph\">We model the system behavior with the <em>process model</em>. Here, our process model is that the dog moves one or more positions at each time step. This is not a particularly accurate model of how dogs behave. The error in the model is called the <em>system error</em> or <em>process error</em>.</span>\n<span class=\"paragraph\">The prediction is our new <em>prior</em>. Time has moved forward and we made a prediction without benefit of knowing the measurements.</span>\n<span class=\"paragraph\">Let's work an example. The current position of the dog is 17 m. Our epoch is 2 seconds long, and the dog is traveling at 15 m/s. Where do we predict he will be in two seconds?</span>\n<span class=\"paragraph\">Clearly,</span>\n<marimo-tex class=\"arithmatex\">||[ \\begin{aligned}\n\\bar x &amp;= 17 + (15*2) \\\\\n&amp;= 47\n\\end{aligned}||]</marimo-tex><span class=\"paragraph\">I use bars over variables to indicate that they are priors (predictions). We can write the equation for the process model like this:</span>\n<marimo-tex class=\"arithmatex\">||[ \\bar x_{k+1} = f_x(\\bullet) + x_k||]</marimo-tex><span class=\"paragraph\"><marimo-tex class=\"arithmatex\">||(x_k||)</marimo-tex> is the current position or state. If the dog is at 17 m then <marimo-tex class=\"arithmatex\">||(x_k = 17||)</marimo-tex>.</span>\n<span class=\"paragraph\"><marimo-tex class=\"arithmatex\">||(f_x(\\bullet)||)</marimo-tex> is the state propagation function for x. It describes how much the <marimo-tex class=\"arithmatex\">||(x_k||)</marimo-tex> changes over one time step. For our example it performs the computation <marimo-tex class=\"arithmatex\">||(15 \\cdot 2||)</marimo-tex> so we would define it as</span>\n<span class=\"paragraph\">$<marimo-tex class=\"arithmatex\">||(f_x(v_x, t) = v_k t||)</marimo-tex>$.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "dNNg",
+      "code_hash": "96059f53e63d0167c99a54594ffd81dc",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"adding-uncertainty-to-the-prediction\">Adding Uncertainty to the Prediction</h2>\n<span class=\"paragraph\"><code>perfect_predict()</code> assumes perfect measurements, but all sensors have noise. What if the sensor reported that our dog moved one space, but he actually moved two spaces, or zero? This may sound like an insurmountable problem, but let's model it and see what happens.</span>\n<span class=\"paragraph\">Assume that the sensor's movement measurement is 80% likely to be correct, 10% likely to overshoot one position to the right, and 10% likely to undershoot to the left. That is, if the movement measurement is 4 (meaning 4 spaces to the right), the dog is 80% likely to have moved 4 spaces to the right, 10% to have moved 3 spaces, and 10% to have moved 5 spaces.</span>\n<span class=\"paragraph\">Each result in the array now needs to incorporate probabilities for 3 different situations. For example, consider the reported movement of 2. If we are 100% certain the dog started from position 3, then there is an 80% chance he is at 5, and a 10% chance for either 4 or 6. Let's try coding that:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "yCnT",
+      "code_hash": "8e8dec6cf75082f89649dab1f2b4d642",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "wlCL",
+      "code_hash": "ee0e06fe14d939e9096b8ca83449a4f2",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">It appears to work correctly. Now what happens when our belief is not 100% certain?</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "kqZH",
+      "code_hash": "3ee2bccbd22a7dce96cd30d79e3f3b78",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<pre class='text-xs'>array([0.  , 0.  , 0.  , 0.04, 0.38, 0.52, 0.06, 0.  , 0.  , 0.  ])</pre>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "wAgl",
+      "code_hash": "c3ae4199fdf1a212c3754568bf95e463",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Here the results are more complicated, but you should still be able to work it out in your head. The 0.04 is due to the possibility that the 0.4 belief undershot by 1. The 0.38 is due to the following: the 80% chance that we moved 2 positions (0.4 <marimo-tex class=\"arithmatex\">||(\\times||)</marimo-tex> 0.8) and the 10% chance that we undershot (0.6 <marimo-tex class=\"arithmatex\">||(\\times||)</marimo-tex> 0.1). Overshooting plays no role here because if we overshot both 0.4 and 0.6 would be past this position. <strong>I strongly suggest working some examples until all of this is very clear, as so much of what follows depends on understanding this step.</strong></span>\n<span class=\"paragraph\">If you look at the probabilities after performing the update you might be dismayed. In the example above we started with probabilities of 0.4 and 0.6 in two positions; after performing the update the probabilities are not only lowered, but they are strewn out across the map.</span>\n<span class=\"paragraph\">This is not a coincidence, or the result of a carefully chosen example - it is always true of the prediction. If the sensor is noisy we lose some information on every prediction. Suppose we were to perform the prediction an infinite number of times - what would the result be? If we lose information on every step, we must eventually end up with no information at all, and our probabilities will be equally distributed across the <code>belief</code> array. Let's try this with 100 iterations. The plot is animated; use the slider to change the step number.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "rEll",
+      "code_hash": "8f9fc7cc1304ceee23ce6fc6e13673d4",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<div style='border-radius: 6px; overflow: hidden; background-color: var(--slate-1); display: inline-block; min-width: 0; max-width: 100%;'><div style='padding: 10px 12px 8px 12px; display: flex; align-items: center;'><span style='background-color: var(--green-3); color: var(--green-11);padding: 2px 8px; border-radius: 4px; font-family: monospace; font-size: 0.75rem; font-weight: 600; margin-right: 8px; display: inline-block;'>function</span><span style='font-family: monospace; font-size: 0.875rem; color: var(--slate-12);'>show_prior</span></div><div style='height: 1px; background-color: var(--slate-3); margin: 0 12px 8px 12px;'></div><div style='font-family: monospace; font-size: 0.875rem; color: var(--slate-12); margin: 0 12px 8px 12px;'><span>def show_prior(step):</span></div><div style='overflow-x: auto; font-size: 0.875rem; padding: 0 0 8px 0;'><table><tbody><tr><td style='padding: 2px 8px 2px 12px; vertical-align: top; text-align: right; font-family: monospace; font-size: 0.75rem; white-space: nowrap; line-height: 1.5; color: var(--slate-10);'>widget</td><td style='padding: 2px 4px; color: var(--slate-9); vertical-align: top; font-family: monospace; font-size: 0.75rem; line-height: 1.5;'>=</td><td style='color: var(--foreground); vertical-align: top; line-height: 1.5; padding: 2px 12px 2px 4px;'><span style='display: inline-block;'><marimo-mime-renderer data-mime='&quot;application/vnd.marimo+mimebundle&quot;' data-data='{&quot;application/vnd.jupyter.widget-view+json&quot;:{&quot;version_major&quot;:2,&quot;version_minor&quot;:0,&quot;model_id&quot;:&quot;458206cfe3304a90b6c6fdd06055912c&quot;}}'></marimo-mime-renderer></span></td></tr></tbody></table></div></div>"
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "Final Belief: [0.104 0.103 0.101 0.099 0.097 0.096 0.097 0.099 0.101 0.103]\n\u001b[2K\r\u001b[2K\r",
+          "mimetype": "text/plain"
+        },
+        {
+          "type": "streamMedia",
+          "name": "media",
+          "mimetype": "application/vnd.marimo+mimebundle",
+          "data": "{\"image/png\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAu0AAAF0CAYAAACXPwdxAAAAOnRFWHRTb2Z0d2FyZQBNYXRwbG90bGliIHZlcnNpb24zLjExLjAsIGh0dHBzOi8vbWF0cGxvdGxpYi5vcmcvlcelbwAAAAlwSFlzAAAPYQAAD2EBqD+naQAAJTpJREFUeJzt3QuYVlW9P/AfAoIoIOrxlogglPc0Ll4RvGCoGRYppWacox46GZbgDTMFSqkjppim57H0mB41UygtL2iGt5MXwksKoqGIWYIiN+XigHOetf+982e4zuggi9mfz/O8z8zevJvZe82a/X7f9f722k2qq6urAwAAyNZG63sHAACANRPaAQAgc0I7AABkTmgHAIDMCe0AAJA5oR0AADIntAMAQOaEdgAAyJzQDgAAmRPaATYgL7zwQgwcODD22muv2G677WLfffeN7373uzF58uRaz7vqqqti8803j3fffTfWp5deeilGjhwZe+65Z7E/o0ePXq/7A7ChEtoBNhD3339/7LPPPjFz5sy49tprY9KkSfGf//mf8eKLL8buu+8e8+bNq3nu4sWLi+UPP/xwve3vyy+/HF/60pdi6dKlcf755xf7k/YLgPpr9hG2AWA9GDFiRLRu3TrGjRsXLVu2LNal0faDDz64CMXV1dVZ/V66dOkSU6ZMKb5/9tln1/fuAGzQjLQDbCDSCPv2229fE9grmjRpEqNGjSrKT5Jzzjknvv/97xff77zzzsX69HjiiSdq/V+prGbXXXeNrbfeOj73uc/FmDFjagX/VMqStps7d24MGzYsOnXqFO3bt49TTz01Zs2atdb9TfsFQMMQ2gE2ED169ChGru+66661jsh/73vfK75/5plnYvr06cWje/fuxbq//e1v0bVr13j00Ufj6quvLspszjvvvPjBD34Q3/rWt1YqsRk6dGjsuOOO8cc//jGuv/76+MMf/hC9e/eOhQsXruMjBqBCeQzABuKyyy4r6sT79esXn/70p+PAAw8swnffvn2LEfWKTTbZpGY0vk2bNjUj8BVnn312vP/++3HvvfcWo+zJ8ccfX4T0b3zjGzF48ODYbbfdap6fAvt//Md/FN936NAhbrvttthvv/3immuuKQI9AOuekXaADUQqjZk4cWI8/vjjcfLJJxcj3WlUvXPnzsWMMh988MFa/49ly5YVI/WHH354TWCv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RbHFFlvE3nvvHVtttVX89Kc/Xes2zz33XBxwwAHRvn372GOPPeLoo4+Ot956q74/GgAASqleof2mm26KSy+9NB588MGYPXt23HzzzXHmmWfGAw88sNptZsyYEb17946uXbsW27z55pvx3e9+N1588cWG2H8AAGj0mtXnyddcc03079+/GDVPvvjFL0bPnj2L9X369FnlNhdffHFsueWWccUVV0TTpk2Ldat7LgAA8DFG2j/88MOYNGlS7L///rXWH3TQQTFx4sTVbnffffdFv379YqONNipG2ZcsWVLXHwkAANRnpH3BggVF4E6j5stLde3vvPPOardLQX3RokWx6667xrx584oLUT//+c/HddddF1tvvfUqt0k/Z/lwP3/+/OJrVVVV8WiMKsfVWI8vN7m2c9n7QdmPP9EG2kA/0Af0gfKcD6vqcWxNqqurq+sa2tu0aVPUtZ900kk161ON+8iRI4t/X5XmzZtHixYt4uGHHy7q2mfOnBlHHHFEdOrUKcaNG7fKbYYPHx4jRoxYaf0tt9wSrVq1qvPB0XCGz9+tUTXn8DaT1/cuAAAlt3DhwjjhhBOKge2UsxtkpL1169bRtm3blWZ9Scs77LDDardL/9atW7cisCfbbLNN/Pu//3ucc845kd4vNGnSZKVthg0bFkOGDKk10p5mnklhf20HtCG/00oX9KZ6//RGJzfDb5sejclRRx0VOcq9H6xrZT/+RBtoA/1AH9AHynM+nP/PapIGvxA1zQJz//33x1lnnVWz7t577y3WV7z77rvFu4WOHTsWy4cddlhMn1478KXnpDcBqwrsSRqZT48VpV9YY/2llekYc5B7G5e9H5T9+BNtoA30A31AH2j858Pm9Tiuek35+L3vfS8eeeSRuPDCC+Ppp5+O008/vbjJ0tChQ2uec+WVV8Y+++xTs3zuuefGU089FZdcckk8//zzceutt8bll19ebAsAADRwaO/evXuMHz++COwDBw4sLjJNteqdO3eueU668VKqV6/o0qVLEfT//Oc/FzU7119/fYwePTouuOCC+vxoAAAorXqVxyS9evUqHqtzxhlnFI/lpbun3nnnnR9tDwEAoOTqNdIOAAB88oR2AADInNAOAACZE9oBACBzQjsAAGROaAcAgMwJ7QAAkDmhHQAAMie0AwBA5oR2AADInNAOAACZE9oBACBzQjsAAGROaAcAgMwJ7QAAkDmhHQAAMie0AwBA5oR2AADInNAOAACZE9oBACBzQjsAAGROaAcAgMwJ7QAAkDmhHQAAMie0AwBA5oR2AADInNAOAACZE9oBACBzQjsAAGROaAcAgMwJ7QAAkDmhHQAAMie0AwBA5oR2AADInNAOAACZE9oBACBzQjsAAGROaAcAgMwJ7QAAkDmhHQAAMie0AwBA5oR2AADInNAOAACZE9oBACBzQjsAAGROaAcAgMwJ7QAAkDmhHQAAMie0AwBA5oR2AADIXLP6bvDee+/F7bffHq+//np06dIljj/++Nh4443rtO20adPiuuuuiz333DNOPPHEj7K/AABQOvUaaZ89e3Z069Ytfvazn8XixYvjkksuiYMOOigWLly41m0/+OCD+OpXv1qE9nHjxn2cfQYAgFKpV2i/+OKLY9myZfHII4/Ej3/843j00UeL0fOrr756rdued955xQj7/vvv/3H2FwAASqdeoX3s2LFx3HHHRatWrYrlLbfcMo455phi/Zrcc889cffdd8eVV1758fYWAABKqM417UuWLCnq2Dt37lxrfVpOgXx1/vGPf8Spp55aBPvNNtuszj8rPSrmz59ffK2qqioejVHluBrr8eUm13Yuez8o+/En2kAb6Af6gD5QnvNhVT2Orc6hvVK33qZNm1rr27ZtG++///4qt/nwww+LC04HDRoU++23X513atSoUTFixIiV1o8fP75mlL+xeuCBByJPu0Vjkj79yVm+/eCTUfbjT7SBNtAP9AF9oPGfDxfW4brQeof2TTfdNJo0aRLz5s2rtX7u3LmrHUG///774/HHH4+uXbsWNe3JSy+9FM2aNSuWzz333GjXrt1K2w0bNiyGDBlSa6S9ffv2ccQRR6z0pqExvdNKnbJPnz7RvHnzyM3w26ZHY3LUUUdFjnLvB+ta2Y8/0QbaQD/QB/SB8pwP5/+zmqRBQ3ua1rFTp04xderUWuvT8q677rrKbVLpzIoj5qnRU2jffPPNY6ONVl1S36JFi+KxorRtY/2llekYc5B7G5e9H5T9+BNtoA30A31AH2j858Pm9Tiues3Tni5CvfXWW+OCCy4oRrxTvfrvfve7GDlyZM1zHnzwwWJ0/aKLLirmca+MsFc89thj0bJly5XWAwAADTB7TAraqZxl3333LerU0/SNn/vc54rvlw/l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2G/SpEk0RvPnz4/27dvHG2+8EW3atIky0gbaQB/QB5wLnA/1AX2gTLmgurq6COzbb7/9Wp9b59C+ySabxLbbbhszZsyotT4td+rUqcG2qYT9SuCv2HzzzaMMUqdsrB2zrrSBNtAH9AHnAudDfUAfKEsuaLuWEfaPdCFquoB07Nixxch3snjx4rj77ruL9RWTJ0+Ou+66q17bAAAADRTaL7zwwvjb3/4W/fv3j+uuuy6OPvroaNasWa1Slttvvz1OPvnkem0DAAA0UGjfaaedYtKkScUdTSdMmBA9e/aMp59+uqg1r9htt92iX79+9dqG/1cSdNFFF61UFlQm2kAb6AP6gHOB86E+oA/IBavWpNqtSQEAoPGMtAMAAJ88oR0AADIntAMAQObqPE87687SpUvjT3/6U3EDqX322Sd23HHH0jX3Bx98EA888EAxNegxxxwTZTz+Z599Nt5+++3iou2dd945ymbRokXFRevz5s0r2mBN93Jo7J555pmYOnVqHHzwwXW64UZjkG4u8vvf/36l9Yccckhss802USbphoTpNSGdDw888MBo1apVlOUc8Nvf/naV/5ZeGz/zmc9EWbz66qsxZcqU2HjjjeOzn/1sbL311lEmy5YtK86DafbBzp07xx577LG+dykLQvt69tZbb0WfPn2Ku8SmkJJO1MOHD49zzjknyuL73/9+3HDDDcVUoEnZQvutt94aF1xwQTGj0r/8y7/Eo48+Gl/4whfil7/8ZU2bNHY33XRTMXtShw4dihlkHnvssTj22GPjv//7v0vTBhWvv/56cR+LmTNnFve0KEtof/PNN+NrX/tafPGLXyxuzFeRXqzLFNp/85vfxCmnnFK8cU83JzzzzDPjf/7nf4rgVobQno5/ef/4xz/ikUceiV/96lelCO1pbpBTTz21ON5evXoV2SDNuPejH/0ozjjjjCiD1157rZiFMB377rvvHk899VQceuihxetE2V4PVpJmj2H9GTBgQHXXrl2rFy1aVCyPGzeuukmTJtWTJk0qza/lJz/5SfVbb71V/YMf/KC6Q4cO1WVz++23V7/55ps1y9OmTatu3bp19ZgxY6rLIvX7uXPn1iy/9NJLxd9Bapsyqaqqqt5///2rL7300up0er777rury2LKlCnFMb/xxhvVZfXss89WN2/evPrqq6+uWZfODRMnTqwuq6FD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\", \"__metadata__\": {\"image/png\": {\"width\": 749, \"height\": 372}}}"
+        }
+      ]
+    },
+    {
+      "id": "dGlV",
+      "code_hash": "9b5c9d35922589ab61d5b04e42c85f34",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "Final Belief: [0.104 0.103 0.101 0.099 0.097 0.096 0.097 0.099 0.101 0.103]\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "SdmI",
+      "code_hash": "7d68b2a3eb0a00729fd8687681b921fe",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">After 100 iterations we have lost almost all information, even though we were 100% sure that we started in position 0. Feel free to play with the numbers to see the effect of differing number of updates. For example, after 100 updates a small amount of information is left, after 50 a lot is left, but by 200 iterations essentially all information is lost.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "lgWD",
+      "code_hash": "25c152e92ed5813901b78d7113283a6e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">And, if you are viewing this online here is an animation of that output.\n<img src=\"animations/02_no_info.gif\"></span>\n<span class=\"paragraph\">I will not generate these standalone animations through the rest of the book. Please see the preface for instructions to run this book on the web, for free, or install IPython on your computer. This will allow you to run all of the cells and see the animations. It's very important that you practice with this code, not just read passively.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "yOPj",
+      "code_hash": "2966246443dcb1a1e2f0aa12734c7e78",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"generalizing-with-convolution\">Generalizing with Convolution</h2>\n<span class=\"paragraph\">We made the assumption that the movement error is at most one position. But it is possible for the error to be two, three, or more positions. As programmers we always want to generalize our code so that it works for all cases.</span>\n<span class=\"paragraph\">This is easily solved with <a href=\"https://en.wikipedia.org/wiki/Convolution\" rel=\"noopener noreferrer\" target=\"_blank\"><em>convolution</em></a>. Convolution modifies one function with another function. In our case we are modifying a probability distribution with the error function of the sensor. The implementation of <code>predict_move()</code> is a convolution, though we did not call it that. Formally, convolution is defined as</span>\n<marimo-tex class=\"arithmatex\">||[ (f \\ast g) (t) = \\int_0^t \\!f(\\tau) \\, g(t-\\tau) \\, \\mathrm{d}\\tau||]</marimo-tex><span class=\"paragraph\">where <marimo-tex class=\"arithmatex\">||(f\\ast g||)</marimo-tex> is the notation for convolving f by g. It does not mean multiply.</span>\n<span class=\"paragraph\">Integrals are for continuous functions, but we are using discrete functions. We replace the integral with a summation, and the parenthesis with array brackets.</span>\n<marimo-tex class=\"arithmatex\">||[ (f \\ast g) [t] = \\sum\\limits_{\\tau=0}^t \\!f[\\tau] \\, g[t-\\tau]||]</marimo-tex><span class=\"paragraph\">Comparison shows that <code>predict_move()</code> is computing this equation - it computes the sum of a series of multiplications.</span>\n<span class=\"paragraph\"><a href=\"https://www.khanacademy.org/math/differential-equations/laplace-transform/convolution-integral/v/introduction-to-the-convolution\" rel=\"noopener noreferrer\" target=\"_blank\">Khan Academy</a> [4] has a good introduction to convolution, and Wikipedia has some excellent animations of convolutions [5]. But the general idea is already clear. You slide an array called the <em>kernel</em> across another array, multiplying the neighbors of the current cell with the values of the second array. In our example above we used 0.8 for the probability of moving to the correct location, 0.1 for undershooting, and 0.1 for overshooting. We make a kernel of this with the array <code>[0.1, 0.8, 0.1]</code>. All we need to do is write a loop that goes over each element of our array, multiplying by the kernel, and summing the results. To emphasize that the belief is a probability distribution I have named it <code>pdf</code>.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "fwwy",
+      "code_hash": "452f86c6b9d6c3704a02f8809cf6b031",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "LJZf",
+      "code_hash": "356a82240ae90d1ccfed59c07b56e83d",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">This illustrates the algorithm, but it runs very slow. SciPy provides a convolution routine <code>convolve()</code> in the <code>ndimage.filters</code> module. We  need to shift the pdf by <code>offset</code> before convolution; <code>np.roll()</code> does that. The move and predict algorithm can be implemented with one line:</span>\n<div class=\"language-python codehilite\"><pre><span></span><code><span class=\"n\">convolve</span><span class=\"p\">(</span><span class=\"n\">np</span><span class=\"o\">.</span><span class=\"n\">roll</span><span class=\"p\">(</span><span class=\"n\">pdf</span><span class=\"p\">,</span> <span class=\"n\">offset</span><span class=\"p\">),</span> <span class=\"n\">kernel</span><span class=\"p\">,</span> <span class=\"n\">mode</span><span class=\"o\">=</span><span class=\"s1\">&#39;wrap&#39;</span><span class=\"p\">)</span>\n</code></pre></div>\n<span class=\"paragraph\">FilterPy implements this with <code>discrete_bayes</code>' <code>predict()</code> function.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "urSm",
+      "code_hash": "dca64acd5ef48b3d6efa9600c138632e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "jxvo",
+      "code_hash": "707af4185d028000d90cabc17ac34701",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">All of the elements are unchanged except the middle ones. The values in position 4 and 6 should be</span>\n<marimo-tex class=\"arithmatex\">||[(0.1 \\times 0.05)+ (0.8 \\times 0.05) + (0.1 \\times 0.55) = 0.1||]</marimo-tex><span class=\"paragraph\">Position 5 should be $<marimo-tex class=\"arithmatex\">||((0.1 \\times 0.05) + (0.8 \\times 0.55)+ (0.1 \\times 0.05) = 0.45||)</marimo-tex>$</span>\n<span class=\"paragraph\">Let's ensure that it shifts the positions correctly for movements greater than one and for asymmetric kernels.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "mWxS",
+      "code_hash": "47fe139d70d3572c4700c9e2d34b658a",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "CcZR",
+      "code_hash": "85ceed38196a22ac5725f93709181817",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">The position was correctly shifted by 3 positions and we give more weight to the likelihood of an overshoot vs an undershoot, so this looks correct.</span>\n<span class=\"paragraph\">Make sure you understand what we are doing. We are making a prediction of where the dog is moving, and convolving the probabilities to get the prior.</span>\n<span class=\"paragraph\">If we weren't using probabilities we would use this equation that I gave earlier:</span>\n<marimo-tex class=\"arithmatex\">||[ \\bar x_{k+1} = x_k + f_{\\mathbf x}(\\bullet)||]</marimo-tex><span class=\"paragraph\">The prior, our prediction of where the dog will be, is the amount the dog moved plus his current position. The dog was at 10, he moved 5 meters, so he is now at 15 m. It couldn't be simpler. But we are using probabilities to model this, so our equation is:</span>\n<marimo-tex class=\"arithmatex\">||[ \\bar{ \\mathbf x}_{k+1} = \\mathbf x_k \\ast f_{\\mathbf x}(\\bullet)||]</marimo-tex><span class=\"paragraph\">We are <em>convolving</em> the current probabilistic position estimate with a probabilistic estimate of how much we think the dog moved. It's the same concept, but the math is slightly different. <marimo-tex class=\"arithmatex\">||(\\mathbf x||)</marimo-tex> is bold to denote that it is an array of numbers.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "YWSi",
+      "code_hash": "b2c2dc0d1c9636f1f045270e5db4cfb9",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"integrating-measurements-and-movement-updates\">Integrating Measurements and Movement Updates</h2>\n<span class=\"paragraph\">The problem of losing information during a prediction may make it seem as if our system would quickly devolve into having no knowledge. However, each prediction is followed by an update where we incorporate the measurement into the estimate. The update improves our knowledge. The output of the update step is fed into the next prediction. The prediction degrades our certainty. That is passed into another update, where certainty is again increased.</span>\n<span class=\"paragraph\">Let's think about this intuitively. Consider a simple case - you are tracking a dog while he sits still. During each prediction you predict he doesn't move. Your filter quickly <em>converges</em> on an accurate estimate of his position. Then the microwave in the kitchen turns on, and he goes streaking off. You don't know this, so at the next prediction you predict he is in the same spot. But the measurements tell a different story. As you incorporate the measurements your belief will be smeared along the hallway, leading towards the kitchen. On every epoch (cycle) your belief that he is sitting still will get smaller, and your belief that he is inbound towards the kitchen at a startling rate of speed increases.</span>\n<span class=\"paragraph\">That is what intuition tells us. What does the math tell us?</span>\n<span class=\"paragraph\">We have already programmed the update and predict steps. All we need to do is feed the result of one into the other, and we will have implemented a dog tracker!!! Let's see how it performs. We will input measurements as if the dog started at position 0 and moved right one position each epoch. As in a real world application, we will start with no knowledge of his position by assigning equal probability to all positions.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "zlud",
+      "code_hash": "c06292480be2beaae576fc967e6d37ed",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "tZnO",
+      "code_hash": "8f6a4bf692a2bb83ef387f3955c3d796",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">After the first update we have assigned a high probability to each door position, and a low probability to each wall position.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "xvXZ",
+      "code_hash": "fb8c619cd0b001c5741be97e127cdd0f",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "CLip",
+      "code_hash": "347ce5b16639404b26ede1db8b064aaf",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">The predict step shifted these probabilities to the right, smearing them about a bit. Now let's look at what happens at the next sense.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "YECM",
+      "code_hash": "5a3ba9695b6028511868228d98299795",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "cEAS",
+      "code_hash": "2763caf1d2481092e505045a8b068c35",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Notice the tall bar at position 1. This corresponds with the (correct) case of starting at position 0, sensing a door, shifting 1 to the right, and sensing another door. No other positions make this set of observations as likely. Now we will add an update and then sense the wall.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "iXej",
+      "code_hash": "e17f45657d273f0f6169ccc5b20c5841",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "EJmg",
+      "code_hash": "6ec55dff23e3c068c306f6322f159980",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">This is exciting! We have a very prominent bar at position 2 with a value of around 35%. It is over twice the value of any other bar in the plot, and is about 4% larger than our last plot, where the tallest bar was around 31%. Let's see one more cycle.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "UmEG",
+      "code_hash": "8944aca92646f3fedb2c9b3c177b8fdb",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vEBW",
+      "code_hash": "ab8a9a5eefcc4b8fce518d09f4ba416e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">I ignored an important issue. Earlier I assumed that we had a motion sensor for the predict step; then, when talking about the dog and the microwave I assumed that you had no knowledge that he suddenly began running. I mentioned that your belief that the dog is running would increase over time, but I did not provide any code for this. In short, how do we detect and/or estimate changes in the process model if we aren't directly measuring it?</span>\n<span class=\"paragraph\">For now I want to ignore this problem. In later chapters we will learn the mathematics behind this estimation; for now it is a large enough task just to learn this algorithm. It is profoundly important to solve this problem, but we haven't yet built enough of the mathematical apparatus that is required, and so for the remainder of the chapter we will ignore the problem by assuming we have a sensor that senses movement.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "kLmu",
+      "code_hash": "76279ceaf539f8f83577e003fdc746e2",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"the-discrete-bayes-algorithm\">The Discrete Bayes Algorithm</h2>\n<span class=\"paragraph\">This chart illustrates the algorithm:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "IpqN",
+      "code_hash": "6df7abb618da9985c62f773eae53c89b",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "streamMedia",
+          "name": "media",
+          "mimetype": "application/vnd.marimo+mimebundle",
+          "data": "{\"image/png\": \"data:image/png;base64,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pZdesk1Vo606xB/98MMP9u86deqYxx57LCxe2bcnnnjC/o1Aeuihh0z9+vVNqvCZH3/8sf1tBgwYkPL7hRBCiHwTSoHevXvbuJUvvvgilbfZGJkuXbrEje+56KKLQn/++WfE+h07dgzVrFkz9Oyzz9o4E/f6DRo0CG3YsCFi/d27d4f69OkTs+1evXqFLrvssqRidkqVKhV3/+66664cY3bWrVtn9zfee6+44orQgQMHItZv2bJlqGHDhqF///vfoSJFikSs36RJk5j4lltvvTXutqtUqRJasWJFUse/Q4cOodq1a8c8v3btWnucnW0++uij9vlt27aFGjVqFH7+9ttvD+UVfiu2cf755+d5G0IIIUR+SEnscJPmxrV69eqUPqRfv37hwOVBgwaFXnrppdDAgQNDpUuXts8/8sgjEesjHkqWLGkFyIABA0LPP/986Iknngi1bt3ark/gq5t//OMf9vkKFSrYG/PLL78cuu2220Lly5cPlS1bNimx8/7774dFy7Bhw8LLrFmzchQ7ffv2tc/XqVMnNHjwYPvdrrvuOrv/PP/kk0/GiB2+N69fcskl9rs9/vjjoebNm9v177777vC6fGaxYsXs+jfeeKP9Xk8//XTommuusd919uzZuR57toGoOuWUU+K+PnbsWPsZfDb7NG3aNBuk7QgdBO7+/ftD+QHhxPERQgghsl7sVKtWzd4AuYEmy8qVK+17eO/69esjXhs3bpy9EderVy/ieUd0vPjiizGWCG7IWIncYJ0oUaJEzM1/5syZoeLFiyedjeVYh+IRT+wsWrQoLOI2b94csf7XX39tX2vWrFmM2OH56KworDSIjiOPPDL83K+//mrXRTxFw2u//fZbKDemT59ut3H11VcnXOfBBx+MsBg5fyNQon8z2Lt3rxVpZ555pj1m7N+cOXMSbr9bt252e1jghBBCiMImpWjVypUr28dNmzYl/R7iTeDCCy+MieUh/uXwww83q1evNhs3bowJIr744osjniPOh4wi9+fzXgKie/fubdq1axexfocOHezzBcXUqVPtI3WGouOIjj32WHPwwQebxYsXm99++y0msys6fqZBgwamXr16Ed+N4038EFlgjz76qJkyZYqNHXJeSyZmh6ByZ/1EECNF/BQ49YiKFy9u3n///ZjfjPikvn37mquuuspuk+9OTNUhhxxiRo4cGXf7zrFJ5bwRQggh0kVKYgfxAAQZJwsBzY5QiUetWrUi1nPgRhovo6t06dL2huvwxx9/JAyKzun5dJDX71atWrW4WVHR3w0oykcgMcKKoGQCmAl8fuutt5LaR0QjEBSdCIKS+/XrF/EcQdbO7x0dpE4QON+BAHLE2G233Wa3T6Ze9P47BSihVKlSSe2zEEIIkTGx49wQqZniWBhywxEbs2bNinkNN9qcOXPszZY05bxQo0YN+8h24pHo+XjES6PP63cjI+yXX36xFpJ42WOp7BPZYFh3SCHHOnL66afbzKZXX3011/c7x9VdQTqaefPmmRtuuCHiuRUrVljxEg3ZY0D2WLFixezfjigiW4yMtGjINkPc5ec4CCGEEIUidpjFc5NbsGCBOeGEE+zNN15a9yuvvGLdN4CbCrcNro4vvvgiQuhQe4X1DjvssKTTqKPBAtSxY0czffp0m87thtRpihwmS9myZcOusWTo1q2btVa8/vrrtpCiOw2etgwUWSQFPq8WjaVLl5o333zTFmx0qFixojnmmGPs3yNGjMh1G02bNrX1beL9Vo7VicKQjoUM95QjkHBjDR06NGJ9fvtot5j7b+d19+/MZ3PeFGaNHyGEEMIhpbsPVgpqpuDiwJXVsmVLG5eCpQHxQ8wMlhZ6Iq1fv96+BxFDJV0sHaeccoqN7aAGTfPmzW1hQm6A//znP01+cGr+XH/99bYGDdtv3bq1ufHGG+3nJIsT80MsEQIAcccNPxFVqlQxN910k3Xd9OnTx3Tp0sV+drNmzWzVYCwf999/f56/F3FM1P/hmCIaqfnTq1cvK6CA75qMG6tr167WDRbPxYT1BsuOI96eeuop88Ybb4StXLfccouZNGlSjEvKLVzcfzuvOyxcuNDWTGK/hRBCiIyQl6hmastQv8ZJHXcvlSpVCv3lL3+JyOKh1sy9994bsz5ZTB988EHM9p06O/HgNfpyRfPUU0+FypQpE942WVj0ukqlNxbZXk2bNk2pzg41gu68886YOj1kMtFDLBqnzk48eI3Pd9i4caOtQ+SkzzsLx/HKK68M7dq1K5QMQ4cOte8bM2ZMxPP/+c9/In635cuXx63vU79+/XC2WYsWLexzJ5xwQnjd8ePHh9clXT/eZ5PiLoQQQmSCIvyTV6GEe4VsK7KhcFWRTYRVwwmKjYaspJ9//tk+Erx76KGHxg1CprUB2z7ttNPivob1AAtKNFgQfvzxR+tG6ty5s/0MMphwlbEtp10BwbRYqMjswmLiBusH+7h27Vr7N+6X9u3bm3379tkqyfTGwlISDZWTqfbMd6MaMZ8f77t9+eWXYStXvNf4OWixEO1qmjt3rt0nAoPZp5yyq+LtG/uEpYrWDQ4cAydwGStdp06dIo4Dr3MsAVch1jKsdrgpsYLNnj3bvoaLkuBprEHLli0zDRs2DG8HFyXHZP78+UnvrxBCCJFO8iV2hHcYOHCgFToEHuN+yysIHIQcgo32Goge3Gu0AkHwkD3mgBBmXdpVIJKEEEKITCCxExDIxsLqdvXVV5sHH3wwX9si0JxAZseKRQDyueeea0UNFj4HrFeIK4LEFZwshBAiU0jsBAgCjUlddwoI5gcntZ4sLjK+nBIA7tdp/on7iwauQgghRKaQ2BFCCCGEr1HhEyGEEEL4GokdIYQQQvgaiR0hhBBC+BqJHSGEEEL4GokdIYQQQvgaiR2P4m4OKoQQQojESOx4EKoY06Jh8+bNmd4VIYQQIutRnR0PQWcP+nbRpgHo9UXPrwoVKmR614QQQoisRZYdD4ElZ9asWeH/79q1yzYP5VEIIYQQ8ZHY8RDVq1c33bt3j3iO/lQjR460XdmFEEIIEYvEjsdo06aNOeSQQyKeo9/V119/bftRCSGEECISiR0P0rlz55jmmqtXrzbff/+9jesRQgghxP8jseNBihQpYo488kjTqFGjiOcXL15sO5sLIYQQ4v+R2PEoRYsWNUcffbSpVatWxPMEMLuDmIUQQoigI7HjYYoXL2769OljKleuHPH8Tz/9ZK08QgghhJDY8TylSpUyJ5xwgilXrlzE8999952N4xFCCCGCjiw7PuCggw4yJ554ohU+DgcOHLAZWmRqCSGEEEFGYscn4MrCpVWsWLHwc9TeoQYPtXiEEEKIoCKx4yMIVj7mmGNstpYD1ZVHjBhhdu7cmdF9E0IIITKFxI7PIB29R48eEc/9/vvv1sKzd+/ejO2XEEIIkSkkdnwIBQe7dOkS01dLVZaFEEIEEYkdn9KpUyfbWsLNmjVrbJaWqiwLIYQIEhI7PoW4nW7dusVUWV6yZImtwyOEEEIEBYmdAFRZrl27dsTzs2fPNjNnzszYfgkhhBCFicROAKosH3/88aZKlSoRz9NDa+HChRnbLyGEEKKwkNgJUJVlig+6oUv6qlWrMrZfQgghRGEgsRMQaCcRXWWZQGUytDZu3JjRfRNCCCEKEomdAFGpUiXTt2/fiCrL+/fvtzV4tm/fntF9E0IIIQoKiZ2AUbNmTXPsscdGVFnevXu3+fLLL1VlWQghhC+R2AkgDRs2NEcddVRMleWvvvpKVZaFEEL4DomdgNKyZUtz6KGHRjy3ZcsWM3r0aPPnn39mbL+EEEKIdCOxE2AOPvhg07Zt24jn1q5da8aOHasqy0IIIXyDxE6AIW7niCOOME2aNIl4funSpebHH3+U4BFCCOELJHYCDlWWe/XqFVNlec6cOaqyLIQQwhcUCakrpDDGBiZ//vnnNm7HDUKoRYsWOkZC+Ji5c+fabEysvYccckhEtqab6dOn25i+0qVLm3bt2hX6fors4rfffrOV+Fu3bm1ruRUUmzdvNsuXLzcdO3Y0JUqUyNM2ZNkRlpIlSyassrxy5UodJSF8zAUXXGATFrp06WLHfCKhgxBivX79+hX6Por0s3TpUjNlypQ8J6XcdNNN5swzz8yzAEkWyqMceeSR5plnnsnzNiR2RJiyZcvGrbL8zTffqMqyEAGgQoUK5tVXX4372ssvv2yvEfTbE/7gzjvvtOKV0iOpQkNpzpW7777bTpYLknr16pnLL7/cDB482GzdujVP25DYETFVlrHwuC9oVFmmBs+2bdt0tITwMeeee6758MMPY25+e/bsMe+8844566yzIiqwi+AyZMgQK44vuuiiQvm86667zvz666/mueeey9P7JXZEDDVq1IipsszFjirLf/zxh46YED7l0ksvtbE77777bsTzH3/8sZ1R83pu4BJZvHixnfkn04aGuA/WXbZsWa4ZoLt27bLbZmESFg2fh1tm06ZNSb9GMgaLw7p168y0adPiXusozTFr1iz7mIiZM2faGCgHYk2Ia4l2Fe3bt88sWLDAfu9kIJyAz86plyHfj2MDHEvcVOzL/jjHiv10rCQzZsyw72VJJmyBGBrOibPPPjvCE+C4O51tJVqIEc1LbTjcrC+++GLeMoUJUBYiHgsWLAg9//zzEcsHH3wQ2rNnjw6YED6iY8eO3D1C+/btC7Vv3z50xBFHRLx+7LHHhpo0aRI6cOBAqFSpUqGmTZvGbIPrwh133BGqVKmS3RZLsWLFQv369QutX78+Yl228+STT4batm0bXpelevXqoYceeihm2xs3bgxdcMEFoRIlSoTX5e8BAwaEVq5cGV7v888/t6+x7Wic15599tmI5/kuLPPmzQsddthh4e1PnDgxvM67774batGiRcS+dujQITRu3LiYz6lZs6Y9njNnzgy1a9cuvH7jxo1DkyZNsuu89tpr9rs6rx166KGhNWvWxP1tnnnmmVC9evUiPrtbt252+2747XjtpJNOsp/TsmXL8PpVqlQJDRs2LGY/3dt0lmuvvTaUGy+++KJd95NPPol5rVy5cnG3616WLVsWyguDBg2y7//xxx9Tfq/EjsiR6dOnxwiezz77zA4sIYT/xM7jjz9u/+bmD8uXLw8VKVIkdP/999v/xxM7f/75Z+iEE06w72PdBg0ahNq0aRMqW7asfY6/d+7cGV5/165d4RtftWrVrHBo2LBh+LlosXL66afb54sWLRpq3rx5qFWrVqGSJUva57jx5lfs1K5d235+8eLF7fY7d+4cmjFjhn196NChEWIMAcM+83+OxdSpU2NEBNtim6VLlw61bt06VLlyZbt+rVq1Qm+//bb9G1HIa6zD/88555yYfb711lvDn832+GxHTPLoFg2O2EGsVqxYMVSmTBm7/apVq4bF4fz588Pr9+nTJ7xfBx98sP3OLA8//HCu50v//v3t+9auXRvzWo8ePcLbchbnPIgWO7z/q6++sksyk2jW4/0PPvhgKFUkdkSOMAObMGFCjOAZPXq0vcAJIfwldrCicGPkRgv33nuvFRmOBSWe2HFu4L169QotXbo0/Pzvv/8euvrqq+1rTz/9dPh5bmw33nhjaMWKFaENGzZYK8XkyZNDw4cPt1YILD5usGzUqVMntGrVqvBz+/fvD7311luhUaNG5Vvs8Hzv3r1D69ati3gNixSioUaNGqFvvvkm4rrId0YcIfLiWUwQL9u2bQt/3zPOOCNs7XrsscfC108sOohDjvHWrVvD25kzZ44Vjuwfx8aB3+iJJ56w27riiisinnfEBM9z7J3jdO2119rn//GPf0Ts67nnnmufd39uMiBeEVvJ8PLLL9vv4ewbImvv3r32tTfffDP8fPSxjwfnIOueeeaZoVRRzI7IU5Vl/MwTJ05UlWUhfEb16tXNySefbN544w0bW/Haa6/ZGL769esnfA9BzXDjjTfa2BjiNliIVRkwYIANav7222/D65O9w3XluOOOMzVr1rT1U8gKOv30020QKrEmbjp16mTTmymC6sA2+/fvb44//vi0fG++Z61atSKeGzFihI0T4jtUrVo1/L1YnBgS2uscOHAg4n1lypSxmUoVK1YMf9+//e1v9u+ePXvalG3nu9SpU8ecd955dhvu+J2PPvrIXl+vuuoqmzDifC5xO6RhN27cOOKYujOXSNF2yohwnO644w7796JFi9JyrDZs2GCqVKmS63rDhg0zV1xxRfg+Qd224cOH5zlV3fnMnOKWEqEcQpGU4Ondu7cNUl6zZk34eQLfKCTFhUgI4R8uu+wye1P6+9//blasWGEeeuihHNd3xMlpp52W4w3SgexOMr+4CZLRww2aQoVcaxBIBEm7IQPnmmuusZOu9u3bmw4dOphu3bpZcZTMTTc3EFwNGjRI+L0ee+wxu+QUZE0mqwP7SZp+tIgE9j8a5zWEXvRn33rrrQk/N14hP/odRpcHqFmzpn1EuKUDtuNsMxGcP2RqOUKQ34vCtQjBnCDr96effrJ/I7Dd/Rud9+YlUUZiRyQFswNmYdFVlidPnmxPwFatWulICuETKD9BC5mhQ4eaypUr51pEEMuFU305Ec2bNw//7WTUvP322+b888+PyPykQbE7O8qxfnz66af2Rvjzzz9b68brr79uBg4caK1Kffr0ses5N3kynaLJqT5LdDFV9/dy9h1RlojoitM51SLK6TV3lpHz2dzsEYLxiM6ESmX7+QGBmdPxRMxirXKywLCAkc2b6Dg7UPKA35LfmMr9WM3cOJ9ZrVq1lPdZYkekXGWZi467DscPP/xgBU/Dhg11NIXwyeQGl9R7771nTj311Lg3VTeIHCY+//73v02PHj3irrNjx47w36R/cwPnhugWCqR8//LLLzHv5XpTvnx5az3BbcVy880325k/1idH7NStWzecVh3NBx98kMIR+P/vBViQElm3+F653cTzgvPZuLGoMZPos/ND8f8JI6z2qYAVjBRyxEy0uBozZow544wzwunlWOFGjRoVduklAmveOeecY4UOk2e2E92z0bEO5uRSTYTEjshTlWUEDyW83VWW8fPnZtoUQngDRARLMhCP8sorr5iTTjrJupsQPMz+ia2YP3++efPNN614ogoucDMbP368FTs8xw2Tm9wjjzwS1/qAZYeWFsSqNGrUyN6cR48ebevduIVYs2bN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LVO2bFlzxhlnpO0zZ82aZV588UU7hkqXLp3Se3/44QezZMkSc8kllxi/Qizc3r17TcmSJTO9KyKfyLKTBezcudN4UexwkRw/fnzYZTB//nxz3XXXmQEDBmSsu/Tpp59uTjjhhJTfh9gZOXKk8bolQ3h3XCHeX3rppYSvv/POO1bMZwuInddee834HY0rfyDLThbgtYuym9atW5urrroq/H8sIzfccIN58sknzb333lvo+5POWa/X8PJ5VBDoeIh0nUeVK1fWwfQ4EjsZBouIny7K3bt3t26kqVOn2v9PmTLF/v2Xv/zF9nEaN26cnSk5pm++P+ssWLDA1kRp1aqVOeyww6xbLNp3PnbsWPvYpk0bc+ihh8b9fGJ2MMdHu7H4nGnTplnrE9tu27at6dixo33tlVdeMVu3brWp/8QvQMWKFc15551nvISfzqP8wrlELJyf+e6778yqVausJXXx4sXmp59+MsWLFzdHHnmkqVevXlyXzPfff29Wr15t6tata3r16hV3uzNmzDCTJk2KcE8zLg855JDwuCQubt68edbF44wZYF9wtTksWrTIjjvOTfapR48eKbvLMo3GlT+Q2MkCd5DfAkvddU0QOri7WrZsaV599VXTvn17M3v2bCt2NmzYYG6++Wb72LNnT1OiRAlrqm/UqJF5/PHHw/Enc+bMsdYiZldHHHGEDUrG5B+PeDE769evN7fccotZu3atvRHw+rfffmuqVatmHnroIeMXiNnhXCqMeKlsJwg3KMTOjz/+aGPNvvjiCzsJ+OWXX8wTTzxh7rnnHnPSSSeF10XM//Wvf7W91I4++mizYsUK89FHH1kBk5toRLC88MILdoKAxbZYsWK57hsi6L777jNjxowxvXv3NtWrV7cxSUOHDrXbYIx7hSCcS0FAYifD+G0gcfHF+sIMzg0XOuIREDROr6K///3vtnDX+++/HzYTYwHCosIF8fbbb7fWljvuuMPORLngOrPCd999115IES45wc0fQcU+8Z4aNWqEX0NEwWWXXWbjderUqRPhkvMiClIOVpwF3xMLCxMKrC6MK0TGAw88YA4++GA7buDhhx+2Yn/YsGH2PIe5c+eaG2+8MWabvI/FDePy7LPPtpOJs846y04msABhWYo3Zhi/TCgY8+3atQtblq699lo7npnURFtvsxWuQQpS9j6aAmYYr4sdLrSY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hBC+RmJHCCGEEL5GYkcIIYQQvkZiRwghhBC+RmJHCCGEEL5GYkcIIYQQvkZiRwghhBC+RmJHCCGEEL5GYkcIIYQQvkZiRwghhBC+RmJHCCGEEL5GYkcIIYQQvkZiRwghhBC+RmJHCCGEEL5GYkcIIYQQvkZiRwghhBC+RmJHCCGEEL5GYkcIIYQQvkZiRwghhBC+RmJHCCGEEL5GYkcIIYQQvkZiRwghhBC+RmJHCCGEEL5GYkcIIYQQvkZiRwghhBC+RmJHCCGEEL5GYkcIIYQQvkZiRwghhBC+RmJHCCGEEL5GYkcIIYQQvkZiRwghhBC+RmJHCCGEEL5GYkcIIYQQvkZiRwghhBC+RmJHCCGEEL5GYkcIIYQQvkZiRwghhBC+RmJHCCGEEL5GYkcIIYQQvkZiRwghhBC+RmJHCCGEEL5GYkcIIYQQvkZiRwghhBC+RmJHCCGEEL5GYkcIIYQQvkZiRwghhBC+RmJHCCGEEL5GYkcIIYQQvkZiRwghhBC+RmJHCCGEEL5GYkcIIYQQvkZiRwghhBC+RmJHCCGEEL5GYkcIIYQQxs/8H+CHtZ7lMkIdAAAAAElFTkSuQmCC\", \"__metadata__\": {\"image/png\": {\"width\": 571, \"height\": 420}}}"
+        }
+      ]
+    },
+    {
+      "id": "dxZZ",
+      "code_hash": "1ff82420b8ad76146358f1a283fb2373",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">This filter is a form of the g-h filter. Here we are using the percentages for the errors to implicitly compute the <marimo-tex class=\"arithmatex\">||(g||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(h||)</marimo-tex> parameters. We could express the discrete Bayes algorithm as a g-h filter, but that would obscure the logic of this filter.</span>\n<span class=\"paragraph\">The filter equations are:</span>\n<marimo-tex class=\"arithmatex\">||[\\begin{aligned} \\bar {\\mathbf x} &amp;= \\mathbf x \\ast f_{\\mathbf x}(\\bullet)\\, \\, &amp;\\text{Predict Step} \\\\\n\\mathbf x &amp;= \\|\\mathcal L \\cdot \\bar{\\mathbf x}\\|\\, \\, &amp;\\text{Update Step}\\end{aligned}||]</marimo-tex><span class=\"paragraph\"><marimo-tex class=\"arithmatex\">||(\\mathcal L||)</marimo-tex> is the usual way to write the likelihood function, so I use that. The <marimo-tex class=\"arithmatex\">||(\\|\\|||)</marimo-tex> notation denotes taking the norm. We need to normalize the product of the likelihood with the prior to ensure <marimo-tex class=\"arithmatex\">||(x||)</marimo-tex> is a probability distribution that sums to one.</span>\n<span class=\"paragraph\">We can express this in pseudocode.</span>\n<span class=\"paragraph\"><strong>Initialization</strong></span>\n<div class=\"language-cbmbas highlight\"><pre><span></span><code><span class=\"mf\">1.</span><span class=\"w\"> </span><span class=\"n\">Initialize</span><span class=\"w\"> </span><span class=\"n\">our</span><span class=\"w\"> </span><span class=\"n\">belief</span><span class=\"w\"> </span><span class=\"n\">in</span><span class=\"w\"> </span><span class=\"n\">the</span><span class=\"w\"> </span><span class=\"n\">state</span>\n</code></pre></div>\n<span class=\"paragraph\"><strong>Predict</strong></span>\n<div class=\"language-cbmbas highlight\"><pre><span></span><code><span class=\"mf\">1.</span><span class=\"w\"> </span><span class=\"n\">Based</span><span class=\"w\"> </span><span class=\"kr\">on</span><span class=\"w\"> </span><span class=\"n\">the</span><span class=\"w\"> </span><span class=\"kr\">sys</span><span class=\"n\">tem</span><span class=\"w\"> </span><span class=\"n\">behavior</span><span class=\"p\">,</span><span class=\"w\"> </span><span class=\"n\">predict</span><span class=\"w\"> </span><span class=\"n\">state</span><span class=\"w\"> </span><span class=\"kr\">for</span><span class=\"w\"> </span><span class=\"n\">the</span><span class=\"w\"> </span><span class=\"kr\">next</span><span class=\"w\"> </span><span class=\"n\">time</span><span class=\"w\"> </span><span class=\"kr\">step</span>\n\n<span class=\"mf\">2.</span><span class=\"w\"> </span><span class=\"n\">Adjust</span><span class=\"w\"> </span><span class=\"n\">belief</span><span class=\"w\"> </span><span class=\"kr\">to</span><span class=\"w\"> </span><span class=\"n\">account</span><span class=\"w\"> </span><span class=\"kr\">for</span><span class=\"w\"> </span><span class=\"n\">the</span><span class=\"w\"> </span><span class=\"n\">uncertainty</span><span class=\"w\"> </span><span class=\"n\">in</span><span class=\"w\"> </span><span class=\"n\">prediction</span>\n</code></pre></div>\n<span class=\"paragraph\"><strong>Update</strong></span>\n<div class=\"language-cbmbas highlight\"><pre><span></span><code><span class=\"mf\">1.</span><span class=\"w\"> </span><span class=\"kr\">Get</span><span class=\"w\"> </span><span class=\"n\">a</span><span class=\"w\"> </span><span class=\"n\">measurement</span><span class=\"w\"> </span><span class=\"ow\">and</span><span class=\"w\"> </span><span class=\"n\">associated</span><span class=\"w\"> </span><span class=\"n\">belief</span><span class=\"w\"> </span><span class=\"n\">about</span><span class=\"w\"> </span><span class=\"n\">its</span><span class=\"w\"> </span><span class=\"n\">accuracy</span>\n\n<span class=\"mf\">2.</span><span class=\"w\"> </span><span class=\"n\">Compute</span><span class=\"w\"> </span><span class=\"n\">how</span><span class=\"w\"> </span><span class=\"n\">likely</span><span class=\"w\"> </span><span class=\"n\">it</span><span class=\"w\"> </span><span class=\"n\">is</span><span class=\"w\"> </span><span class=\"n\">the</span><span class=\"w\"> </span><span class=\"n\">measurement</span><span class=\"w\"> </span><span class=\"n\">matches</span><span class=\"w\"> </span><span class=\"n\">each</span><span class=\"w\"> </span><span class=\"n\">state</span>\n\n<span class=\"mf\">3.</span><span class=\"w\"> </span><span class=\"n\">Update</span><span class=\"w\"> </span><span class=\"n\">state</span><span class=\"w\"> </span><span class=\"n\">belief</span><span class=\"w\"> </span><span class=\"n\">with</span><span class=\"w\"> </span><span class=\"n\">this</span><span class=\"w\"> </span><span class=\"n\">likelihood</span>\n</code></pre></div>\n<span class=\"paragraph\">When we cover the Kalman filter we will use this exact same algorithm; only the details of the computation will differ.</span>\n<span class=\"paragraph\">Algorithms in this form are sometimes called <em>predictor correctors</em>. We make a prediction, then correct them.</span>\n<span class=\"paragraph\">Let's animate this. First Let's write functions to perform the filtering and to plot the results at any step. I've plotted the position of the doorways in black. Prior are drawn in orange, and the posterior in blue. I draw a thick vertical line to indicate where Simon really is. This is not an output of the filter - we know where Simon is only because we are simulating his movement.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "dlnW",
+      "code_hash": "36ce6c277f9cc9ca0a8f3c858797f8eb",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "TTti",
+      "code_hash": "dd0045e3a813491c21c1b67801c38780",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Let's run the filter and animate it.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "RKFZ",
+      "code_hash": "5a001ff16c86bad5835e5e0bde20f0b9",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "name '_cell_dlnW_measurements' is not defined",
+          "traceback": null
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stderr",
+          "text": "<span class=\"codehilite\"><div class=\"highlight\"><pre><span></span><span class=\"gt\">Traceback (most recent call last):</span>\n  File <span class=\"nb\">&quot;C:\\Users\\goper\\AppData\\Local\\Temp\\marimo_10256\\__marimo__cell_RKFZ_.py&quot;</span>, line <span class=\"m\">5</span>, in <span class=\"n\">&lt;module&gt;</span>\n<span class=\"w\">    </span><span class=\"n\">_priors</span><span class=\"p\">,</span> <span class=\"n\">_posteriors</span> <span class=\"o\">=</span> <span class=\"n\">discrete_bayes_sim</span><span class=\"p\">(</span><span class=\"n\">prior_7</span><span class=\"p\">,</span> <span class=\"n\">kernel_1</span><span class=\"p\">,</span> <span class=\"n\">_zs</span><span class=\"p\">,</span> <span class=\"n\">z_prob</span><span class=\"p\">,</span> <span class=\"n\">hallway_2</span><span class=\"p\">)</span>\n<span class=\"w\">                           </span><span class=\"pm\">^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</span>\n  File <span class=\"nb\">&quot;C:\\Users\\goper\\AppData\\Local\\Temp\\marimo_10256\\__marimo__cell_dlnW_.py&quot;</span>, line <span class=\"m\">4</span>, in <span class=\"n\">discrete_bayes_sim</span>\n<span class=\"w\">    </span><span class=\"k\">for</span> <span class=\"n\">_i</span><span class=\"p\">,</span> <span class=\"n\">z</span> <span class=\"ow\">in</span> <span class=\"nb\">enumerate</span><span class=\"p\">(</span><span class=\"n\">_measurements</span><span class=\"p\">):</span>\n<span class=\"w\">                           </span><span class=\"pm\">^^^^^^^^^^^^^</span>\n<span class=\"gr\">NameError</span>: <span class=\"n\">name &#39;_cell_dlnW_measurements&#39; is not defined</span>\n</pre></div>\n</span>",
+          "mimetype": "application/vnd.marimo+traceback"
+        }
+      ]
+    },
+    {
+      "id": "IaQp",
+      "code_hash": "4bbc56b66f8ad3da336c9c4fd4ad93a4",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Now we can see the results. You can see how the prior shifts the position and reduces certainty, and the posterior stays in the same position and increases certainty as it incorporates the information from the measurement. I've made the measurement perfect with the line <code>z_prob = 1.0</code>; we will explore the effect of imperfect measurements in the next section. Finally,</span>\n<span class=\"paragraph\">Another thing to note is how accurate our estimate becomes when we are in front of a door, and how it degrades when in the middle of the hallway. This should make intuitive sense. There are only a few doorways, so when the sensor tells us we are in front of a door this boosts our certainty in our position. A long stretch of no doors reduces our certainty.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "IWgg",
+      "code_hash": "b133e9ba242f3b2c2dd9102574212c61",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"the-effect-of-bad-sensor-data\">The Effect of Bad Sensor Data</h2>\n<span class=\"paragraph\">You may be suspicious of the results above because I always passed correct sensor data into the functions. However, we are claiming that this code implements a <em>filter</em> - it should filter out bad sensor measurements. Does it do that?</span>\n<span class=\"paragraph\">To make this easy to program and visualize I will change the layout of the hallway to mostly alternating doors and hallways, and run the algorithm on 6 correct measurements:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "fCoF",
+      "code_hash": "209f7a3e8ce5d6cde34654bb8cb2b93a",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "name '_cell_dlnW_measurements' is not defined",
+          "traceback": null
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stderr",
+          "text": "<span class=\"codehilite\"><div class=\"highlight\"><pre><span></span><span class=\"gt\">Traceback (most recent call last):</span>\n  File <span class=\"nb\">&quot;C:\\Users\\goper\\AppData\\Local\\Temp\\marimo_10256\\__marimo__cell_fCoF_.py&quot;</span>, line <span class=\"m\">6</span>, in <span class=\"n\">&lt;module&gt;</span>\n<span class=\"w\">    </span><span class=\"n\">_priors</span><span class=\"p\">,</span> <span class=\"n\">_posteriors</span> <span class=\"o\">=</span> <span class=\"n\">discrete_bayes_sim</span><span class=\"p\">(</span><span class=\"n\">prior_8</span><span class=\"p\">,</span> <span class=\"n\">kernel_2</span><span class=\"p\">,</span> <span class=\"n\">_zs</span><span class=\"p\">,</span> <span class=\"n\">z_prob_1</span><span class=\"p\">,</span> <span class=\"n\">hallway_3</span><span class=\"p\">)</span>\n<span class=\"w\">                           </span><span class=\"pm\">^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</span>\n  File <span class=\"nb\">&quot;C:\\Users\\goper\\AppData\\Local\\Temp\\marimo_10256\\__marimo__cell_dlnW_.py&quot;</span>, line <span class=\"m\">4</span>, in <span class=\"n\">discrete_bayes_sim</span>\n<span class=\"w\">    </span><span class=\"k\">for</span> <span class=\"n\">_i</span><span class=\"p\">,</span> <span class=\"n\">z</span> <span class=\"ow\">in</span> <span class=\"nb\">enumerate</span><span class=\"p\">(</span><span class=\"n\">_measurements</span><span class=\"p\">):</span>\n<span class=\"w\">                           </span><span class=\"pm\">^^^^^^^^^^^^^</span>\n<span class=\"gr\">NameError</span>: <span class=\"n\">name &#39;_cell_dlnW_measurements&#39; is not defined</span>\n</pre></div>\n</span>",
+          "mimetype": "application/vnd.marimo+traceback"
+        }
+      ]
+    },
+    {
+      "id": "LkGn",
+      "code_hash": "52bedf930a68ad8c1f42e7300971b555",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">We have identified the likely cases of having started at position 0 or 5, because we saw this sequence of doors and walls: 1,0,1,0,0. Now I inject a bad measurement. The next measurement should be 0, but instead we get a 1:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "zVRe",
+      "code_hash": "e2aac16d0aa07b3166cc0b22c2f4c323",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (NameError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "woaO",
+      "code_hash": "e97e27357ada1ff70bc1d7961f33c883",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">That one bad measurement has significantly eroded our knowledge. Now let's continue with a series of correct measurements.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "HnMC",
+      "code_hash": "d33549570f74e2d555d5cad7bcfeb28f",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (NameError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "wadT",
+      "code_hash": "f54d6735ef06a810f8ce0a555993c72d",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">We quickly filtered out the bad sensor reading and converged on the most likely positions for our dog.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "VCRE",
+      "code_hash": "332d9e525999b8d3be5c22024f14a0d9",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"drawbacks-and-limitations\">Drawbacks and Limitations</h2>\n<span class=\"paragraph\">Do not be mislead by the simplicity of the examples I chose. This is a robust and complete filter, and you may use the code in real world solutions. If you need a multimodal, discrete filter, this filter works.</span>\n<span class=\"paragraph\">With that said, this filter it is not used often because it has several limitations. Getting around those limitations is the motivation behind the chapters in the rest of this book.</span>\n<span class=\"paragraph\">The first problem is scaling. Our dog tracking problem used only one variable, <marimo-tex class=\"arithmatex\">||(pos||)</marimo-tex>, to denote the dog's position. Most interesting problems will want to track several things in a large space. Realistically, at a minimum we would want to track our dog's <marimo-tex class=\"arithmatex\">||((x,y)||)</marimo-tex> coordinate, and probably his velocity <marimo-tex class=\"arithmatex\">||((\\dot{x},\\dot{y})||)</marimo-tex> as well. We have not covered the multidimensional case, but instead of an array we use a multidimensional grid to store the probabilities at each discrete location. Each <code>update()</code> and <code>predict()</code> step requires updating all values in the grid, so a simple four variable problem would require <marimo-tex class=\"arithmatex\">||(O(n^4)||)</marimo-tex> running time <em>per time step</em>. Realistic filters can have 10 or more variables to track, leading to exorbitant computation requirements.</span>\n<span class=\"paragraph\">The second problem is that the filter is discrete, but we live in a continuous world. The histogram requires that you model the output of your filter as a set of discrete points. A 100 meter hallway requires 10,000 positions to model the hallway to 1cm accuracy. So each update and predict operation would entail performing calculations for 10,000 different probabilities. It gets exponentially worse as we add dimensions. A 100x100 m<marimo-tex class=\"arithmatex\">||(^2||)</marimo-tex> courtyard requires 100,000,000 bins to get 1cm accuracy.</span>\n<span class=\"paragraph\">A third problem is that the filter is multimodal. In the last example we ended up with strong beliefs that the dog was in position 4 or 9. This is not always a problem. Particle filters, which we will study later, are multimodal and are often used because of this property. But imagine if the GPS in your car reported to you that it is 40% sure that you are on D street, and 30% sure you are on Willow Avenue.</span>\n<span class=\"paragraph\">A forth problem is that it requires a measurement of the change in state. We need a motion sensor to detect how much the dog moves. There are ways to work around this problem, but it would complicate the exposition of this chapter, so, given the aforementioned problems, I will not discuss it further.</span>\n<span class=\"paragraph\">With that said, if I had a small problem that this technique could handle I would choose to use it; it is trivial to implement, debug, and understand, all virtues.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "hgqU",
+      "code_hash": "fd6345795fc03f67696f06dcb34f7e3e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"tracking-and-control\">Tracking and Control</h2>\n<span class=\"paragraph\">We have been passively tracking an autonomously moving object. But consider this very similar problem. I am automating a warehouse and want to use robots to collect all of the items for a customer's order. Perhaps the easiest way to do this is to have the robots travel on a train track. I want to be able to send the robot a destination and have it go there. But train tracks and robot motors are imperfect. Wheel slippage and imperfect motors means that the robot is unlikely to travel to exactly the position you command. There is more than one robot, and we need to know where they all are so we do not cause them to crash.</span>\n<span class=\"paragraph\">So we add sensors. Perhaps we mount magnets on the track every few feet, and use a Hall sensor to count how many magnets are passed. If we count 10 magnets then the robot should be at the 10th magnet. Of course it is possible to either miss a magnet or to count it twice, so we have to accommodate some degree of error. We can use the code from the previous section to track our robot since magnet counting is very similar to doorway sensing.</span>\n<span class=\"paragraph\">But we are not done. We've learned to never throw information away. If you have information you should use it to improve your estimate. What information are we leaving out? We know what control inputs we are feeding to the wheels of the robot at each moment in time. For example, let's say that once a second we send a movement command to the robot - move left 1 unit, move right 1 unit, or stand still.  If I send the command 'move left 1 unit' I expect that in one second from now the robot will be 1 unit to the left of where it is now. This is a simplification because I am not taking acceleration into account, but I am not trying to teach control theory. Wheels and motors are imperfect. The robot might end up 0.9 units away, or maybe 1.2 units.</span>\n<span class=\"paragraph\">Now the entire solution is clear. We assumed that the dog kept moving in whatever direction he was previously moving. That is a dubious assumption for my dog! Robots are far more predictable. Instead of making a dubious prediction based on assumption of behavior we will feed in the command that we sent to the robot! In other words, when we call <code>predict()</code> we will pass in the commanded movement that we gave the robot along with a kernel that describes the likelihood  of that movement.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "PSUk",
+      "code_hash": "5f0c8683b5f1fce7706ebbe19f082293",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"simulating-the-train-behavior\">Simulating the Train Behavior</h3>\n<span class=\"paragraph\">We need to simulate an imperfect train. When we command it to move it will sometimes make a small mistake, and its sensor will sometimes return the incorrect value.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "mfOT",
+      "code_hash": "8089288fe75c13f062aa7e77e8fd3e1b",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "cycle",
+          "evalue": "This cell is in a cycle",
+          "traceback": []
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vGiW",
+      "code_hash": "366cec246919bc38fc42e6095a0bcd8a",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">With that we are ready to write the filter. We will put it in a function so that we can run it with different assumptions. I will assume that the robot always starts at the beginning of the track. The track is implemented as being 10 units long, but think of it as a track of length, say 10,000, with the magnet pattern repeated every 10 units. A length of 10 makes it easier to plot and inspect.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "SYQT",
+      "code_hash": "26212496befec50930bc0968ca4f40f3",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "cycle",
+          "evalue": "This cell is in a cycle",
+          "traceback": []
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "bMrW",
+      "code_hash": "4004791df8f4f56e1b07f57155f3661a",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Read the code and make sure you understand it. Now let's do a run with no sensor or movement error. If the code is correct it should be able to locate the robot with no error. The output is a bit tedious to read, but if you are at all unsure of how the update/predict cycle works make sure you read through it carefully to solidify your understanding.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "PSQn",
+      "code_hash": "e5c7c186363db48bf8762a310b8983d7",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "cycle",
+          "evalue": "This cell is in a cycle",
+          "traceback": []
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "OfTS",
+      "code_hash": "fd3a2c1e18828e952ccfe89c6b8d14f4",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">We can see that the code was able to perfectly track the robot so we should feel reasonably confident that the code is working. Now let's see how it fairs with some errors.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "lQxp",
+      "code_hash": "f8ca2debcb039f668a19bd8d88533e9a",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "Name `random` is not defined. It was expected to be defined in ",
+          "traceback": null
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stderr",
+          "text": "<span class=\"codehilite\"><div class=\"highlight\"><pre><span></span><span class=\"gt\">Traceback (most recent call last):</span>\n  File <span class=\"nb\">&quot;C:\\Users\\goper\\AppData\\Local\\Temp\\marimo_10256\\__marimo__cell_lQxp_.py&quot;</span>, line <span class=\"m\">1</span>, in <span class=\"n\">&lt;module&gt;</span>\n<span class=\"w\">    </span><span class=\"n\">random</span><span class=\"o\">.</span><span class=\"n\">seed</span><span class=\"p\">(</span><span class=\"mi\">5</span><span class=\"p\">)</span>\n<span class=\"w\">    </span><span class=\"pm\">^^^^^^</span>\n<span class=\"gr\">NameError</span>: <span class=\"n\">name &#39;random&#39; is not defined</span>\n</pre></div>\n</span>",
+          "mimetype": "application/vnd.marimo+traceback"
+        }
+      ]
+    },
+    {
+      "id": "Plbk",
+      "code_hash": "24b491bb783b77f09c33096ce0303e1d",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">There was a sensing error at time 1, but we are still quite confident in our position.</span>\n<span class=\"paragraph\">Now let's run a very long simulation and see how the filter responds to errors.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "rSYo",
+      "code_hash": "82cc8b1e696be0f669acfacb4819bed8",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "Name `random` is not defined. It was expected to be defined in ",
+          "traceback": null
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stderr",
+          "text": "<span class=\"codehilite\"><div class=\"highlight\"><pre><span></span><span class=\"gt\">Traceback (most recent call last):</span>\n  File <span class=\"nb\">&quot;C:\\Users\\goper\\AppData\\Local\\Temp\\marimo_10256\\__marimo__cell_rSYo_.py&quot;</span>, line <span class=\"m\">3</span>, in <span class=\"n\">&lt;module&gt;</span>\n<span class=\"w\">    </span><span class=\"n\">random</span><span class=\"o\">.</span><span class=\"n\">seed</span><span class=\"p\">(</span><span class=\"mi\">3</span><span class=\"p\">)</span>\n<span class=\"w\">    </span><span class=\"pm\">^^^^^^</span>\n<span class=\"gr\">NameError</span>: <span class=\"n\">name &#39;random&#39; is not defined</span>\n</pre></div>\n</span>",
+          "mimetype": "application/vnd.marimo+traceback"
+        }
+      ]
+    },
+    {
+      "id": "HuZB",
+      "code_hash": "2f192a456a685a725e720575ccf07e85",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">We can see that there was a problem on iteration 149 as the confidence degrades. But within a few iterations the filter is able to correct itself and regain confidence in the estimated position.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "WfYj",
+      "code_hash": "3ce14352306afb8eb4e223f197086e1a",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"bayes-theorem-and-the-total-probability-theorem\">Bayes Theorem and the Total Probability Theorem</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Ynfw",
+      "code_hash": "2ed51e7d4650c77036b470c566a7ba22",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">We developed the math in this chapter merely by reasoning about the information we have at each moment. In the process we discovered <a href=\"https://en.wikipedia.org/wiki/Bayes%27_theorem\" rel=\"noopener noreferrer\" target=\"_blank\"><em>Bayes' Theorem</em></a> and the <a href=\"https://en.wikipedia.org/wiki/Law_of_total_probability\" rel=\"noopener noreferrer\" target=\"_blank\"><em>Total Probability Theorem</em></a>.</span>\n<span class=\"paragraph\">Bayes theorem tells us how to compute the probability of an event given previous information.</span>\n<span class=\"paragraph\">We implemented the <code>update()</code> function with this probability calculation:</span>\n<marimo-tex class=\"arithmatex\">||[ \\mathtt{posterior} = \\frac{\\mathtt{likelihood}\\times \\mathtt{prior}}{\\mathtt{normalization\\, factor}}||]</marimo-tex><span class=\"paragraph\">We haven't developed the mathematics to discuss Bayes yet, but this is Bayes' theorem. Every filter in this book is an expression of Bayes' theorem. In the next chapter we will develop the mathematics, but in many ways that obscures the simple idea expressed in this equation:</span>\n<marimo-tex class=\"arithmatex\">||[ updated\\,knowledge = \\big\\|likelihood\\,of\\,new\\,knowledge\\times prior\\, knowledge \\big\\|||]</marimo-tex><span class=\"paragraph\">where <marimo-tex class=\"arithmatex\">||(\\| \\cdot\\|||)</marimo-tex> expresses normalizing the term.</span>\n<span class=\"paragraph\">We came to this with simple reasoning about a dog walking down a hallway. Yet, as we will see the same equation applies to a universe of filtering problems. We will use this equation in every subsequent chapter.</span>\n<span class=\"paragraph\">Likewise, the <code>predict()</code> step computes the total probability of multiple possible events. This is known as the <em>Total Probability Theorem</em> in statistics, and we will also cover this in the next chapter after developing some supporting math.</span>\n<span class=\"paragraph\">For now I need you to understand that Bayes' theorem is a formula to incorporate new information into existing information.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "LqFA",
+      "code_hash": "27d3839e606ec7ba95b2acce07ab339a",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"summary\">Summary</h2>\n<span class=\"paragraph\">The code is very short, but the result is impressive! We have implemented a form of a Bayesian filter. We have learned how to start with no information and derive information from noisy sensors. Even though the sensors in this chapter are very noisy (most sensors are more than 80% accurate, for example) we quickly converge on the most likely position for our dog. We have learned how the predict step always degrades our knowledge, but the addition of another measurement, even when it might have noise in it, improves our knowledge, allowing us to converge on the most likely result.</span>\n<span class=\"paragraph\">This book is mostly about the Kalman filter. The math it uses is different, but the logic is exactly the same as used in this chapter. It uses Bayesian reasoning to form estimates from a combination of measurements and process models.</span>\n<span class=\"paragraph\"><strong>If you can understand this chapter you will be able to understand and implement Kalman filters.</strong> I cannot stress this enough. If anything is murky, go back and reread this chapter and play with the code. The rest of this book will build on the algorithms that we use here. If you don't understand why this filter works you will have little success with the rest of the material. However, if you grasp the fundamental insight - multiplying probabilities when we measure, and shifting probabilities when we update leads to a converging solution - then after learning a bit of math you are ready to implement a Kalman filter.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "uDnK",
+      "code_hash": "2e548c956f666653fea4db34b3e63ef3",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"references\">References</h2>\n<div class=\"language-scdoc highlight\"><pre><span></span><code><span class=\"k\">*</span> [1] D. Fox, W. Burgard, and S. Thrun. &quot;Monte carlo localization: Efficient position estimation for mobile robots.&quot; In <span class=\"gs\">*Journal of Artifical Intelligence Research*</span>, 1999.\n</code></pre></div>\n<span class=\"paragraph\"><a href=\"http://www.cs.cmu.edu/afs/cs/project/jair/pub/volume11/fox99a-html/jair-localize.html\" rel=\"noopener noreferrer\" target=\"_blank\">http://www.cs.cmu.edu/afs/cs/project/jair/pub/volume11/fox99a-html/jair-localize.html</a></span>\n<div class=\"language-scdoc highlight\"><pre><span></span><code><span class=\"k\">*</span> [2] Dieter Fox, et. al. &quot;Bayesian Filters for Location Estimation&quot;. In <span class=\"gs\">*IEEE Pervasive Computing*</span>, September 2003.\n</code></pre></div>\n<span class=\"paragraph\"><a href=\"http://swarmlab.unimaas.nl/wp-content/uploads/2012/07/fox2003bayesian.pdf\" rel=\"noopener noreferrer\" target=\"_blank\">http://swarmlab.unimaas.nl/wp-content/uploads/2012/07/fox2003bayesian.pdf</a></span>\n<div class=\"language-scdoc highlight\"><pre><span></span><code><span class=\"k\">*</span> [3] Sebastian Thrun. &quot;Artificial Intelligence for Robotics&quot;.\n</code></pre></div>\n<span class=\"paragraph\"><a href=\"https://www.udacity.com/course/cs373\" rel=\"noopener noreferrer\" target=\"_blank\">https://www.udacity.com/course/cs373</a></span>\n<div class=\"language-scdoc highlight\"><pre><span></span><code><span class=\"k\">*</span> [4] Khan Acadamy. &quot;Introduction to the Convolution&quot;\n</code></pre></div>\n<span class=\"paragraph\"><a href=\"https://www.khanacademy.org/math/differential-equations/laplace-transform/convolution-integral/v/introduction-to-the-convolution\" rel=\"noopener noreferrer\" target=\"_blank\">https://www.khanacademy.org/math/differential-equations/laplace-transform/convolution-integral/v/introduction-to-the-convolution</a></span>\n<ul>\n<li>[5] Wikipedia. \"Convolution\"</li>\n</ul>\n<span class=\"paragraph\"><a href=\"http://en.wikipedia.org/wiki/Convolution\" rel=\"noopener noreferrer\" target=\"_blank\">http://en.wikipedia.org/wiki/Convolution</a></span>\n<ul>\n<li>[6] Wikipedia. \"Law of total probability\"</li>\n</ul>\n<span class=\"paragraph\"><a href=\"http://en.wikipedia.org/wiki/Law_of_total_probability\" rel=\"noopener noreferrer\" target=\"_blank\">http://en.wikipedia.org/wiki/Law_of_total_probability</a></span>\n<ul>\n<li>[7] Wikipedia. \"Time Evolution\"</li>\n</ul>\n<span class=\"paragraph\"><a href=\"https://en.wikipedia.org/wiki/Time_evolution\" rel=\"noopener noreferrer\" target=\"_blank\">https://en.wikipedia.org/wiki/Time_evolution</a></span>\n<ul>\n<li>[8] We need to rethink how we teach statistics from the ground up</li>\n</ul>\n<span class=\"paragraph\"><a href=\"http://www.statslife.org.uk/opinion/2405-we-need-to-rethink-how-we-teach-statistics-from-the-ground-up\" rel=\"noopener noreferrer\" target=\"_blank\">http://www.statslife.org.uk/opinion/2405-we-need-to-rethink-how-we-teach-statistics-from-the-ground-up</a></span></span>"
+          }
+        }
+      ],
+      "console": []
+    }
+  ]
+}

@@ -1,0 +1,1297 @@
+{
+  "version": "1",
+  "metadata": {
+    "marimo_version": "0.23.10",
+    "script_metadata_hash": null
+  },
+  "cells": [
+    {
+      "id": "Hbol",
+      "code_hash": "1d0db38904205bec4d6f6f6a1f6cec3e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "XRMQ",
+      "code_hash": "b35bdc40f2177738c7fd7e18de8fbee8",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "MJUe",
+      "code_hash": "aae9eb2d3ea3a449680bedd58a67c8f0",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\"><a href=\"./table_of_contents.ipynb\">Table of Contents</a></span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vblA",
+      "code_hash": "3b04dd624886f143aa2bdce27902e280",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h1 id=\"adaptive-filtering\">Adaptive Filtering</h1></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "bkHC",
+      "code_hash": "e8538e1461e4aa6f23e893d65c7f11e3",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "lEQa",
+      "code_hash": "eafb355248acc454199a7ab51eddc522",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "\n        <style>\n        .output_wrapper, .output {\n            height:auto !important;\n            max-height:100000px;\n        }\n        .output_scroll {\n            box-shadow:none !important;\n            webkit-box-shadow:none !important;\n        }\n        </style>\n    "
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "PKri",
+      "code_hash": "e74c57cbcaaf2389c3c4b86fe4837e57",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"introduction\">Introduction</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Xref",
+      "code_hash": "80afbfb82a5773b4783a50bdd68ef290",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">So far we have considered the problem of tracking objects that are well behaved in relation to our process model. For example, we can use a constant velocity filter to track an object moving in a straight line. So long as the object moves in a straight line at a reasonably constant speed, or varies its track and/or velocity very slowly this filter will perform very well. Suppose instead that we are trying to track a maneuvering target, such as a car along a road, an aircraft in flight, and so on. In these situations the filters perform quite poorly. Alternatively, consider a situation such as tracking a sailboat in the ocean. Even if we model the control inputs we have no way to model the wind or the ocean currents.</span>\n<span class=\"paragraph\">A first order approach to this problem is to make the process noise <marimo-tex class=\"arithmatex\">||(\\mathbf{Q}||)</marimo-tex> larger to account for the unpredictability of the system dynamics. While this can work in the sense of providing a non-diverging filter, the result is typically far from optimal. The larger <marimo-tex class=\"arithmatex\">||(\\mathbf{Q}||)</marimo-tex> results in the filter giving more emphasis to the noise in the measurements. We will see an example of this shortly.</span>\n<span class=\"paragraph\">In this chapter we will discuss the concept of an <em>adaptive filter</em>. The filter will <em>adapt</em> itself when it detects dynamics that the process model cannot account for. I will start with an example of the problem, and then discuss and implement various adaptive filters.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "SFPL",
+      "code_hash": "87804e10f1953d473027e9860890a905",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"maneuvering-targets\">Maneuvering Targets</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "BYtC",
+      "code_hash": "f9b650bb377acc9d547edfe55737ac61",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">We need a simulation of a maneuvering target.  I will implement a simple 2D model with steering inputs. You provide a new speed and/or direction, and it will modify its state to match.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "RGSE",
+      "code_hash": "ef0a9e73cc6a02437750da331f73dbf1",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Kclp",
+      "code_hash": "0b596783b683532c7fafcae5fafba22c",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Now let's implement a simulated sensor with noise.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "emfo",
+      "code_hash": "3079b841dd0ce768897edf0bfd882e03",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Hstk",
+      "code_hash": "5a12ab0eb946702660c41e7e93733793",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Now let's generate a track and plot it to test that everything is working. I'll put the data generation in a function so we can create paths of different lengths (why will be clear soon).</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "nWHF",
+      "code_hash": "b5802eeb9df2c602f080cec3e2f83250",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "name '_cell_RGSE_y' is not defined",
+          "traceback": null
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stderr",
+          "text": "<span class=\"codehilite\"><div class=\"highlight\"><pre><span></span><span class=\"gt\">Traceback (most recent call last):</span>\n  File <span class=\"nb\">&quot;C:\\Users\\goper\\AppData\\Local\\Temp\\marimo_22448\\__marimo__cell_nWHF_.py&quot;</span>, line <span class=\"m\">23</span>, in <span class=\"n\">&lt;module&gt;</span>\n<span class=\"w\">    </span><span class=\"n\">_track</span><span class=\"p\">,</span> <span class=\"n\">zs</span> <span class=\"o\">=</span> <span class=\"n\">generate_data</span><span class=\"p\">(</span><span class=\"mi\">50</span><span class=\"p\">,</span> <span class=\"n\">sensor_std</span><span class=\"p\">)</span>\n<span class=\"w\">                 </span><span class=\"pm\">^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</span>\n  File <span class=\"nb\">&quot;C:\\Users\\goper\\AppData\\Local\\Temp\\marimo_22448\\__marimo__cell_nWHF_.py&quot;</span>, line <span class=\"m\">12</span>, in <span class=\"n\">generate_data</span>\n<span class=\"w\">    </span><span class=\"n\">t</span><span class=\"o\">.</span><span class=\"n\">set_commanded_heading</span><span class=\"p\">(</span><span class=\"mi\">310</span><span class=\"p\">,</span> <span class=\"mi\">25</span><span class=\"p\">)</span>\n  File <span class=\"nb\">&quot;C:\\Users\\goper\\AppData\\Local\\Temp\\marimo_22448\\__marimo__cell_RGSE_.py&quot;</span>, line <span class=\"m\">35</span>, in <span class=\"n\">set_commanded_heading</span>\n<span class=\"w\">    </span><span class=\"bp\">self</span><span class=\"o\">.</span><span class=\"n\">hdg_delta</span> <span class=\"o\">=</span> <span class=\"n\">angle_between</span><span class=\"p\">(</span><span class=\"bp\">self</span><span class=\"o\">.</span><span class=\"n\">cmd_hdg</span><span class=\"p\">,</span> <span class=\"bp\">self</span><span class=\"o\">.</span><span class=\"n\">hdg</span><span class=\"p\">)</span> <span class=\"o\">/</span> <span class=\"n\">steps</span>\n<span class=\"w\">                     </span><span class=\"pm\">^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</span>\n  File <span class=\"nb\">&quot;C:\\Users\\goper\\AppData\\Local\\Temp\\marimo_22448\\__marimo__cell_RGSE_.py&quot;</span>, line <span class=\"m\">4</span>, in <span class=\"n\">angle_between</span>\n<span class=\"w\">    </span><span class=\"k\">return</span> <span class=\"nb\">min</span><span class=\"p\">(</span><span class=\"n\">_y</span> <span class=\"o\">-</span> <span class=\"n\">x</span><span class=\"p\">,</span> <span class=\"n\">_y</span> <span class=\"o\">-</span> <span class=\"n\">x</span> <span class=\"o\">+</span> <span class=\"mi\">360</span><span class=\"p\">,</span> <span class=\"n\">_y</span> <span class=\"o\">-</span> <span class=\"n\">x</span> <span class=\"o\">-</span> <span class=\"mi\">360</span><span class=\"p\">,</span> <span class=\"n\">key</span><span class=\"o\">=</span><span class=\"nb\">abs</span><span class=\"p\">)</span>\n<span class=\"w\">               </span><span class=\"pm\">^^</span>\n<span class=\"gr\">NameError</span>: <span class=\"n\">name &#39;_cell_RGSE_y&#39; is not defined</span>\n</pre></div>\n</span>",
+          "mimetype": "application/vnd.marimo+traceback"
+        }
+      ]
+    },
+    {
+      "id": "iLit",
+      "code_hash": "0eeba4ab47a6243ea226889ae242a37f",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">This large amount of noise allows us to see the effect of various design choices more easily.</span>\n<span class=\"paragraph\">Now we can implement a Kalman filter to track this object. But let's make a simplification. The <em>x</em> and <em>y</em> coordinates are independent, so we can track each independently. In the remainder of this chapter we will only track the <em>x</em> coordinate to keep the code and matrices as small as possible.</span>\n<span class=\"paragraph\">We start with a constant velocity filter.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ZHCJ",
+      "code_hash": "6644dbc4e5d1d60f146e141a868fbc63",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (NameError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ROlb",
+      "code_hash": "132e1cd23213c1dd6f3ee87be040f88f",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Now we run it:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "qnkX",
+      "code_hash": "ba619033442a4d1274e1c71cd233386c",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (NameError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "TqIu",
+      "code_hash": "5a74656c38a1e5fc70ea64c60ca6b8f2",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">We can see from the plot that the Kalman filter was unable to track the change in heading. Recall from the <strong>g-h Filter</strong> chapter that this is because the filter is not modeling acceleration, hence it will always lag the input. The filter will eventually catch up with the signal if the signal enters a steady state. Let's look at that.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Vxnm",
+      "code_hash": "94a676b29d79387121ada859c693ff92",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (NameError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "DnEU",
+      "code_hash": "19361c4b89a1feb0691e5a1997ce06b7",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">The underlying problem is that our process model is correct for the steady state sections, but incorrect for when the object is maneuvering. We can try to account for this by increasing the size of Q, like so.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ulZA",
+      "code_hash": "7e8de27a42401b88cc945119e8093b49",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (NameError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ecfG",
+      "code_hash": "9b449bcd816d624b1ffe43c5ff178a79",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">We can see that the filter reacquired the track more quickly, but at the cost of a lot of noise in the output. Furthermore, many tracking situations could not tolerate the amount of lag shown between seconds 4 and 8. We could reduce it further at the cost of very noisy output, like so:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Pvdt",
+      "code_hash": "fc9e6e1607024f838bd89a7681ca020b",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (NameError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ZBYS",
+      "code_hash": "8efc071461f60fadd53e7f196cf01c92",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Maneuvers imply acceleration, so let's implement a constant acceleration Kalman filter and see how it fairs with the same data.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "aLJB",
+      "code_hash": "4de658bffac980576c5d8381c299ebf0",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (NameError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "nHfw",
+      "code_hash": "b5655c04ad02b1b24f1f623256ed9c95",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (NameError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "xXTn",
+      "code_hash": "e9d775619708c41ba55329fe4a16ae52",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">The constant acceleration model is able to track the maneuver with no lag, but at the cost of very noisy output during the steady state behavior. The noisy output is due to the filter being unable to distinguish between the beginning of an  maneuver and noise in the signal. Noise in the signal implies an acceleration, and so the acceleration term of the filter tracks it.</span>\n<span class=\"paragraph\">It seems we cannot win. A constant velocity filter cannot react quickly when the target is accelerating, but a constant acceleration filter misinterprets noise during zero acceleration regimes as acceleration instead of nosie.</span>\n<span class=\"paragraph\">Yet there is an important insight here that will lead us to a solution. When the target is not maneuvering (the acceleration is zero) the constant velocity filter performs optimally. When the target is maneuvering the constant acceleration filter performs well, as does the constant velocity filter with an artificially large process noise <marimo-tex class=\"arithmatex\">||(\\mathbf{Q}||)</marimo-tex>. If we make a filter that adapts itself to the behavior of the tracked object we could have the best of both worlds.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "AjVT",
+      "code_hash": "77aa625d536766b51f41a1a2233d880b",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"detecting-a-maneuver\">Detecting a Maneuver</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "pHFh",
+      "code_hash": "cd0075e5231d23030021993c02adf47a",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Before we discuss how to create an adaptive filter we have to ask \"how do we detect a maneuver?\" We cannot reasonably adapt a filter to respond to maneuvers if we do not know when a maneuver is happening.</span>\n<span class=\"paragraph\">We have been defining <em>maneuver</em> as the time when the tracked object is accelerating, but in general we can say that the object is maneuvering with respect to the Kalman filter if its behavior is different than the process model being used by the filter.</span>\n<span class=\"paragraph\">What is the mathematical consequence of a maneuvering object for the filter? The object will be behaving differently than predicted by the filter, so the residual will be large. Recall that the residual is the difference between the current prediction of the filter and the measurement.\n<img src=\"./figs/residual_chart.png\"></span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "NCOB",
+      "code_hash": "a0b5b5a2da7175b790bf9abd6a5a7286",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">To confirm this, let's plot the residual for the filter during the maneuver. I will reduce the amount of noise in the data to make it easier to see the residual.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "aqbW",
+      "code_hash": "dd6f77586fd918c5c969331d9434b93f",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (NameError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "TRpd",
+      "code_hash": "166e75cb3e85a97e9029e1d6c6b2caba",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">On the left I have plotted the noisy measurements against the Kalman filter output. On the right I display the residuals computed by the filter - the difference between the measurement and the predictions made by the Kalman filter. Let me emphasize this to make this clear. The plot on the right is not merely the difference between the two lines in the left plot. The left plot shows the difference between the measurements and the final Kalman filter output, whereas the right plot shows us the difference between the measurements and the <em>predictions of the process model</em>.</span>\n<span class=\"paragraph\">That may seem like a subtle distinction, but from the plots you see it is not. The amount of deviation in the left plot when the maneuver starts is small, but the deviation in the right plot tells a different story. If the tracked object was moving according to the process model the residual plot should bounce around 0.0. This is because the measurements will be obeying the equation</span>\n<marimo-tex class=\"arithmatex\">||[\\mathtt{measurement} = \\mathtt{process\\_model}(t) + \\mathtt{noise}(t)||]</marimo-tex><span class=\"paragraph\">Once the target starts maneuvering the predictions of the target behavior will not match the behavior as the equation will be</span>\n<marimo-tex class=\"arithmatex\">||[\\mathtt{measurement} = \\mathtt{process\\_model}(t) + \\mathtt{maneuver\\_delta}(t) + \\mathtt{noise}(t)||]</marimo-tex><span class=\"paragraph\">Therefore if the residuals diverge from a mean of 0.0 we know that a maneuver has commenced.</span>\n<span class=\"paragraph\">We can see from the residual plot that we have our work cut out for us. We can clearly see the result of the maneuver in the residual plot, but the amount of noise in the signal obscures the start of the maneuver. This is our age old problem of extracting the signal from the noise.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "TXez",
+      "code_hash": "84e3e4f0dad9c926909d877738ac1083",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"adjustable-process-noise\">Adjustable Process Noise</h2>\n<span class=\"paragraph\">The first approach we will consider will use a lower order model and adjust the process noise based on whether a maneuver is occurring or not. When the residual gets \"large\" (for some reasonable definition of large) we will increase the process noise. This will cause the filter to favor the measurement over the process prediction and the filter will track the signal closely. When the residual is small we will then scale back the process noise.</span>\n<span class=\"paragraph\">There are many ways of doing this in the literature, I will consider a couple of choices.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "dNNg",
+      "code_hash": "fe5c00b2444d9ac1c38b0f838e8d7157",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"continuous-adjustment\">Continuous Adjustment</h3>\n<span class=\"paragraph\">The first method (from Bar-Shalom [1]) normalizes the square of the residual using the following equation:</span>\n<marimo-tex class=\"arithmatex\">||[ \\epsilon = \\mathbf{y^\\mathsf{T}S}^{-1}\\mathbf{y}||]</marimo-tex><span class=\"paragraph\">where <marimo-tex class=\"arithmatex\">||(\\mathbf{y}||)</marimo-tex> is the residual and <marimo-tex class=\"arithmatex\">||(\\mathbf{S}||)</marimo-tex> is the system uncertainty (covariance), which has the equation</span>\n<marimo-tex class=\"arithmatex\">||[\\mathbf{S} = \\mathbf{HPH^\\mathsf{T}} + \\mathbf{R}||]</marimo-tex><span class=\"paragraph\">If the linear algebra used to compute this confuses you, recall that we can think of matrix inverses in terms of division, so <marimo-tex class=\"arithmatex\">||(\\epsilon = \\mathbf{y^\\mathsf{T}S}^{-1}\\mathbf{y}||)</marimo-tex> can be thought of as computing</span>\n<marimo-tex class=\"arithmatex\">||[\\epsilon\\approx\\frac{\\mathbf{y}^2}{\\mathbf{S}}||]</marimo-tex><span class=\"paragraph\">Both <marimo-tex class=\"arithmatex\">||(\\mathbf{y}||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(\\mathbf{S}||)</marimo-tex> are attributes of <code>filterpy.KalmanFilter</code> so implementation will be straightforward.</span>\n<span class=\"paragraph\">Let's look at a plot of <marimo-tex class=\"arithmatex\">||(\\epsilon||)</marimo-tex> against time.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "yCnT",
+      "code_hash": "efe4dc1cbc421e1e0234d00496c5475f",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (NameError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "wlCL",
+      "code_hash": "f7d24b764969e097cf03198d8a8ebba8",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">This plot should make clear the effect of normalizing the residual. Squaring the residual ensures that the signal is always greater than zero, and normalizing by the measurement covariance scales the signal so that we can distinguish when the residual is markedly changed relative to the measurement noise. The maneuver starts at t=3 seconds, and we can see that <marimo-tex class=\"arithmatex\">||(\\epsilon||)</marimo-tex> starts to increase rapidly not long after that.</span>\n<span class=\"paragraph\">We will want to start scaling <marimo-tex class=\"arithmatex\">||(\\mathbf{Q}||)</marimo-tex> up once <marimo-tex class=\"arithmatex\">||(\\epsilon||)</marimo-tex> exceeds some limit, and back down once it again falls below that limit. We multiply <marimo-tex class=\"arithmatex\">||(\\mathbf{Q}||)</marimo-tex> by a scaling factor. Perhaps there is literature on choosing this factor analytically; I derive it experimentally. We can be somewhat more analytical about choosing the limit for <marimo-tex class=\"arithmatex\">||(\\epsilon||)</marimo-tex> (named <marimo-tex class=\"arithmatex\">||(\\epsilon_{max}||)</marimo-tex>) - generally speaking once the residual is greater than 3 standard deviations or so we can assume the difference is due to a real change and not to noise. However, sensors are rarely truly Gaussian and so a larger number, such as 5-6 standard deviations is used in practice.</span>\n<span class=\"paragraph\">I have implemented this algorithm using reasonable values for <marimo-tex class=\"arithmatex\">||(\\epsilon_{max}||)</marimo-tex> and the <marimo-tex class=\"arithmatex\">||(\\mathbf{Q}||)</marimo-tex> scaling factor. To make inspection of the result easier I have limited the plot to the first 10 seconds of simulation.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "kqZH",
+      "code_hash": "e0dee3b57550d73c1cc6ca6ed13598ee",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (NameError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "wAgl",
+      "code_hash": "6a66a554a95c3947cecdc47799c29e82",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">The performance of this filter is markedly better than the constant velocity filter. The constant velocity filter took roughly 10 seconds to reacquire the signal after the start of the maneuver. The adaptive filter takes under a second to do the same.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "rEll",
+      "code_hash": "934f69412ebf467813a8722bf2397223",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"continuous-adjustment-standard-deviation-version\">Continuous Adjustment - Standard Deviation Version</h3></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "dGlV",
+      "code_hash": "0b362b7615d7095691a99807e46f8e4f",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Another, very similar method from Zarchan [2] sets the limit based on the standard deviation of the measurement error covariance. Here the equations are:</span>\n<span class=\"paragraph\">$$ \\begin{aligned}\nstd &amp;= \\sqrt{\\mathbf{HPH}^\\mathsf{T} + \\mathbf{R}} \\\n&amp;= \\sqrt{\\mathbf{S}}\n\\end{aligned}</span>\n<span class=\"paragraph\">$$</span>\n<span class=\"paragraph\">If the absolute value of the residual is more than some multiple of the standard deviation computed above we increase the process noise by a fixed amount, recompute Q, and continue.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "SdmI",
+      "code_hash": "a56729244046b4c45da5bee13a109161",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (NameError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "lgWD",
+      "code_hash": "efaeeced2c809cf222556a394e2eee4c",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">So I chose to use 1000 as the scaling factor for the noise, and 2 as the standard deviation limit. Why these numbers? Well, first, let's look at the difference between 2 and 3 standard deviations.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "yOPj",
+      "code_hash": "a78dc60db4e0d389a0b53041ebb2fe44",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\"><strong>Two Standard Deviations</strong></span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "fwwy",
+      "code_hash": "7d5fe7072ae7431baae398dd304b30e2",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (NameError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "LJZf",
+      "code_hash": "479dbba91ee92771cf89f97d1eec1676",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\"><strong>Three Standard Deviations</strong></span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "urSm",
+      "code_hash": "07b86a91301efce6b6ff31fb05304ec0",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (NameError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "jxvo",
+      "code_hash": "01610847cee06c0ece32aaa80c1fae6c",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">We can see from the charts that the filter output for the position is very similar regardless of weather we use 2 standard deviations or three. But the computation of the velocity is a different matter. Let's explore this further. First, let's make the standard deviation very small.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "mWxS",
+      "code_hash": "ac6c8c6575e752ef7c1cf73ee267f603",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (NameError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "CcZR",
+      "code_hash": "a6c3302f42063693eeb1340e1cb8f3a6",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">As the standard deviation limit gets smaller the computation of the velocity gets worse. Think about why this is so. If we start varying the filter so that it prefers the measurement over the prediction as soon as the residual deviates even slightly from the prediction we very quickly be giving almost all the weight towards the measurement. With no weight for the prediction we have no information from which to create the hidden variables. So, when the limit is 0.1 std you can see that the velocity is swamped by the noise in the measurement. On the other hand, because we are favoring the measurements so much the position follows the maneuver almost perfectly.</span>\n<span class=\"paragraph\">Now let's look at the effect of various increments for the process noise. Here I have held the standard deviation limit to 2 std, and varied the increment from 1 to 10,000.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "YWSi",
+      "code_hash": "a9a1a05d569689e7a25e8219b55b9964",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (NameError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "zlud",
+      "code_hash": "a02ebabf00d8601cbe3e16012fc2d854",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Here we can see that the position estimate gets marginally better as the increment factor increases, but that the velocity estimate starts to create a large overshoot.</span>\n<span class=\"paragraph\">It isn't possible for me to tell you which of these is 'correct'. You will need to test your filter's performance against real and simulated data, and choose the design that best matches the performance you need for each of the state variables.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "tZnO",
+      "code_hash": "210fce72c61eaf6ebadffa687aeffed5",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"fading-memory-filter\">Fading Memory Filter</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "xvXZ",
+      "code_hash": "977c5bafea5392a070c71a0d649282bb",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Fading memory filters are not normally classified as an adaptive filter since they do not adapt to the input, but they do provide good performance with maneuvering targets. They also have the benefit of having a very simple computational form for first, second, and third order kinematic filters (e.g. the filters we are using in this chapter). This simple form does not require the Ricatti equations to compute the gain of the Kalman filter, which drastically reduces the amount of computation. However, there is also a form that works with the standard Kalman filter. I will focus on the latter in this chapter since our focus is more on adaptive filters. Both forms of the fading memory filter are implemented in <code>FilterPy</code>.</span>\n<span class=\"paragraph\">The Kalman filter is recursive, but it incorporates all of the previous measurements into the current computation of the filter gain. If the target behavior is consistent with the process model than this allows the Kalman filter to find the optimal estimate for every measurement. Consider a ball in flight - we can clearly estimate the position of the ball at time t better if we take into account all the previous measurement. If we only used some of the measurements we would be less certain about the current position, and thus more influenced by the noise in the measurement. If this is still not clear, consider the worst case. Suppose we forget all but the last measurement and estimates. We would then have no confidence in the position and trajectory of the ball, and would have little choice but to weight the current measurement heavily. If the measurement is noisy, the estimate is noisy. We see this effect every time a Kalman filter is initialized. The early estimates are noisy, but then they settle down as more measurements are acquired.</span>\n<span class=\"paragraph\">However, if the target is maneuvering it is not always behaving like the process model predicts. In this case remembering all of the past measurements and estimates is a liability. We can see this in all of the charts above. The target initiates a turn, and the Kalman filter continues to project movement in a straight line. This is because the filter has built a history of the target's movement, and incorrectly 'feels' confident that the target is moving in a straight line at a given heading and velocity.</span>\n<span class=\"paragraph\">The fading memory filter accounts for this problem by giving less weight to older measurements, and greater weight to the more recent measurements.</span>\n<span class=\"paragraph\">There are many formulations for the fading memory filter; I use the one provided by Dan Simon in <em>Optimal State Estimation</em> [3]. I will not go through his derivation, but only provide the results.</span>\n<span class=\"paragraph\">The Kalman filter equation for the covariances of the estimation error is</span>\n<marimo-tex class=\"arithmatex\">||[ \\bar{\\mathbf P} = \\mathbf{FPF}^\\mathsf T + \\mathbf Q ||]</marimo-tex><span class=\"paragraph\">We can force the filter to forget past measurements by multiplying a term <marimo-tex class=\"arithmatex\">||(\\alpha||)</marimo-tex></span>\n<marimo-tex class=\"arithmatex\">||[ \\tilde{\\mathbf P} = \\alpha^2\\mathbf{FPF}^\\mathsf T + \\mathbf Q||]</marimo-tex><span class=\"paragraph\">where <marimo-tex class=\"arithmatex\">||(\\alpha &gt; 1.0||)</marimo-tex>. If <marimo-tex class=\"arithmatex\">||(\\alpha == 1||)</marimo-tex> then we get the normal Kalman filter performance. <marimo-tex class=\"arithmatex\">||(\\alpha||)</marimo-tex> is an attribute of the <code>KalmanFilter</code> class; its value defaults to 1 so the filter acts like a Kalman filter unless <marimo-tex class=\"arithmatex\">||(\\alpha||)</marimo-tex> is assigned a value other than 1. There is no hard and fast rule for choosing <marimo-tex class=\"arithmatex\">||(\\alpha||)</marimo-tex>, but it is typically very close to 1, such as 1.01. You will need to make many runs with either simulated or real data to determine a value that responds to maneuvers without causing the estimate to become too noisy due to overly weighting the noisy measurement.</span>\n<span class=\"paragraph\">Why does this work? If we increase the estimate error covariance the filter becomes more uncertain about it's estimate, hence it gives more weight to the measurement.</span>\n<span class=\"paragraph\">One caveat - if we use <marimo-tex class=\"arithmatex\">||(\\alpha||)</marimo-tex> than we are computing <marimo-tex class=\"arithmatex\">||(\\tilde{\\mathbf P}||)</marimo-tex>, not <marimo-tex class=\"arithmatex\">||(\\bar{\\mathbf P}||)</marimo-tex>. In other words, <code>KalmanFilter.P</code> <em>is not</em> equal to the covariance of the prior, so do not treat it as if it is.</span>\n<span class=\"paragraph\">Let's filter our data using the fading memory filter and see the result. I will inject a lot of error into the system so that we can compare various approaches.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "CLip",
+      "code_hash": "f2bff912dca3a011593dd93b6c81c147",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (NameError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "YECM",
+      "code_hash": "f027170a6522106c35b4001ff5a7fdb7",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">The first plot shows the performance of the Kalman filter. The filter diverges when the maneuver starts and does not reacquire the signal until about 10 seconds. I then made the filter track the maneuver very quickly by making the process noise large, but this has the cost of making the filter estimate very noisy due to unduly weighting the noisy measurements. I then implemented a fading memory filter with <marimo-tex class=\"arithmatex\">||(\\alpha=1.02||)</marimo-tex>. The filtered estimate is very smooth, but it does take a few seconds to converge when the target regains steady state behavior. However, the time to do so is considerably smaller than for the Kalman filter, and the amount of lag is much smaller - the estimate for the fading memory is much closer to the actual track than the Kalman filter's track is. Finally, I bumped up <marimo-tex class=\"arithmatex\">||(\\alpha||)</marimo-tex> to 1.05. Here we can see that the filter responds almost instantly to the maneuver, but that the estimate is not as straight during the steady state operation because the filter is forgetting the past measurements.</span>\n<span class=\"paragraph\">This is quite good performance for such a small change in code! Note that there is no 'correct' choice here. You will need to design your filter based on your needs and the characteristics of the measurement noise, process noise, and maneuvering behavior of the target.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "cEAS",
+      "code_hash": "bbdb442d1a08e1f87d4c6cbdd1c42098",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"multiple-model-estimation\">Multiple Model Estimation</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "iXej",
+      "code_hash": "8ef6b0013ecf0503326ffc7c448c733d",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">The example I have been using in this chapter entails a target moving in a steady state, performing a maneuver, and then returning to a steady state. We have been thinking of this as two models - a constant velocity model, and a constant acceleration model. Whenever you can describe the system as obeying one of a finite set of models you can use <em>Multiple Model (MM) Estimation</em>. We use a bank of multiple filters, each using a different process to describe the system, and either switch between them or blend them based on the dynamics of the tracked object.</span>\n<span class=\"paragraph\">As you might imagine this is a broad topic, and there are many ways of designing and implementing MM estimators. But consider a simple approach for the target we have been tracking in this chapter. One idea would be to simultaneously run a constant velocity and a constant acceleration filter, and to switch between their outputs when we detect a maneuver by inspecting the residuals. Even this choice gives us many options. Consider the dynamics of a turning object. For example, an automobile turns on a wheelbase - the front wheels turn, and the car pivots around the rear wheels. This is a nonlinear process, so for best results we would want to use some type of nonlinear filter (EKF, UKF, etc) to model the turns. On the other hand, a linear constant velocity filter would perform fine for the steady state portions of the travel. So our bank of filters might consist of a linear KF and an EKF filter for the turns. However, neither is particularly well suited for modeling behaviors such as accelerating and braking. So a highly performing MM estimator might contain a bank of many filters, each designed to perform best for a certain performance envelope of the tracked object.</span>\n<span class=\"paragraph\">Of course, you do not need to base your filters on the order of the model. You can use different noise models, different adapters in each. For example, in the section above I showed many plots depicting the effects of changing parameters on the estimate of the velocity and position. Perhaps one setting works better for position, and a different setting for velocity. Put both in your bank of filters. You could then take the best estimates for the position from one filter, and the best estimate for the velocity from a different filter.</span>\n<h3 id=\"a-two-filter-adaptive-filter\">A Two Filter Adaptive Filter</h3>\n<span class=\"paragraph\">I trust the idea of switching between filters to get the best performance is clear, but what mathematical foundations should we use to implement it? The problem that we face is trying to detect via noisy measurements when a change in regime should result in a change in model. What aspect of the Kalman filter measures how far the measurement deviates from the prediction? Yes, the <em>residual</em>.</span>\n<span class=\"paragraph\">Let's say we have a first order (constant velocity) Kalman filter. As long as the target is not maneuvering the filter will track it's behavior closely, and roughly 68% of the measurements should fall within 1<marimo-tex class=\"arithmatex\">||(\\sigma||)</marimo-tex>. Furthermore the residual should fluctuate around 0 because as many if the sensor is Gaussian an equal number of measurement should have positive error as have negative errors. If the residual grows and stays beyond predicted bounds then the target must not be performing as predicted by the state model. We saw this earlier in this chart where the residual switched from bouncing around 0 to suddenly jumping and staying above zero once the tracked object began maneuvering.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "EJmg",
+      "code_hash": "2c013de3e229a1f720d9de81bb1caafc",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (NameError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "UmEG",
+      "code_hash": "bda279a9442f84c5d709412352f59928",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">For this problem we saw that the constant velocity filter performed better the constant acceleration filter while the object was in steady state, and the opposite was true when the object is maneuvering. In the chart above that transition occurs at 4 seconds.</span>\n<span class=\"paragraph\">So the algorithm is easy. Initialize both a  constant velocity and constant acceleration filter and run them together in a predict/update loop. After every update examine the residual of the  constant velocity filter. If it falls within theoretical bounds use the estimate from the constant velocity filter as the estimate, otherwise use the estimate from the constant acceleration filter.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vEBW",
+      "code_hash": "d38e065082e3895fec29aad70959a2da",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (NameError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "kLmu",
+      "code_hash": "5180bc8965c4df198437f0721a34a6f8",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Here the filter tracks the maneuver closely. While the target is not maneuvering our estimate is nearly noise free, and then once it does maneuver we quickly detect that and switch to the constant acceleration filter. However, it is not ideal. Here is the filter output plotted alone:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "IpqN",
+      "code_hash": "db86472cba71b829e08173f1e3b17ba0",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (NameError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "dxZZ",
+      "code_hash": "ac9635899d04d257eda642c5c3d53696",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">You can see that the estimate jumps when the filter bank switches from one filter to the other. I would not use this algorithm in a production system. The next section gives a state of the art implementation of a filter bank that eliminates this problem.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "dlnW",
+      "code_hash": "3b27be5822fecd70454670541f5e92ad",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"mmae\">MMAE</h2>\n<span class=\"paragraph\">The core idea of using several filters to detect a maneuver is sound, but the estimate is jagged when we abruptly transition between the filters. Choosing one filter over the other flies in the face of this entire book, which uses probability to determine the <em>likelihood</em> of measurements and models. We don't choose <em>either</em> the measurement or prediction, depending on which is more likely, we choose a <em>blend</em> of the two in proportion to their likelihoods. We should do the same here. This approach is called the <em>Multiple Model Adaptive Estimator</em>, or MMAE.</span>\n<span class=\"paragraph\">In the <strong>Designing Kalman Filters</strong> chapter we learned the <em>likelihood function</em></span>\n<marimo-tex class=\"arithmatex\">||[\\mathcal{L} = \\frac{1}{\\sqrt{2\\pi S}}\\exp [-\\frac{1}{2}\\mathbf{y}^\\mathsf{T}\\mathbf{S}^{-1}\\mathbf{y}]||]</marimo-tex><span class=\"paragraph\">which tells us how likely a filter is to be performing optimally given the inputs. <marimo-tex class=\"arithmatex\">||(\\mathbf y||)</marimo-tex> is the residual and <marimo-tex class=\"arithmatex\">||(\\mathbf S||)</marimo-tex> is the system uncertainty (covariance in measurement space). This is just a Gaussian of the residual and the system uncertainty. A large residual will give a large uncertainty, and thus low likelihood that the measurement matches the filter's current state. We can use this to compute the probability that each filter is the best fit to the data. If we have N filters, we can compute the probability that filter i is correct in relation to the rest of the filters with</span>\n<marimo-tex class=\"arithmatex\">||[p_k^i = \\frac{\\mathcal{L}_k^ip_{k-1}^i}{\\sum\\limits_{j=1}^N \\mathcal{L}_k^jp_{k-1}^j}||]</marimo-tex><span class=\"paragraph\">That looks messy, but it is straightforward. The numerator is just the likelihood from this time step multiplied by the probability that this filter was correct at the last time frame. We need all of the probabilities for the filter to sum to one, so we normalize by the probabilities for all of the other filters with the term in the denominator.</span>\n<span class=\"paragraph\">That is a recursive definition, so we need to assign some initial probability for each filter. In the absence of better information, use <marimo-tex class=\"arithmatex\">||(\\frac{1}{N}||)</marimo-tex> for each. Then we can compute the estimated state as the sum of the state from each filter multiplied by the probability of that filter being correct.</span>\n<span class=\"paragraph\">Here is a complete implementation:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "TTti",
+      "code_hash": "d8de1c24896a10fff927dc005fd6160b",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (NameError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "RKFZ",
+      "code_hash": "bf94e86345508183556b190863f6f7de",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">I plot the filter's estimates alone on the left so you can see how smooth the result is. On the right I plot both the estimate and the measurements to prove that the filter is tracking the maneuver.</span>\n<span class=\"paragraph\">Again I want to emphasize that this is nothing more than the Bayesian algorithm we have been using throughout the book. We have two (or more) measurements or estimate, each with an associated probability. We choose an estimate as a weighted combination of each of those values, where the weights are proportional to the probability of correctness. The computation of the probability at each step is</span>\n<marimo-tex class=\"arithmatex\">||[\\frac{\\texttt{Prob(meas | state)} \\times\\texttt{prior}}{\\texttt{normalization}}||]</marimo-tex><span class=\"paragraph\">which is Bayes theorem.</span>\n<span class=\"paragraph\">For real world problems you are likely to need more than two filters in your bank. In my job I track objects using computer vision. I track hockey pucks. Pucks slide, they bounce and skitter, they roll, they ricochet, they are picked up and carried, and they are 'dribbled' quickly by the players. I track humans who are athletes, and their capacity for nonlinear behavior is nearly limitless. A two filter bank doesn't get very far in those circumstances. I need to model multiple process models, different assumptions for noise due to the computer vision detection, and so on. But you have the main idea.</span>\n<h3 id=\"limitations-of-the-mmae-filter\">Limitations of the MMAE Filter</h3>\n<span class=\"paragraph\">The MMAE as I have presented it has a significant problem. Look at this chart of the ratio of the probability for the constant velocity vs constant acceleration filter.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "IaQp",
+      "code_hash": "f9f3032e04d1c2e0e1ca5560bee9e712",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (NameError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "IWgg",
+      "code_hash": "59859dd0c955513e818eb1bf676c3836",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">For the first three seconds, while the tracked object travels in a straight direction, the constant velocity filter become much more probable than the constant acceleration filter. Once the maneuver starts the probability quickly changes to to favor the constant acceleration model. However, the maneuver is completed by second six. You might expect that the probability for the constant velocity filter would once again become large, but instead it remains at zero.</span>\n<span class=\"paragraph\">This happens because of the recursive computation of the probability:</span>\n<marimo-tex class=\"arithmatex\">||[p_k = \\frac{\\mathcal{L}p_{k-1}}{\\sum \\text{probabilities}}||]</marimo-tex><span class=\"paragraph\">Once the probability becomes very small it can never recover. The result is that the filter bank quickly converges on only the most probable filters. A robust scheme needs to monitor the probability of each filter and kill off the filters with very low probability and replace them with filters with greater likelihood of performing well. You can subdivide the existing filters into new filters that try to span the characteristics that make them perform well. In the worst case, if a filter has diverged you can reinitialize a filter's state so that it is closer to the current measurements.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "fCoF",
+      "code_hash": "f28cbbaeabf5a10cbc067a94faec10ac",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"interacting-multiple-models-imm\">Interacting Multiple Models (IMM)</h2>\n<span class=\"paragraph\">Let's think about multiple models in another way. The scenario is as before - we wish to track a maneuvering target. We can design a set of Kalman filters which make different modeling assumptions. They can differ in terms of the filter order, or in the amount of noise in the process model. As each new measurement comes in each filter has a probability of being the correct model.</span>\n<span class=\"paragraph\">This naive approach leads to combinatorial explosion. At step 1 we generate <marimo-tex class=\"arithmatex\">||(N||)</marimo-tex> hypotheses, or 1 per filter. At step 2 we generate another <marimo-tex class=\"arithmatex\">||(N||)</marimo-tex> hypotheses which then need to be combined with the prior <marimo-tex class=\"arithmatex\">||(N||)</marimo-tex> hypotheses, which yields <marimo-tex class=\"arithmatex\">||(N^2||)</marimo-tex> hypothesis. Many different schemes have been tried which either cull unlikely hypotheses or merge similar ones, but the algorithms still suffered from computational expense and/or poor performance. I will not cover these in this book, but prominent examples in the literature are the generalized pseudo Bayes (GPB) algorithms.</span>\n<span class=\"paragraph\">The <em>Interacting Multiple Models</em> (IMM) algorithm was invented by Blom[5] to solve the combinatorial explosion problem of multiple models. A subsequent paper by Blom and Bar-Shalom is the most cited paper [6]. The idea is to have 1 filter for each possible mode of behavior of the system. At each epoch we let the filters <em>interact</em> with each other. The more likely filters modify the estimates of the less likely filters so they more nearly represent the current state of the sytem. This blending is done probabilistically, so the unlikely filters also modify the likely filters, but by a much smaller amount.</span>\n<span class=\"paragraph\">For example, suppose we have two modes: going straight, or turning. Each mode is represented by a Kalman filter, maybe a first order and second order filter. Now say the target it turning. The second order filter will produce a good estimate, and the first order filter will lag the signal. The likelihood function of each tells us which of the filters is most probable. The first order filter will have low likelihood, so we adjust its estimate greatly with the second order filter. The second order filter is very likely, so its estimate will only be changed slightly by the first order Kalman filter.</span>\n<span class=\"paragraph\">Now suppose the target stops turning. Because we have been revising the first order filter's estimate with the second order estimate it will not have been lagging the signal by very much. Within just a few epochs it will be producing very good (high likelihood) estimates and be the most probable filter. It will then start contributing heavily to the estimate of the second order filter. Recall that a second order filter mistakes measurement noise for acceleration. This adjustment insures reduces this effect greatly.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "LkGn",
+      "code_hash": "1151f932271ccb69c976ddc88621a637",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"mode-probabilities\">Mode Probabilities</h3>\n<span class=\"paragraph\">We define a set of modes for our system, <marimo-tex class=\"arithmatex\">||(m||)</marimo-tex>, and assume that the target is always in one of these modes. In the discussion above we have the modes straight and turn, so <marimo-tex class=\"arithmatex\">||(m=\\{\\text{straight},\\ \\text{turn}\\}||)</marimo-tex>.</span>\n<span class=\"paragraph\">We assign a probability that the target is in any given mode. This gives us a vector of <em>mode probabilities</em> with one probability for each possible mode. <marimo-tex class=\"arithmatex\">||(m||)</marimo-tex> has two modes, so we will have a vector of two probabilities. If we think that there is a 70% chance that the target is going straight we can say</span>\n<marimo-tex class=\"arithmatex\">||[\\mu = \\begin{bmatrix} 0.7 &amp; 0.3\\end{bmatrix}||]</marimo-tex><span class=\"paragraph\">We get 0.3 for the turn because the probabilities must sum to one. <marimo-tex class=\"arithmatex\">||(\\mu||)</marimo-tex> is typically but not universally used as the symbol for the mode probabilities, so I will use it. Do not confuse it with the mean.</span>\n<span class=\"paragraph\">In Python we can implement this as</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "zVRe",
+      "code_hash": "fb2ee8d829fb3906231d725571c102c3",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (NameError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "woaO",
+      "code_hash": "3298f53002b49c4e45c491f98a6ef1d5",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">We can formalize it by saying that the prior probability that <marimo-tex class=\"arithmatex\">||(m_i||)</marimo-tex> is correct (the maneuvering object is in mode <marimo-tex class=\"arithmatex\">||(i||)</marimo-tex>), given the prior measurements <marimo-tex class=\"arithmatex\">||(Z||)</marimo-tex>, is</span>\n<marimo-tex class=\"arithmatex\">||[\\mu_i = P(m_i|Z)||]</marimo-tex></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "HnMC",
+      "code_hash": "1d51cd1c5a5d5cd97b8fdf41d0c6e655",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"mode-transitions\">Mode Transitions</h3>\n<span class=\"paragraph\">Next we have to consider that this is a maneuvering target. It will go straight, then turn, then go straight again. We can model the transition between these modes as a <a href=\"https://en.wikipedia.org/wiki/Markov_chain\" rel=\"noopener noreferrer\" target=\"_blank\"><em>Markov chain</em></a>, as in this illustration:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "wadT",
+      "code_hash": "5f3935c5ee9938d6b4977d5977cc03dd",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "streamMedia",
+          "name": "media",
+          "mimetype": "application/vnd.marimo+mimebundle",
+          "data": "{\"image/png\": \"data:image/png;base64,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\", \"__metadata__\": {\"image/png\": {\"width\": 423, \"height\": 419}}}"
+        }
+      ]
+    },
+    {
+      "id": "VCRE",
+      "code_hash": "9286f4ed1bf2aae42f1e3b391956717e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">This shows an example of two modes for a target, going straight and performing a turn. If the current mode of the target is straight, then we predict that there is a 97% chance of the target continuing straight, and a 3% chance of starting a turn. Once the target is turning, we then predict that there is a 95% chance of staying in the turn, and a 5% of returning to a straight path.</span>\n<span class=\"paragraph\">The algorithm is not sensitive to the exact numbers, and you will typically use simulation or trials to choose appropriate values. However, these values are quite representative.</span>\n<span class=\"paragraph\">We represent Markov chains with a <a href=\"https://en.wikipedia.org/wiki/Stochastic_matrix\" rel=\"noopener noreferrer\" target=\"_blank\"><em>transition probability matrix</em></a>, which we will call <marimo-tex class=\"arithmatex\">||(\\mathbf M||)</marimo-tex>. For the Markov chain in the illustration we would write</span>\n<marimo-tex class=\"arithmatex\">||[\\mathbf M = \\begin{bmatrix}.97 &amp; .03\\\\.05 &amp; .95\\end{bmatrix}||]</marimo-tex><span class=\"paragraph\">In other words <marimo-tex class=\"arithmatex\">||(\\mathbf M[i, j]||)</marimo-tex> is the probability of mode being <marimo-tex class=\"arithmatex\">||(j||)</marimo-tex> given that the last mode was <marimo-tex class=\"arithmatex\">||(i||)</marimo-tex>. In this example the probability of the mode currently being straight <marimo-tex class=\"arithmatex\">||((j=0)||)</marimo-tex> given that the last mode was a turn <marimo-tex class=\"arithmatex\">||((i=1)||)</marimo-tex> is <marimo-tex class=\"arithmatex\">||(\\mathbf M[1,\\ 0] = 0.05||)</marimo-tex>. In Python we'd write:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "hgqU",
+      "code_hash": "7f5c1077134b267ad611d347ef05a1d1",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (NameError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "PSUk",
+      "code_hash": "c2dbafa98cc4991d05b1de6d5f474b44",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">This allows us to compute the new mode probabilities based on the probability of a transition. Let's compute the probability of the mode being straight after a transition. There are two ways for us to be moving straight. We could have been moving straight, and then continued straight, or we could have been turning, but then went straight. The former probability is calculated with <marimo-tex class=\"arithmatex\">||((0.7\\times 0.97)||)</marimo-tex> and the latter with <marimo-tex class=\"arithmatex\">||((0.3\\times 0.05)||)</marimo-tex>. We are multiplying the mode probability with the relevant probability from the Markov Chain. The <em>total probability</em> is the sum of the two, or <marimo-tex class=\"arithmatex\">||((0.7)(0.97) + (0.3)(0.05) = 0.694||)</marimo-tex>.</span>\n<span class=\"paragraph\">Recall the <a href=\"https://en.wikipedia.org/wiki/Law_of_total_probability\" rel=\"noopener noreferrer\" target=\"_blank\"><em>total probability theorem</em></a> from the second chapter. It states that the probability of several distinct events is</span>\n<marimo-tex class=\"arithmatex\">||[P(A) = \\sum P(A\\mid B)\\, P(B)||]</marimo-tex><span class=\"paragraph\">Here <marimo-tex class=\"arithmatex\">||(P(A\\mid B)||)</marimo-tex> is the transition matrix <marimo-tex class=\"arithmatex\">||(\\mathbf M||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(P(B)||)</marimo-tex> is <marimo-tex class=\"arithmatex\">||(\\mu||)</marimo-tex>. We are using arrays and matrices, and so we take advantage of the fact that a vector times a matrix computes the sum of products:</span>\n<marimo-tex class=\"arithmatex\">||[\\begin{bmatrix}\\mu_1 &amp; \\mu_2 \\end{bmatrix}\\begin{bmatrix}m_{11} &amp; m_{12}\\\\m_{21} &amp; m_{22}\\end{bmatrix} = \\begin{bmatrix}\\mu_1 m_{11} + \\mu_2 m_{21} &amp; \\mu_1 m_{12} + \\mu_2 m_{22}\\end{bmatrix}||]</marimo-tex><span class=\"paragraph\">The IMM literature expresses this as</span>\n<marimo-tex class=\"arithmatex\">||[\\bar c_j = \\sum\\limits_{i=1}^{N} \\mu_i M_{ij}||]</marimo-tex><span class=\"paragraph\">We use NumPy's <code>dot</code> function to compute this for us. We could also use the matix multiply operator <code>@</code>, but I find using dot for the summation symbol, which is the dot product, more intuitive:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "mfOT",
+      "code_hash": "e74692652c90b1d837ae5d270dfaa91f",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (NameError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vGiW",
+      "code_hash": "8a820d02ff4e131341f19972af8cda92",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"computing-the-mode-probabilities\">Computing the Mode Probabilities</h3>\n<span class=\"paragraph\">We will compute the new mode probabilities using Bayes theorem. Recall that Bayes theorem states</span>\n<marimo-tex class=\"arithmatex\">||[\\text{posterior} = \\frac{\\text{prior} \\cdot \\text{likelihood}}{\\text{normalization factor}}||]</marimo-tex><span class=\"paragraph\">Here the prior is the total probability computation we performed in the last section. The Kalman filter computes the <em>likelihood</em>, which is the likelihood of the measurements given the current state of the filter. For review the equation is:</span>\n<marimo-tex class=\"arithmatex\">||[\n\\mathcal{L} = \\frac{1}{\\sqrt{2\\pi \\mathbf S}}\\exp [-\\frac{1}{2}\\mathbf y^\\mathsf T\\mathbf S^{-1}\\mathbf y]||]</marimo-tex><span class=\"paragraph\">In mathematical notation the updated mode probability is:</span>\n<marimo-tex class=\"arithmatex\">||[\\mu_i = \\| \\mathcal{L}_i {\\bar c}_{i}\\|||]</marimo-tex><span class=\"paragraph\">In words, for each Kalman filter (mode) we compute the mode probability as the probability of the current mode taking the possible transition into account times the likelihood that this is the correct mode. Then we normalize all of the probabilities so they sum to one.</span>\n<span class=\"paragraph\">This is trivial to compute in Python. I'll introduce the variable <code>L</code> to store the likelihoods. Likelihoods are computed by the <code>KalmanFilter.update()</code> step, and in the code snippet below I just hard coded values for <code>L</code> since we haven't created the Kalman filters yet:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "SYQT",
+      "code_hash": "74cb08ef667d87465229cb2f66c252a0",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (NameError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "bMrW",
+      "code_hash": "7affe7ef2ab26ad36eb15a8b7d71e4e8",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Here you can see that the relatively strong likelihood for the straight filter pushed the probability for the straight mode from 70% to 80.2%.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "PSQn",
+      "code_hash": "bd7e4b6e51e46d86b61753f7d6480887",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"mixing-probabilities\">Mixing Probabilities</h2>\n<span class=\"paragraph\">At this point we could use the mode transitions to compute the probabilities for all possible choices. If <marimo-tex class=\"arithmatex\">||(\\mu = \\begin{bmatrix} 0.63 &amp; 0.27\\end{bmatrix}||)</marimo-tex>, then we can use the transition probability matrix to compute all possible outcomes. In other words, if the current mode is straight <marimo-tex class=\"arithmatex\">||((\\mu=0.63)||)</marimo-tex>, we can compute two new probabilities based on whether the target keeps moving straight, or turns. We do the same for the turning mode <marimo-tex class=\"arithmatex\">||((\\mu=0.27)||)</marimo-tex>. We will have gone from 2 mode probabilities to 4. At the next step 4 will turn into 8, and so on. It's computationally exact, but infeasible in practice. After only 30 epochs you'd require 8GB of memory to store the mode probabilities in double precision.</span>\n<span class=\"paragraph\">We need a better, albeit approximate way. IMMs resolve this by computing <em>mixing probabilities</em>. The idea is simple. Let's say the first mode (straight) is currently very likely, and the second mode (turn) is unlikely. Instead of having the Kalman filter for the straight mode compute its state as the weighted average of all of the filters in the filter bank. Filters with high probability of matching the target's mode get weighted more than filters with lower probability. The result is that the information from the probable filters improve the accuracy of the filters that are improbable. This is the crux of the algorithm.</span>\n<span class=\"paragraph\">What we need to do is very simple. Each Kalman filter performs the update step, computing a new mean and covariance. But then we compute a new mean and covariance for each filter as a weighted sum of these means and covariances according to <em>mixing probabilities</em> which we call <marimo-tex class=\"arithmatex\">||(\\omega||)</marimo-tex>. Likely filters will be slightly adjusted by the unlikely filters, and the unlikely filters will be strongly adjusted by the likely ones. The literature calls these adjusted means and covariances either the <em>mixed conditions</em> or <em>mixed initial conditions</em>. I use the notation <marimo-tex class=\"arithmatex\">||(\\mathbf x^m_j||)</marimo-tex> for the mixed state, and  <marimo-tex class=\"arithmatex\">||(\\mathbf P^m_j||)</marimo-tex> for the mixed covariance. The equations are:</span>\n<marimo-tex class=\"arithmatex\">||[\\begin{aligned}\n\\mathbf x^m_j &amp;= \\sum_{i=1}^N \\omega_{ij} \\mathbf x_i \\\\\n\\mathbf P^m_j &amp;= \\sum_{i=1}^N \\omega_{ij}\\left[(\\mathbf x^i - \\mathbf  x^m_i) (\\mathbf x^i - \\mathbf  x^m_i)^\\mathsf T + \\mathbf P_i\\right]\n\\end{aligned}||]</marimo-tex></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "OfTS",
+      "code_hash": "e3f8517bfd18c66354bd8b698fbb83d5",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Just think of the subscripts as indexes into arrays. Putting it in pseudo-Python we can write this as:</span>\n<div class=\"language-python codehilite\"><pre><span></span><code><span class=\"k\">for</span> <span class=\"n\">j</span> <span class=\"ow\">in</span> <span class=\"n\">N</span><span class=\"p\">:</span>\n    <span class=\"n\">x0</span><span class=\"p\">[</span><span class=\"n\">j</span><span class=\"p\">]</span> <span class=\"o\">=</span> <span class=\"n\">sum_over_i</span><span class=\"p\">(</span><span class=\"n\">w</span><span class=\"p\">[</span><span class=\"n\">i</span><span class=\"p\">,</span><span class=\"n\">j</span><span class=\"p\">]</span> <span class=\"o\">*</span> <span class=\"n\">x</span><span class=\"p\">[</span><span class=\"n\">i</span><span class=\"p\">])</span>\n    <span class=\"n\">P0</span><span class=\"p\">[</span><span class=\"n\">j</span><span class=\"p\">]</span> <span class=\"o\">=</span> <span class=\"n\">sum_over_i</span><span class=\"p\">(</span><span class=\"n\">w</span><span class=\"p\">[</span><span class=\"n\">i</span><span class=\"p\">,</span> <span class=\"n\">j</span><span class=\"p\">]</span> <span class=\"o\">*</span> <span class=\"p\">(</span><span class=\"n\">P</span><span class=\"p\">[</span><span class=\"n\">i</span><span class=\"p\">]</span> <span class=\"o\">+</span> <span class=\"n\">np</span><span class=\"o\">.</span><span class=\"n\">outer</span><span class=\"p\">(</span><span class=\"n\">x</span><span class=\"p\">[</span><span class=\"n\">i</span><span class=\"p\">]</span> <span class=\"o\">-</span> <span class=\"n\">x0</span><span class=\"p\">[</span><span class=\"n\">j</span><span class=\"p\">])))</span>\n</code></pre></div>\n<span class=\"paragraph\">Don't let the notation confuse what is a simple idea: incorporate estimates from the probable filters into the estimates of the improbable filters, ensuring all have a good estimate.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "lQxp",
+      "code_hash": "98534503eb254c608cc18ccb63b73a14",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">How do we compute the mixing probabilities? Think about it, and try to give a reasonable answer before reading on. We have mode probabilities which describe the current probability of each mode, and then transition probabilities describing how likely we are to change modes. How do we compute the new probability?</span>\n<span class=\"paragraph\">Bayes theorem, of course! Prior times the likelihood, normalized. The prior is the mode probability, and the likelihood comes from the Markov chain, which we store in the matrix <marimo-tex class=\"arithmatex\">||(\\mathbf M||)</marimo-tex>.</span>\n<marimo-tex class=\"arithmatex\">||[\\boldsymbol\\omega_{ij} = \\| \\mu_i \\cdot \\mathbf M_{ij}\\|||]</marimo-tex><span class=\"paragraph\">We can compute this as follows. I computed the update of <marimo-tex class=\"arithmatex\">||(\\mu||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(\\bar c||)</marimo-tex> out of order above (you must compute <marimo-tex class=\"arithmatex\">||(\\bar c||)</marimo-tex> incorporating the transition probability matrix into <marimo-tex class=\"arithmatex\">||(\\mu||)</marimo-tex>), so I'll need to correct that here:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Plbk",
+      "code_hash": "6bdbc83f7aaeace5961c1c15734b558d",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (NameError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "rSYo",
+      "code_hash": "cff1db72500caf442dc47c9665daafc4",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">The Kalman filters need to perform the prediction step to compute the new prior. They use the mixed estimates:</span>\n<marimo-tex class=\"arithmatex\">||[\n\\begin{aligned}\n\\bar{\\mathbf x}_j &amp;= \\mathbf F_j\\mathbf x^m_j\\\\\n\\bar{\\mathbf P}_j &amp;= \\mathbf F_j\\mathbf P^m_j\\mathbf F_j^\\mathsf T + \\mathbf Q_j\n\\end{aligned}||]</marimo-tex></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "HuZB",
+      "code_hash": "bc33146b17cdf2b519c79e94ef88cf52",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"imm-estimate\">IMM Estimate</h3>\n<span class=\"paragraph\">Now we need a final state estimate from the bank of filters. How do we do that? Just weight the mixed estimate from each Kalman filter:</span>\n<marimo-tex class=\"arithmatex\">||[\\begin{aligned}\n\\mathbf x &amp;= \\sum_{j=1}^N \\mu_j{\\bar{\\mathbf x}}_j\\\\\n\\mathbf P &amp;= \\sum_{j=1}^N \\mu_j\\left[(\\bar{{\\mathbf x}}_j - \\bar{\\mathbf x})({\\bar{\\mathbf x}}_j - \\bar{\\mathbf x})^\\mathsf T + \\bar{\\mathbf P_j}\\right]\n\\end{aligned}||]</marimo-tex></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "WfYj",
+      "code_hash": "1bdf32a88ca42a97e6889e806091c179",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"tracking-maneuvering-target-with-the-imm\">Tracking Maneuvering Target with the IMM</h3>\n<span class=\"paragraph\">Let's work an example. Crassidis[4] is one of the few texts with a worked example, so I have chosen his example. He tracks a moving target for 600 seconds. The target starts off moving straight, and then a control input is injected starting at 400 seconds, causing the target to make a 90 degree turn. He uses two constant acceleration Kalman filters. One filter assumes no process noise, and the other assumes process noise with spectral density <marimo-tex class=\"arithmatex\">||(10^{-3}\\mathbf I||)</marimo-tex>. He assumes very good initialization of the filters, setting <marimo-tex class=\"arithmatex\">||(\\mathbf P =10^{-12}||)</marimo-tex> for both filters. My implementation follows:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Ynfw",
+      "code_hash": "af64fd2f4cdd7cf0f46daf0079278c32",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (NameError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "LqFA",
+      "code_hash": "721f95f8aeff275030c6e1305f066d41",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">It is rather hard to see the performance of the filter, so let's look at the performance just as the turn starts. I've swapped the <marimo-tex class=\"arithmatex\">||(x||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(y||)</marimo-tex> axis to let us zoom in closely. In the chart below the turn starts at <marimo-tex class=\"arithmatex\">||(Y=4000||)</marimo-tex>. If you look very closely you can see that the estimate wavers slightly after the turn is initiated, but the filter tracks the measurement without lag and soon tracks smoothly.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "uDnK",
+      "code_hash": "90b384d2b8baca5ca708ed0d9b2ac021",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (NameError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "aWBL",
+      "code_hash": "1d81ea9bddb2253e8bd98b2dc64b485d",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"limitations-of-the-imm\">Limitations of the IMM</h3>\n<span class=\"paragraph\">I haven't extensively worked with the IMM, so I am unable to address this as well as I would like. However, the IMM was invented to track maneuvering aircraft for air traffic control, and by all reports it performs superbly in that role.</span>\n<span class=\"paragraph\">That use case assumes a few things. Foremost among them is the requirement that all of the filters in the bank have the same dimensional design. A review of the math should show why. To create the mixed estimate the IMM performs this computation:</span>\n<marimo-tex class=\"arithmatex\">||[\\mathbf x = \\sum_{j=1}^N \\mu_j{\\bar{\\mathbf x}}_j||]</marimo-tex><span class=\"paragraph\">This is computable if and only if the state <marimo-tex class=\"arithmatex\">||(x||)</marimo-tex> in each filter is of the same dimension. Furthermore, the interpretation of <marimo-tex class=\"arithmatex\">||(x[i]||)</marimo-tex> must be the same for each filter.</span>\n<span class=\"paragraph\">For example, suppose we tried to filter that uses a constant velocity model and another with a constant acceleration model. This doesn't work because the dimension of <marimo-tex class=\"arithmatex\">||(x||)</marimo-tex> are different. <code>FilterPy</code> will raise a <code>ValueError</code> if you try to use filters with different dimensions.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "MIsd",
+      "code_hash": "6aa0f90a69d2c155395fe01696015dbb",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (NameError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "IrqS",
+      "code_hash": "d24a28f5178cfdabf4fb091b7c2fa64e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">I occasionally get emails or bug reports about this. In the past I have recommended designing the filter with constant velocity to be of dimension 3, and then implement <code>F</code> to ignore acceleration</span>\n<div class=\"language-python codehilite\"><pre><span></span><code><span class=\"n\">F</span> <span class=\"o\">=</span> <span class=\"n\">np</span><span class=\"o\">.</span><span class=\"n\">array</span><span class=\"p\">([[</span><span class=\"mi\">1</span><span class=\"p\">,</span> <span class=\"n\">dt</span><span class=\"p\">,</span> <span class=\"mi\">0</span><span class=\"p\">],</span>\n              <span class=\"p\">[</span><span class=\"mi\">0</span><span class=\"p\">,</span> <span class=\"mi\">1</span><span class=\"p\">,</span>  <span class=\"mi\">0</span><span class=\"p\">],</span>\n              <span class=\"p\">[</span><span class=\"mi\">0</span><span class=\"p\">,</span> <span class=\"mi\">0</span><span class=\"p\">,</span>  <span class=\"mi\">0</span><span class=\"p\">]])</span>\n</code></pre></div>\n<span class=\"paragraph\">In retrospect I am not sure if this is a sound recommendation. It allows the IMM to work, but clearly the estimate for acceleration will be incorrect, since one filter will have an accurate estimate of acceleration, and the other filter will have an estimate of 0. This inaccurate acceleration will then be used to perform the next predict cycle.</span>\n<span class=\"paragraph\">Consider a more extreme case. Suppose one of your filters interprets <code>x[2]</code> to be acceleration, and another filter interprets it as angular rotation rate. Clearly <code>x[2]</code> of the mixed estimate will be meaningless since you cannot sum (linear) acceleration with a rotation rate.</span>\n<span class=\"paragraph\">As I said I am not particularly well versed in the IMM. Perhaps the literature explains how to handle these situations. All I can say is that the IMM implemented by FilterPy will not work for these use cases.</span>\n<span class=\"paragraph\">The IMM as designed for air traffic control uses filters with different process assumptions. An aircraft can be flying level, it can be descending/ascending, it can be performing a coordinated turn, or an uncoordinated turn. You can design a filter for each case with a different <code>F</code> and <code>Q</code> matrix, but the state estimate <code>x</code> will be the same for all.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Lpqv",
+      "code_hash": "e79f4db177f60e95b4b1fe48642bcaf4",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"summary\">Summary</h2>\n<span class=\"paragraph\">This chapter contains some of the more challenging material in this book. However, it is the gateway to implementing realistic Kalman filters. If we are controlling a robot we know its process model, and it is easy to construct a Kalman filter for it. Far more commonly we are given a set of time series data and asked to make sense of it. The process model is largely unknown to us. We use the techniques in this chapter to <em>learn</em> (in a machine learning sense) how to parameterize our models. The models change over time as the target maneuver, so our filters must be adaptive.</span>\n<span class=\"paragraph\">Finding an optimal answer involves combinatorial explosion, and is impractical in practice. The IMM algorithm has become the standard algorithm because of its good performance and computational tractability.</span>\n<span class=\"paragraph\">A real filter bank usually involves more than two filters. It is common to have many filters. As the target's regime changes some filters become infinitesimally likely. Most adaptive filters implement an algorithm that kills off extremely unlikely filters and replaces them with filters that more closely match the current regime. This is highly specific to your problem space, and is usually very ad-hoc. You will need to devise schemes for killing and creating filters and test them against simulated or real data.</span>\n<span class=\"paragraph\">Despite the complexity of the algorithms, I hope you recognize the underlying ideas are very simple. We use the same two tools that we learned in the second chapter: Bayes theorem and the total probability theorem. We incorporate new information using Bayes theorem, and compute the effect of the process models using the total probability theorem.</span>\n<span class=\"paragraph\">For me, this chapter underscores the beauty of the Bayesian formulation of Kalman filters. I don't much care if you learn the details of the IMM algorithm. I do hope that you see that very simple probabilistic reasoning led to these results. The linear algebra equations of the Kalman filter that Dr. Kalman derived came from a different form of reasoning called <em>orthogonal projection</em>. It is beautiful in its own way, and I urge you to read his paper. But I'm not sure I find them intuitive to use, and it is not at all clear how to devise new, non-optimal filters such as the IMM using those techniques. In contrast, Bayes theorem lets us handle these problems with ease.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "upgv",
+      "code_hash": "b48462401a21ebe7aa0921ea7a120f04",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"references\">References</h2>\n<div class=\"language-scdoc highlight\"><pre><span></span><code><span class=\"k\">*</span> [1] Bar-Shalom, Y., Xiao-Rong L., and Thiagalingam Kirubarajan. <span class=\"gs\">*Estimation with Applications to Tracking and Navigation*</span>. New York: Wiley, p. 424, 2001.\n</code></pre></div>\n<ul>\n<li>[2] Zarchan, P., and Musoff, H., <em>Fundamentals of Kalman Filtering: A Practical Approach</em> Fourth Edition. Reston, VA: American Institute of Aeronautics and Astronautics, p.584-595, 2015.</li>\n<li>[3] Simon, D., <em>Optimal State Estimation: Kalman, H and Nonlinear Approaches</em>. Hoboken, NJ: Wiley-Interscience, p. 208-212, 2006</li>\n<li>[4] Crassidis, John L., and John L. Junkins. <em>Optimal estimation of dynamic systems</em>. CRC press, 2011.</li>\n<li>[5] Blom, H.A.P., \"An Efficient Filter for Abruptly Changing Systems\", <em>Proceedings of 23rd Conference on Decision and Control</em>, Las Vegas, NV, Dec 1984.</li>\n<li>[6] Blom, H.A.P and Bar-Shalom, Y., \"The Interacting Multiple Model Algorithm for Systems with Markovian Switching Coefficients\", <em>IEEE Transactions on Automatic Control</em>, Vol. AC-8, No. 8, Aug. 1998, pp. 780-783.</li>\n</ul></span>"
+          }
+        }
+      ],
+      "console": []
+    }
+  ]
+}

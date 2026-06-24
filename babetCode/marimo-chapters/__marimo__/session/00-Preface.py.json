@@ -1,0 +1,956 @@
+{
+  "version": "1",
+  "metadata": {
+    "marimo_version": "0.23.10",
+    "script_metadata_hash": null
+  },
+  "cells": [
+    {
+      "id": "Hbol",
+      "code_hash": "1d0db38904205bec4d6f6f6a1f6cec3e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "MJUe",
+      "code_hash": "b35bdc40f2177738c7fd7e18de8fbee8",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vblA",
+      "code_hash": "aae9eb2d3ea3a449680bedd58a67c8f0",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\"><a href=\"./table_of_contents.ipynb\">Table of Contents</a></span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "bkHC",
+      "code_hash": "17f70761074fbf9f1cc4706ac17d8954",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h1 id=\"preface\">Preface</h1></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "lEQa",
+      "code_hash": "caaed914126dda2f11555fd0c603ba33",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "PKri",
+      "code_hash": "e8538e1461e4aa6f23e893d65c7f11e3",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Xref",
+      "code_hash": "eafb355248acc454199a7ab51eddc522",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "\n        <style>\n        .output_wrapper, .output {\n            height:auto !important;\n            max-height:100000px;\n        }\n        .output_scroll {\n            box-shadow:none !important;\n            webkit-box-shadow:none !important;\n        }\n        </style>\n    "
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "SFPL",
+      "code_hash": "04842ddab13db8269a4f3a5a203eca49",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Introductory textbook for Kalman filters and Bayesian filters. The book is written using Jupyter Notebook so you may read the book in your browser and also run and modify the code, seeing the results inside the book. What better way to learn?</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "BYtC",
+      "code_hash": "962760dde3a07ce1c63708a614f9a824",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"kalman-and-bayesian-filters\">Kalman and Bayesian Filters</h2>\n<span class=\"paragraph\">Sensors are noisy. The world is full of data and events that we want to measure and track, but we cannot rely on sensors to give us perfect information. The GPS in my car reports altitude. Each time I pass the same point in the road it reports a slightly different altitude. My kitchen scale gives me different readings if I weigh the same object twice.</span>\n<span class=\"paragraph\">In simple cases the solution is obvious. If my scale gives slightly different readings I can just take a few readings and average them. Or I can replace it with a more accurate scale. But what do we do when the sensor is very noisy, or the environment makes data collection difficult? We may be trying to track the movement of a low flying aircraft. We may want to create an autopilot for a drone, or ensure that our farm tractor seeded the entire field. I work on computer vision, and I need to track moving objects in images, and the computer vision algorithms create very noisy and unreliable results.</span>\n<span class=\"paragraph\">This book teaches you how to solve these sorts of filtering problems. I use many different algorithms, but they are all based on <em>Bayesian probability</em>. In simple terms Bayesian probability determines what is likely to be true based on past information.</span>\n<span class=\"paragraph\">If I asked you the heading of my car at this moment you would have no idea. You'd proffer a number between 1<marimo-tex class=\"arithmatex\">||(^\\circ||)</marimo-tex> and 360<marimo-tex class=\"arithmatex\">||(^\\circ||)</marimo-tex> degrees, and have a 1 in 360 chance of being right. Now suppose I told you that 2 seconds ago its heading was 243<marimo-tex class=\"arithmatex\">||(^\\circ||)</marimo-tex>. In 2 seconds my car could not turn very far so you could make a far more accurate prediction. You are using past information to more accurately infer information about the present or future.</span>\n<span class=\"paragraph\">The world is also noisy. That prediction helps you make a better estimate, but it also subject to noise. I may have just braked for a dog or swerved around a pothole. Strong winds and ice on the road  are external influences on the path of my car. In control literature we call this <em>noise</em> though you may not think of it that way.</span>\n<span class=\"paragraph\">There is more to Bayesian probability, but you have the main idea. Knowledge is uncertain, and we alter our beliefs based on the strength of the evidence. Kalman and Bayesian filters blend our noisy and limited knowledge of how a system behaves with the noisy and limited sensor readings to produce the best possible estimate of the state of the system. Our principle is to never discard information.</span>\n<span class=\"paragraph\">Say we are tracking an object and a sensor reports that it suddenly changed direction. Did it really turn, or is the data noisy? It depends. If this is a jet fighter we'd be very inclined to believe the report of a sudden maneuver. If it is a freight train on a straight track we would discount it. We'd further modify our belief depending on how accurate the sensor is. Our beliefs depend on the past and on our knowledge of the system we are tracking and on the characteristics of the sensors.</span>\n<span class=\"paragraph\">The Kalman filter was invented by Rudolf Emil K\u00e1lm\u00e1n to solve this sort of problem in a mathematically optimal way. Its first use was on the Apollo missions to the moon, and since then it has been used in an enormous variety of domains. There are Kalman filters in aircraft, on submarines, and on cruise missiles. Wall street uses them to track the market. They are used in robots, in IoT (Internet of Things) sensors, and in laboratory instruments. Chemical plants use them to control and monitor reactions. They are used to perform medical imaging and to remove noise from cardiac signals. If it involves a sensor and/or time-series data, a Kalman filter or a close relative to the Kalman filter is usually involved.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "RGSE",
+      "code_hash": "988701e44e73f8e000684836f4f0baa7",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"motivation-for-this-book\">Motivation for this Book</h2>\n<span class=\"paragraph\">I'm a software engineer that spent almost two decades in aerospace, and so I have always been 'bumping elbows' with the Kalman filter, but never implemented one. They've always had a fearsome reputation for difficulty. The theory is beautiful, but quite difficult to learn if you are not already well trained in topics such as signal processing, control theory, probability and statistics, and guidance and control theory. As I moved into solving tracking problems with computer vision the need to implement them myself became urgent.</span>\n<span class=\"paragraph\">There are excellent textbooks in the field, such as Grewal and Andrew's <em>Kalman Filtering</em>. But sitting down and trying to read many of these books is a dismal and trying experience if you do not have the necessary background. Typically the first few chapters fly through several years of undergraduate math, blithely referring you to textbooks on It\u014d calculus, and presenting an entire semester's worth of statistics in a few brief paragraphs. They are textbooks for an upper undergraduate  or graduate level course, and an invaluable reference to researchers and professionals, but the going is truly difficult for the more casual reader. Notation is introduced without explanation, different texts use different words and variable names for the same concept, and the books are almost devoid of examples or worked problems. I often found myself able to parse the words and comprehend the mathematics of a definition, but had no idea as to what real world phenomena these words and math were attempting to describe. \"But what does that <em>mean?</em>\" was my repeated thought. Here are typical examples which once puzzled me:</span>\n<marimo-tex class=\"arithmatex\">||[\\begin{aligned}\\hat{x}_{k} = \\Phi_{k}\\hat{x}_{k-1} + G_k u_{k-1} + K_k [z_k - H \\Phi_{k} \\hat{x}_{k-1} - H G_k u_{k-1}]\n\\\\\n\\mathbf{P}_{k\\mid k} = (I - \\mathbf{K}_k \\mathbf{H}_{k})\\textrm{cov}(\\mathbf{x}_k - \\hat{\\mathbf{x}}_{k\\mid k-1})(I - \\mathbf{K}_k \\mathbf{H}_{k})^{\\text{T}}  + \\mathbf{K}_k\\textrm{cov}(\\mathbf{v}_k )\\mathbf{K}_k^{\\text{T}}\\end{aligned}||]</marimo-tex><span class=\"paragraph\">However, as I began to finally understand the Kalman filter I realized the underlying concepts are quite straightforward. If you know a few simple probability rules, and have some intuition about how we fuse uncertain knowledge, the concepts of the Kalman filter are accessible. Kalman filters have a reputation for difficulty, but shorn of much of the formal terminology the beauty of the subject and of their math became clear to me, and I fell in love with the topic.</span>\n<span class=\"paragraph\">As I began to understand the math and theory more difficulties appeared. A book or paper will make some statement of fact and presents a graph as proof.  Unfortunately, why the statement is true is not clear to me, or I cannot reproduce the plot. Or maybe I wonder \"is this true if R=0?\"  Or the author provides pseudocode at such a high level that the implementation is not obvious. Some books offer Matlab code, but I do not have a license to that expensive package. Finally, many books end each chapter with many useful exercises. Exercises which you need to understand if you want to implement Kalman filters for yourself, but exercises with no answers. If you are using the book in a classroom, perhaps this is okay, but it is terrible for the independent reader. I loathe that an author withholds information from me, presumably to avoid 'cheating' by the student in the classroom.</span>\n<span class=\"paragraph\">All of this impedes learning. I want to track an image on a screen, or write some code for my Arduino project. I want to know how the plots in the book are made, and to choose different parameters than the author chose. I want to run simulations. I want to inject more noise into the signal and see how a filter performs. There are thousands of opportunities for using Kalman filters in everyday code, and yet this fairly straightforward topic is the provenance of rocket scientists and academics.</span>\n<span class=\"paragraph\">I wrote this book to address all of those needs. This is not the sole book for you if you design military radars. Go get a Masters or PhD at a great STEM school, because you'll need it. This book is for the hobbyist, the curious, and the working engineer that needs to filter or smooth data. If you are a hobbyist this book should provide everything you need. If you are serious about Kalman filters you'll need more. My intention is to introduce enough of the concepts and mathematics to make the textbooks and papers approachable.</span>\n<span class=\"paragraph\">This book is interactive. While you can read it online as static content, I urge you to use it as intended. It is written using Jupyter Notebook. This allows me to combine text, math, Python, and Python output in one place. Every plot, every piece of data in this book is generated from Python inside the notebook. Want to double the value of a parameter? Just change the parameter's value, and press CTRL-ENTER. A new plot or printed output will appear.</span>\n<span class=\"paragraph\">This book has exercises, but it also has the answers. I trust you. If you just need an answer, go ahead and read the answer. If you want to internalize this knowledge, try to implement the exercise before you read the answer. Since the book is interactive, you enter and run your solution inside the book - you don't have to move to a different environment, or deal with importing a bunch of stuff before starting.</span>\n<span class=\"paragraph\">This book is free. I've spent several thousand dollars on Kalman filtering books. I cannot believe they are within the reach of someone in a depressed economy or a financially struggling student. I have gained so much from free software like Python, and free books like those from Allen B. Downey  [1]. It's time to repay that. So, the book is free, it is hosted on free servers at GitHub, and it uses only free and open software such as IPython and MathJax.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Kclp",
+      "code_hash": "7d3a19fa77371b4eb3b1914868ba2393",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"reading-online\">Reading Online</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "emfo",
+      "code_hash": "2c205dd7c3b69f226f47e42a5885bc05",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\"><b>GitHub</b></span>\n<span class=\"paragraph\">The book is hosted on GitHub, and you can read any chapter by clicking on its name. GitHub statically renders Jupyter Notebooks. You will not be able to run or alter the code, but you can read all of the content.</span>\n<span class=\"paragraph\">The GitHub pages for this project are at</span>\n<div class=\"language-text highlight\"><pre><span></span><code>https://github.com/rlabbe/Kalman-and-Bayesian-Filters-in-Python\n</code></pre></div>\n<span class=\"paragraph\"><b>binder</b></span>\n<span class=\"paragraph\">binder serves interactive notebooks online, so you can run the code and change the code within your browser without downloading the book or installing Jupyter. Use this link to access the book via binder:</span>\n<div class=\"language-text highlight\"><pre><span></span><code>http://mybinder.org/repo/rlabbe/Kalman-and-Bayesian-Filters-in-Python\n</code></pre></div>\n<span class=\"paragraph\"><b>nbviewer</b></span>\n<span class=\"paragraph\">The nbviewer website will render any Notebook in a static format. I find it does a slightly better job than the GitHub renderer, but it is slighty harder to use. It accesses GitHub directly; whatever I have checked into GitHub will be rendered by nbviewer.</span>\n<span class=\"paragraph\">You may access this book via nbviewer here:</span>\n<span class=\"paragraph\"><a href=\"http://nbviewer.ipython.org/github/rlabbe/Kalman-and-Bayesian-Filters-in-Python/blob/master/table_of_contents.ipynb\" rel=\"noopener noreferrer\" target=\"_blank\">http://nbviewer.ipython.org/github/rlabbe/Kalman-and-Bayesian-Filters-in-Python/blob/master/table_of_contents.ipynb</a></span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Hstk",
+      "code_hash": "f6c82c7e5805f12f5f779150219a00a8",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"pdf-version\">PDF Version</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "nWHF",
+      "code_hash": "5dbca9682a313295fd3979dd826542b0",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">I periodically generate a PDF of the book from the notebooks. You can access it here:</span>\n<span class=\"paragraph\"><a href=\"https://drive.google.com/file/d/0By_SW19c1BfhSVFzNHc0SjduNzg/view?usp=sharing\" rel=\"noopener noreferrer\" target=\"_blank\">https://drive.google.com/file/d/0By_SW19c1BfhSVFzNHc0SjduNzg/view?usp=sharing</a></span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "iLit",
+      "code_hash": "d1145828fbf06700539dcb8646822d89",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"downloading-and-running-the-book\">Downloading and Running the Book</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ZHCJ",
+      "code_hash": "c63956747d08988b017b94a7e53fa48a",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">However, this book is intended to be interactive and I recommend using it in that form. It's a little more effort to set up, but worth it. If you install IPython and some supporting libraries  on your computer and then clone this book you will be able to run all of the code in the book yourself. You can perform experiments, see how filters react to different data, see how different filters react to the same data, and so on. I find this sort of immediate feedback both vital and invigorating. You do not have to wonder \"what happens if\". Try it and see!</span>\n<span class=\"paragraph\">Instructions for installation can be found in the Installation appendix, found <a href=\"http://nbviewer.ipython.org/github/rlabbe/Kalman-and-Bayesian-Filters-in-Python/blob/master/Appendix-A-Installation.ipynb\" rel=\"noopener noreferrer\" target=\"_blank\">here</a>.</span>\n<span class=\"paragraph\">Once the software is installed you can navigate to the installation directory and run Juptyer notebook with the command line instruction</span>\n<div class=\"language-text highlight\"><pre><span></span><code>jupyter notebook\n</code></pre></div>\n<span class=\"paragraph\">This will open a browser window showing the contents of the base directory. The book is organized into chapters. Each chapter is named <em>xx</em>-<em>name</em>.ipynb, where <em>xx</em> is the chapter number. .ipynb is the Notebook file extension. To read Chapter 2, click on the link for chapter 2. This will cause the browser to open that subdirectory. In each subdirectory there will be one or more IPython Notebooks (all notebooks have a .ipynb file extension). The chapter contents are in the notebook with the same name as the chapter name. There are sometimes supporting notebooks for doing things like generating animations that are displayed in the chapter. These are not intended to be read by the end user, but of course if you are curious as to how an animation is made go ahead and take a look.</span>\n<span class=\"paragraph\">Admittedly this is a cumbersome interface to a book. I am following in the footsteps of several other projects that are re-purposing Jupyter Notebook to generate entire books. I feel the slight annoyances have a huge payoff - instead of having to download a separate code base and run it in an IDE while you try to read a book, all of the code and text is in one place. If you want to alter the code, you may do so and immediately see the effects of your change. If you find a bug, you can make a fix, and push it back to my repository so that everyone in the world benefits. And, of course, you will never encounter a problem I face all the time with traditional books - the book and the code are out of sync with each other, and you are left scratching your head as to which source to trust.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ROlb",
+      "code_hash": "07f8a1fb1ef232023bdb0ed3093aba58",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"jupyter\">Jupyter</h2>\n<span class=\"paragraph\">First, some words about using Jupyter Notebooks with this book. This book is interactive. If you want to run code examples, and especially if you want to see animated plots, you will need to run the code cells. I cannot teach you everything about Jupyter Notebooks. However, a few things trip readers up. You can go to <a href=\"http://jupyter.org/\" rel=\"noopener noreferrer\" target=\"_blank\">http://jupyter.org/</a> for detailed documentation.</span>\n<span class=\"paragraph\">First, you must always run the topmost code cell, the one with the comment <code>#format the book</code>. It is directly above. This does not just set up formatting, which you might not care about, but it also loads some necessary modules and makes some global settings regarding plotting and printing. So, always run this cell unless you are just passively reading.</span>\n<span class=\"paragraph\">The line</span>\n<span class=\"paragraph\"><div class=\"language-python codehilite\"><pre><span></span><code><span class=\"c1\"># &#39;%matplotlib inline&#39; command supported automatically in marimo</span>\n</code></pre></div>\ncauses plots to be displayed inside the notebook. Matplotlib is a plotting package which is described below. For reasons I don't understand the default behavior of Jupyter Notebooks is to generate plots in an external window.</span>\n<span class=\"paragraph\">The percent sign in <code>%matplotlib</code> is used for IPython <em>magic</em> - these are commands to the kernel to do things that are not part of the Python language. There are many useful magic commands, and you can read about them here: <a href=\"http://ipython.readthedocs.io/en/stable/interactive/magics.html\" rel=\"noopener noreferrer\" target=\"_blank\">http://ipython.readthedocs.io/en/stable/interactive/magics.html</a></span>\n<span class=\"paragraph\">Running the code inside a cell is easy. Click on it so that it has focus (a box will be drawn around it), and then press CTRL-Enter.</span>\n<span class=\"paragraph\">Second, cells must be run in order. I break problems up over several cells; if you try to just skip down and run the tenth code cell it almost certainly won't work. If you haven't run anything yet just choose <em>Run All Above</em> from the <strong>Cell</strong> menu item. That's the easiest way to ensure everything has been run.</span>\n<span class=\"paragraph\">Once cells are run you can often jump around and rerun cells in different orders, but not always. I'm trying to fix this, but there is a tradeoff. I'll define a variable in cell 10 (say), and then run code that modifies that variable in cells 11 and 12. If you go back and run cell 11 again the variable will have the value that was set in cell 12, and the code expects the value that was set in cell 10. So, occasionally you'll get weird results if you run cells out of order. My advise is to backtrack a bit, and run cells in order again to get back to a proper state. It's annoying, but the interactive aspect of Jupyter notebooks more than makes up for it. Better yet, submit an issue on GitHub so I know about the problem and fix it!</span>\n<span class=\"paragraph\">Finally, some readers have reported problems with the animated plotting features in some browsers. I have not been able to reproduce this. In parts of the book I use the <code>%matplotlib notebook</code> magic, which enables interactive plotting. If these plots are not working for you, try changing this to read <code>%matplotlib inline</code>. You will lose the animated plotting, but it seems to work on all platforms and browsers.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "qnkX",
+      "code_hash": "97bb243289382fe39b87472940c7e31a",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"scipy-numpy-and-matplotlib\">SciPy, NumPy, and Matplotlib</h2>\n<span class=\"paragraph\">SciPy is a open source collection of software for mathematics. Included in SciPy are NumPy, which provides array objects, linear algebra, random numbers, and more. Matplotlib provides plotting of NumPy arrays. SciPy's modules duplicate some of the functionality in NumPy while adding features such as optimization, image processing, and more.</span>\n<span class=\"paragraph\">To keep my efforts for this book managable I have elected to assume that you know how to program in Python, and that you also are familiar with these packages. Nonetheless, I will take a few moments to illustrate a few features of each; realistically you will have to find outside sources to teach you the details. The home page for SciPy, <a href=\"https://scipy.org\" rel=\"noopener noreferrer\" target=\"_blank\">https://scipy.org</a>, is the perfect starting point, though you will soon want to search for relevant tutorials and/or videos.</span>\n<span class=\"paragraph\">NumPy, SciPy, and Matplotlib do not come with the default Python distribution; see the <em>Installation</em> Appendix if you do not have them installed.</span>\n<span class=\"paragraph\">I use NumPy's array data structure throughout the book, so let's learn about them now. I will teach you enough to get started; refer to NumPy's documentation if you want to become an expert.</span>\n<span class=\"paragraph\"><code>numpy.array</code> implements a one or more dimensional array. Its type is <code>numpy.ndarray</code>, and we will refer to this as an ndarray for short. You can construct it with any list-like object. The following constructs a 1-D array from a list:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "TqIu",
+      "code_hash": "6fb59c244aafdd5cd902a56a8176c3a5",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<pre class='text-xs'>array([1, 2, 3])</pre>"
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "<class 'numpy.ndarray'>\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "Vxnm",
+      "code_hash": "ea82bdbcb55bb164b964fd7567c2d381",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">It has become a industry standard to use <code>import numpy as np</code>.</span>\n<span class=\"paragraph\">You can also use tuples:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "DnEU",
+      "code_hash": "8a4f5e3b9bceceffc46338300ac67bd8",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<pre class='text-xs'>array([4, 5, 6])</pre>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ulZA",
+      "code_hash": "9d8bc94cd8285b07d52d8ade143fd0d1",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Create multidimensional arrays with nested brackets:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ecfG",
+      "code_hash": "49b7a4824a957eb92b40b080775de598",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "[[1 2 3]\n [4 5 6]]\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "Pvdt",
+      "code_hash": "89d4559f479516b7860dea9ef9452b58",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">You can create arrays of 3 or more dimensions, but we have no need for that here, and so I will not elaborate.</span>\n<span class=\"paragraph\">By default the arrays use the data type of the values in the list; if there are multiple types then it will choose the type that most accurately represents all the values. So, for example, if your list contains a mix of <code>int</code> and <code>float</code> the data type of the array would be of type <code>float</code>. You can override this with the <code>dtype</code> parameter.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ZBYS",
+      "code_hash": "0b866d85df16c585b20ed26a62f8ac2f",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "[1. 2. 3.]\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "aLJB",
+      "code_hash": "c580c622bac6d23333ad7e38ec5578ec",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">You can access the array elements using subscript location:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "nHfw",
+      "code_hash": "c2ed3032fbbc2d00c7f1ed9dff27850b",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "6\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "xXTn",
+      "code_hash": "3a82f3a7d94dd4448812b87406f707eb",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">You can access a column or row by using slices. A colon (:) used as a subscript is shorthand for all data in that row or column. So <code>x[:,0]</code> returns an array of all data in the first column (the 0 specifies the first column):</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "AjVT",
+      "code_hash": "21e4ec6702c4c4b6d98aae4799a753ef",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<pre class='text-xs'>array([1, 4])</pre>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "pHFh",
+      "code_hash": "7b7af04ea1a03613ddc6d3688bcdcfd0",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">We can get the second row with:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "NCOB",
+      "code_hash": "d3f6e59859c4cf0bcf4705fcfd4583c1",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<pre class='text-xs'>array([4, 5, 6])</pre>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "aqbW",
+      "code_hash": "e14aa3c8f9f29c86402415c2421303b7",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Get the last two elements of the second row with:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "TRpd",
+      "code_hash": "b9f16d0c64366e1ce4b68d4e4b6b2805",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<pre class='text-xs'>array([5, 6])</pre>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "TXez",
+      "code_hash": "0ec9ad2efde946994ff4c64c9c93d7c4",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">As with Python <code>list</code>s, you can use negative indexes to refer to the end of the array. -1 refers to the last index. So another way to get the last two elements of the second (last) row would be:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "dNNg",
+      "code_hash": "2d41b8a9b97859a333cb3e467285a8b7",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<pre class='text-xs'>array([5, 6])</pre>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "yCnT",
+      "code_hash": "a3283cadd83d00879d7f4f0850f31133",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">You can perform matrix addition with the <code>+</code> operator, but matrix multiplication requires the <code>dot</code> method or function. The <code>*</code> operator performs element-wise multiplication, which is <strong>not</strong> what you want for linear algebra.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "wlCL",
+      "code_hash": "eb8e29be26b38732c6fa1f10fcba2377",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "addition:\n [[2. 4.]\n [6. 8.]]\n\nelement-wise multiplication\n [[ 1.  4.]\n [ 9. 16.]]\n\nmultiplication\n [[ 7. 10.]\n [15. 22.]]\n\ndot is also a member of np.array\n [[ 7. 10.]\n [15. 22.]]\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "kqZH",
+      "code_hash": "b5fef31f2b38e2b4e447fb1c6039a000",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Python 3.5 introduced the <code>@</code> operator for matrix multiplication.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "wAgl",
+      "code_hash": "acc3eb22450eab4fbdf6e872870ede7e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<pre class='text-xs'>array([[ 7., 10.],\n       [15., 22.]])</pre>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "rEll",
+      "code_hash": "3b175898294885b7eea2c18eeac0b925",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">This will only work if you are using Python 3.5+. This book requires 3.6 or later, so I will use it whenever I can. Note that the operator requires that both values are arrays. Hence, <code>x @ 3.</code> raises a ValueError whereas <code>np.dot(X, 3.)</code> works fine.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "dGlV",
+      "code_hash": "32305085a04b4e6c3350669b922e86d0",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">You can get the transpose with <code>.T</code>, and the inverse with <code>numpy.linalg.inv</code>. The SciPy package also provides the inverse function.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "SdmI",
+      "code_hash": "e6608726e37fc1d956ba1a664eae275c",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "transpose\n [[1. 3.]\n [2. 4.]]\n\nNumPy ninverse\n [[-2.   1. ]\n [ 1.5 -0.5]]\n\nSciPy inverse\n [[-2.   1. ]\n [ 1.5 -0.5]]\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "lgWD",
+      "code_hash": "d60b26551c41a1efd44c19c18c856587",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">There are helper functions like <code>zeros</code> to create a matrix of all zeros, <code>ones</code> to get all ones, and <code>eye</code> to get the identity matrix. If you want a multidimensional array, use a tuple to specify the shape.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "yOPj",
+      "code_hash": "157862c1ac10f3137a7697e9816b73e5",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "zeros\n [0. 0. 0. 0. 0. 0. 0.]\n\nzeros(3x2)\n [[0. 0.]\n [0. 0.]\n [0. 0.]]\n\neye\n [[1. 0. 0.]\n [0. 1. 0.]\n [0. 0. 1.]]\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "fwwy",
+      "code_hash": "1508f14fe2cd71c9b6553f5f6a082e28",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">We have functions to create equally spaced data. <code>arange</code> works much like Python's <code>range</code> function, except it returns a NumPy array. <code>linspace</code> works slightly differently, you call it with <code>linspace(start, stop, num)</code>, where <code>num</code> is the length of the array that you want.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "LJZf",
+      "code_hash": "9b59b54b720ec94f9e43431b9a059dbf",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<pre class='text-xs'>array([0. , 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1. , 1.1,\n       1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9])</pre>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "urSm",
+      "code_hash": "713f852b35a4d8bf9bfea2ff834a1614",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<pre class='text-xs'>array([0.   , 0.105, 0.211, 0.316, 0.421, 0.526, 0.632, 0.737, 0.842,\n       0.947, 1.053, 1.158, 1.263, 1.368, 1.474, 1.579, 1.684, 1.789,\n       1.895, 2.   ])</pre>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "jxvo",
+      "code_hash": "beee10577fe4e4f6a325e88dd403d611",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Now let's plot some data. For the most part it is very simple. Matplotlib contains a plotting library <code>pyplot</code>. It is industry standard to import it as <code>plt</code>. Once imported, plot numbers by calling <code>plt.plot</code> with a list or array of numbers. If you make multiple calls it will plot multiple series, each with a different color.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "mWxS",
+      "code_hash": "d046851c2dfebffb07aadfa2d8d895c2",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "application/vnd.marimo+mimebundle": "{\"image/png\": \"data:image/png;base64,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\", \"__metadata__\": {\"image/png\": {\"width\": 736, \"height\": 351}}}"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "CcZR",
+      "code_hash": "e5f57233123f441148794aff51d59254",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">The output <code>[&lt;matplotlib.lines.Line2D at 0x2ba160bed68&gt;]</code> is because <code>plt.plot</code> returns the object that was just created. Ordinarily we do not want to see that, so I add a <code>;</code> to my last plotting command to suppress that output.</span>\n<span class=\"paragraph\">By default <code>plot</code> assumes that the x-series is incremented by one. You can provide your own x-series by passing in both x and y.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "YWSi",
+      "code_hash": "16016943ef53458921f1d02173ce7881",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "zlud",
+      "code_hash": "a2d130584274e95bd3f9213942c77e09",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">There are many more features to these packages which I use in this book. Normally I will introduce them without explanation, trusting that you can infer the usage from context, or search online for an explanation. As always, if you are unsure, create a new cell in the Notebook or fire up a Python console and experiment!</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "tZnO",
+      "code_hash": "08a2c54b87633f44e030acd3c036c071",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"exercise-create-arrays\">Exercise -  Create arrays</h3>\n<span class=\"paragraph\">I want you to create a NumPy array of 10 elements with each element containing 1/10. There are several ways to do this; try to implement as many as you can think of.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "xvXZ",
+      "code_hash": "5c1fcef54732ca284643868a0ab4a79f",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "CLip",
+      "code_hash": "fc02c92f958b830d6e810a0e3b43f287",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"solution\">Solution</h3>\n<span class=\"paragraph\">Here are three ways to do this. The first one is the one I want you to know. I used the '/' operator to divide all of the elements of the array with 10. We will shortly use this to convert the units of an array from meters to km.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "YECM",
+      "code_hash": "276e0e7b5d1980db3c3637dd10b75ba4",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "[0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1]\n[0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1]\n[0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1]\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "cEAS",
+      "code_hash": "47f95606bd28da1cea283c834998b47c",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Here is one I haven't covered yet. The function <code>numpy.asarray()</code> will convert its argument to an ndarray if it isn't already one. If it is, the data is unchanged. This is a handy way to write a function that can accept either Python lists or ndarrays, and it is very efficient if the type is already ndarray as nothing new is created.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "iXej",
+      "code_hash": "0d53b3cfbf21389ddf5325e9aceaa4a3",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "[0.1 0.2 0.3]\n[0.4 0.5 0.6]\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "EJmg",
+      "code_hash": "4fc2f561c20e445da4f2cd2b19ae843b",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"companion-software\">Companion Software</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "UmEG",
+      "code_hash": "4860cf052635a29f9763375724a12256",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">I am writing an open source Bayesian filtering Python library called FilterPy. Installation instructions are given above.</span>\n<span class=\"paragraph\">FilterPy is hosted GitHub at (<a href=\"https://github.com/rlabbe/filterpy\" rel=\"noopener noreferrer\" target=\"_blank\">https://github.com/rlabbe/filterpy</a>) but the <code>pip</code> installed version should serve your needs.</span>\n<span class=\"paragraph\">Code that is specific to the book is stored with the book in the subdirectory <strong>/kf_book</strong>. It contains code for formatting the book. It also contains python files with names like <em>xxx</em>_internal.py. I use these to store functions that are useful for a specific chapter. This allows me to hide Python code that is not particularly interesting to read - I may be generating a plot or chart, and I want you to focus on the contents of the chart, not the mechanics of how I generate that chart with Python. If you are curious as to the mechanics of that, just go and browse the source.</span>\n<span class=\"paragraph\">Some chapters introduce functions that are useful for the rest of the book. Those functions are initially defined within the Notebook itself, but the code is also stored in a Python file in <strong>/kf_book</strong> that is imported if needed in later chapters. I do document when I do this where the function is first defined, but this is still a work in progress. I try to avoid this because then I always face the issue of code in the directory becoming out of sync with the code in the book. However, Jupyter Notebook does not give us a way to refer to code cells in other notebooks, so this is the only mechanism I know of to share functionality across notebooks.</span>\n<span class=\"paragraph\">There is an undocumented directory called <strong>/experiments</strong>. This is where I write and test code prior to putting it in the book. There is some interesting stuff in there, and feel free to look at it. As the book evolves I plan to create examples and projects, and a lot of this material will end up there. Small experiments will eventually just be deleted. If you are just interested in reading the book you can safely ignore this directory.</span>\n<span class=\"paragraph\">The directory <strong>/kf_book</strong> contains a css file containing the style guide for the book. The default look and feel of Jupyter Notebook is rather plain. I have followed the examples set by books such as <a href=\"http://nbviewer.ipython.org/github/CamDavidsonPilon/Probabilistic-Programming-and-Bayesian-Methods-for-Hackers/blob/master/Chapter1_Introduction/Chapter1.ipynb\" rel=\"noopener noreferrer\" target=\"_blank\">Probabilistic Programming and Bayesian Methods for Hackers</a> [2]. I have also been very influenced by Professor Lorena Barba's fantastic work, <a href=\"https://github.com/barbagroup/CFDPython\" rel=\"noopener noreferrer\" target=\"_blank\">available here</a> [3]. I owe all of my look and feel to the work of these projects.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vEBW",
+      "code_hash": "f793e2f7a596cbff8e1771859edd6380",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"thoughts-on-python-and-coding-math\">Thoughts on Python and Coding Math</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "kLmu",
+      "code_hash": "5b5e91281e7e56c1558989e8b52f361b",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Most Kalman filtering and other engineering texts are written by mathematicians or academics. When there is software (rarely), it is not production quality. Take Paul Zarchan's book <em>Fundamentals of Kalman Filtering</em> as an example. This is a fantastic book which belongs in your library, and is one of the few books that provides full source for every example and chart. But the code is Fortran without any subroutines beyond calls to functions like <code>MATMUL</code>. Kalman filters are re-implemented throughout the book. The same listing mixes simulation with filtering code, making it hard to distinguish them. Some chapters implement the same filter in subtly different ways, and uses bold text to highlight the few lines that changed. If Runge Kutta is needed it is embedded in the code, without comments.</span>\n<span class=\"paragraph\">There's a better way. If I want to perform Runge Kutta I call <code>ode45</code>, I do not embed an Runge Kutta implementation in my code. I don't want to implement Runge Kutta multiple times and debug it several times. if I do find a bug, I can fix it once and be assured that it now works across all my different projects. And, it is readable. It is rare that I care about the implementation of Runge Kutta.</span>\n<span class=\"paragraph\">This is a textbook on Kalman filtering, and you can argue that we <em>do</em> care about the implementation of Kalman filters. That is true, but the code that performs the filtering uses about 10 lines of code. The code to implement the math is fairly trivial. Most of the work that Kalman filter requires is the design of the matrices that get fed into the math engine.</span>\n<span class=\"paragraph\">A possible downside is that the equations that perform the filtering are hidden behind functions, which we could argue is a loss in a pedagogical text. I argue the converse. I want you to learn how to use Kalman filters in the real world, for real projects, and you shouldn't be cutting and pasting established algorithms all over the place.</span>\n<span class=\"paragraph\">I use Python classes. I mostly use classes as a way to organize the data that the filters require, not to implement object oriented (OO) features such as inheritence. For example, the <code>KalmanFilter</code> class stores matrices and vectors called <code>x</code>, <code>P</code>, <code>R</code>, <code>Q</code>, <code>S</code>, <code>y</code>, <code>K</code>. I've seen procedural libraries for Kalman filters, and they require the programmer to maintain all of those matrices. This perhaps isn't so bad for a toy program, but program a bank of Kalman filters and you will not enjoy having to manage all of those matrices and other associated data. I have derived from these classes occasionally in my own work, and find it handy, but I don't want to force OO on people as I know many do not like it.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "IpqN",
+      "code_hash": "4bca7c9e4ac86133dacafc8b41961f0f",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"license\">License</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "dxZZ",
+      "code_hash": "c26d2b6a35fe8210716f74edde048712",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\"><a rel=\"license\" href=\"http://creativecommons.org/licenses/by-nc-sa/4.0/\"><img alt=\"Creative Commons License\" style=\"border-width:0\" src=\"http://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png\" /></a><br /><span xmlns:dct=\"http://purl.org/dc/terms/\" property=\"dct:title\">Kalman Filters and Random Signals in Python</span> by <a xmlns:cc=\"http://creativecommons.org/ns#\" href=\"https://github.com/rlabbe/Kalman-Filters-and-Random-Signals-in-Python\" property=\"cc:attributionName\" rel=\"cc:attributionURL\">Roger Labbe</a> is licensed under a <a rel=\"license\" href=\"http://creativecommons.org/licenses/by-nc-sa/4.0/\">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>.<br /></span>\n<span class=\"paragraph\"><a href=\"http://creativecommons.org/licenses/by-nc-sa/4.0/\" rel=\"noopener noreferrer\" target=\"_blank\">http://creativecommons.org/licenses/by-nc-sa/4.0/</a></span>\n<span class=\"paragraph\">Based on the work at <a xmlns:dct=\"http://purl.org/dc/terms/\" href=\"https://github.com/rlabbe/Kalman-and-Bayesian-Filters-in-Python\" rel=\"dct:source\"><a href=\"https://github.com/rlabbe/Kalman-and-Bayesian-Filters-in-Python\" rel=\"noopener noreferrer\" target=\"_blank\">https://github.com/rlabbe/Kalman-and-Bayesian-Filters-in-Python</a></a>.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "dlnW",
+      "code_hash": "fab12168b66fd753b6e90d024477bd01",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"contact\">Contact</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "TTti",
+      "code_hash": "e4db8d9a535f2ed829cb5ac94e5ee3b7",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\"><a href=\"&#109;&#97;&#105;&#108;&#116;&#111;&#58;&#114;&#108;&#97;&#98;&#98;&#101;&#106;&#114;&#64;&#103;&#109;&#97;&#105;&#108;&#46;&#99;&#111;&#109;\">&#114;&#108;&#97;&#98;&#98;&#101;&#106;&#114;&#64;&#103;&#109;&#97;&#105;&#108;&#46;&#99;&#111;&#109;</a></span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "RKFZ",
+      "code_hash": "69b4caf56c5f4af11317791fa9dac05e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"resources\">Resources</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "IaQp",
+      "code_hash": "66e64ffaf5860c0cea4d77bd9153ee98",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><ul>\n<li>[1] <a href=\"http://www.greenteapress.com/\" rel=\"noopener noreferrer\" target=\"_blank\">http://www.greenteapress.com/</a></li>\n<li>[2] <a href=\"http://nbviewer.ipython.org/github/CamDavidsonPilon/Probabilistic-Programming-and-Bayesian-Methods-for-Hackers/blob/master/Chapter1_Introduction/Chapter1.ipynb\" rel=\"noopener noreferrer\" target=\"_blank\">http://nbviewer.ipython.org/github/CamDavidsonPilon/Probabilistic-Programming-and-Bayesian-Methods-for-Hackers/blob/master/Chapter1_Introduction/Chapter1.ipynb</a></li>\n<li>[3] <a href=\"https://github.com/barbagroup/CFDPython\" rel=\"noopener noreferrer\" target=\"_blank\">https://github.com/barbagroup/CFDPython</a></li>\n</ul></span>"
+          }
+        }
+      ],
+      "console": []
+    }
+  ]
+}

@@ -1,0 +1,1809 @@
+{
+  "version": "1",
+  "metadata": {
+    "marimo_version": "0.23.10",
+    "script_metadata_hash": null
+  },
+  "cells": [
+    {
+      "id": "Hbol",
+      "code_hash": "1d0db38904205bec4d6f6f6a1f6cec3e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "MJUe",
+      "code_hash": "b35bdc40f2177738c7fd7e18de8fbee8",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vblA",
+      "code_hash": "aae9eb2d3ea3a449680bedd58a67c8f0",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\"><a href=\"./table_of_contents.ipynb\">Table of Contents</a></span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "bkHC",
+      "code_hash": "825385863c92b3f8b87fbb2b0ea436f5",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h1 id=\"the-g-h-filter\">The g-h Filter</h1></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "lEQa",
+      "code_hash": "e8538e1461e4aa6f23e893d65c7f11e3",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "PKri",
+      "code_hash": "eafb355248acc454199a7ab51eddc522",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "\n        <style>\n        .output_wrapper, .output {\n            height:auto !important;\n            max-height:100000px;\n        }\n        .output_scroll {\n            box-shadow:none !important;\n            webkit-box-shadow:none !important;\n        }\n        </style>\n    "
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Xref",
+      "code_hash": "88cb50a5e41c1f54f0f0616f127e67f7",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Before we start, be sure you understand how to use <a href=\"http://jupyter.org/\" rel=\"noopener noreferrer\" target=\"_blank\">Jupyter Notebooks</a>, and are familiar with the <a href=\"https://scipy.org\" rel=\"noopener noreferrer\" target=\"_blank\">SciPy</a>, <a href=\"http://www.numpy.org/\" rel=\"noopener noreferrer\" target=\"_blank\">NumPy</a>, and <a href=\"https://matplotlib.org/\" rel=\"noopener noreferrer\" target=\"_blank\">Matplotlib</a> packages, as they are used throughout this book. The Preface contains an introduction to these packages.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "SFPL",
+      "code_hash": "35340a56b6362d5ff40f12a23cb047a2",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"building-intuition-via-thought-experiments\">Building Intuition via Thought Experiments</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "BYtC",
+      "code_hash": "d9f7e083cc079bbb4c144626338305f0",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Imagine that we live in a world without scales - the devices you stand on to weigh yourself. One day at work a co-worker comes running up to you and announces her invention of a 'scale' to you. After she explains, you eagerly stand on it and announce the results: \"172 lbs\". You are ecstatic - for the first time in your life you know what you weigh. More importantly, dollar signs dance in your eyes as you imagine selling this device to weight loss clinics across the world! This is fantastic!</span>\n<span class=\"paragraph\">Another co-worker hears the commotion and comes over to find out what has you so excited. You explain the invention and once again step onto the scale, and proudly proclaim the result: \"161 lbs.\" And then you hesitate, confused.</span>\n<span class=\"paragraph\">\"It read 172 lbs a few seconds ago\", you complain to your co-worker.</span>\n<span class=\"paragraph\">\"I never said it was accurate,\" she replies.</span>\n<span class=\"paragraph\">Sensors are inaccurate. This is the motivation behind a huge body of work in filtering, and solving this problem is the topic of this book. I could just provide the solutions that have been developed over the last half century, but these solutions were developed by asking very basic, fundamental questions into the nature of what we know and how we know it. Before we attempt the math, let's follow that journey of discovery, and see if it informs our intuition about filtering.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "RGSE",
+      "code_hash": "185267a1511162b2941254a0a582104f",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\"><strong>Try Another Scale</strong></span>\n<span class=\"paragraph\">Is there any way we can improve upon this result? The obvious, first thing to try is get a better sensor. Unfortunately, your co-worker informs you that she has built 10 scales, and they all operate with about the same accuracy. You have her bring out another scale, and you weigh yourself on one, and then on the other. The first scale (A) reads \"160 lbs\", and the second (B) reads \"170 lbs\". What can we conclude about your weight?</span>\n<span class=\"paragraph\">Well, what are our choices?</span>\n<ul>\n<li>We could choose to only believe A, and assign 160lbs to our weight estimate.</li>\n<li>We could choose to only believe B, and assign 170lbs to our weight.</li>\n<li>We could choose a number less than both A and B.</li>\n<li>We could choose a number greater than both A and B.</li>\n<li>We could choose a number between A and B.</li>\n</ul>\n<span class=\"paragraph\">The first two choices are plausible, but we have no reason to favor one scale over the other. Why would we choose to believe A instead of B? We have no reason for such a belief. The third and fourth choices are irrational. The scales are admittedly not very accurate, but there is no reason at all to choose a number outside of the range of what they both measured. The final choice is the only reasonable one. If both scales are inaccurate, and as likely to give a result above my actual weight as below it, more often than not the answer is somewhere between A and B.</span>\n<span class=\"paragraph\">In mathematics this concept is formalized as <a href=\"https://en.wikipedia.org/wiki/Expected_value\" rel=\"noopener noreferrer\" target=\"_blank\"><em>expected value</em></a>, and we will cover it in depth later. For now ask yourself what would be the 'usual' thing to happen if we took one million readings. Some of the times both scales will read too low, sometimes both will read too high, and the rest of the time they will straddle the actual weight. If they straddle the actual weight then certainly we should choose a number between A and B. If they don't straddle then we don't know if they are both too high or low, but by choosing a number between A and B we at least mitigate the effect of the worst measurement. For example, suppose our actual weight is 180 lbs. 160 lbs is a big error. But if we choose a weight between 160 lbs and 170 lbs our estimate will be better than 160 lbs. The same argument holds if both scales returned a value greater than the actual weight.</span>\n<span class=\"paragraph\">We will deal with this more formally later, but for now I hope it is clear that our best estimate is the average of A and B.</span>\n<marimo-tex class=\"arithmatex\">||[\\frac{160+170}{2} = 165||]</marimo-tex><span class=\"paragraph\">We can look at this graphically. I have plotted the measurements of A and B with an assumed error of <marimo-tex class=\"arithmatex\">||(\\pm||)</marimo-tex> 8 lbs. The measurements falls between 160 and 170 so the only weight that makes sense must lie within 160 and 170 lbs.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Kclp",
+      "code_hash": "c69cdb6f4dc100ece00383065ac4bd17",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "streamMedia",
+          "name": "media",
+          "mimetype": "application/vnd.marimo+mimebundle",
+          "data": "{\"image/png\": \"data:image/png;base64,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rliqbl332p10dsPWg65OIsyve+65p1gbesstt4wDDzywx5/d7ycRHj9xu1jU/kYMHdLvdwXAWmkrgW4Zd3DElMvXsg702Q1bB3r06NFx9913F5MIc/jG5ptvHrvssktMnz49Ro3KXvGe6fep8fiJ29eloADeyrSVQLeNOzjinQf26p0IL7vssmikfh+gAQBosAGtEdv1/BbazcIYaAAAKEGABgCAEgRoAAAoQYAGAIASBGgAAChBgAYAYK3y7n39QaVSqXlbARoAgDUaPnx4zJ49u1+E6Jdeeik222yzmra1DjQAAGs0ZMiQGDFiRMydO7emHtq3vevIGLBscSwf9LZYPGtWzXu1u++rp8GDB0dbW1tN2wrQAACsM0Rvs802te2hMd/q/HbzMvu0u+/rI4ZwAABACQI0AACUIEADAEAJAjQAAJQgQAMAQAkCNAAAlCBAAwBACQI0AACUIEADAEAJAjQAAJQgQAMAQAkCNAAAlCBAAwBACQI0AACUIEADAEAJAjQAAJQgQAMAQAkCNAAAlCBAAwBACQI0AACUIEADAEAJAjQAAJQgQAMAQAkCNAAAlCBAAwBACQI0AACUIEADAEAJAjQAAJQgQAMAQAkCNAAAlCBAAwBACQI0AACUIEADAEAJAjQAAJQgQAMAQAkCNAAAlCBAAwBACQI0AACUIEADAEAJAjQAAJQgQAMAQAkCNAAAlCBAAwBACQI0AACUIEADAEAJAjQAAJQgQAMAQAkCNAAAlCBAAwBACQI0AACUMDAaqFKpFI+LFi2KQYMGNfJXUdKyZcvitddei4ULFyqbJqNsmpvyaV7Kpnkpm+aWOa1rbqOPA/TLL79cPG633XaN/DUAANQht2222Wb2Y18H6GHDhhWP//rXvxRIk8me5zFjxsSsWbOira2tr/8culA2zU35NC9l07yUTXNbsGBBbLvttp25jT4O0AMGrBhinWczQlpzynJRNs1J2TQ35dO8lE3zUjbNrZrbWD97CgAAShCgAQCgWQL04MGD44wzzigeaS7Kpnkpm+amfJqXsmleyqa5KZ/yWirWLAEAgJoZwgEAACUI0AAAUIIADQAAjV4H+sknn4wHH3ww9thjjxg7duxKrz322GPxj3/8Y6XnNtpoozj00ENX+5y///3vMXPmzHjHO94RO++8c3f+FNawGPrtt98eW221Vey1116r3arzD3/4w2r77CMf+Uixfa3b0D053eDPf/5zvPDCCzFlypS1rreZN7d56KGHYptttoldd911tdfb29vjr3/9a7z++uvxoQ99KIYPH65I6mBd7VrVq6++Gvfcc0+0tLTEhAkTYuONN+5W20f92rWHH344Hn300TW+71Of+lQMHPifw9zs2bPj/vvvL+5NsOeee8agQYMURQPbtSy3m2++eY3v++AHPxjbb7998f0tt9wS//73v1d6fYcddogPfOADyqfB7VreYv2+++4rym/UqFGx++67r/HYJK/1MEBnw3PKKacUB/innnoqrrjiitUK5Ne//nX8+Mc/jv3226/zuU033XSlg8iSJUvisMMOixkzZsT73//+4nHy5Mnxi1/8wiLe3ZTB92tf+1r8/ve/j+XLlxfBatUDTR48jjjiiDj44INXOvDnyUs1HNeyDeVdcMEFce655xbfP/PMM3HIIYfEkCFDVtrmjTfeiC996UtFvdp7772LO3flXaF+85vfdNaLDAoHHHBAEQDytWwYL7744vjMZz6jWLqplnYtXXvttfH5z38+dtppp+Kk5aSTToprrrkmxo0bV3PbR/3btccff7yoI13dddddRTD49Kc/3fnceeedFyeffHLxGXl33NbW1rjtttuKu6/RmHYty2/Vssl9nyehGZqrATrrX56UZt2q2nfffQXoBrdrjzzySHziE58ojvXvete7iuNJfn/rrbd21gt5bR0qJdx+++2V2267rbJ8+fJKvvWKK65YbZszzzyzMn78+HV+zne/+93KiBEjKrNnzy5+fuyxxyobb7xx5dJLLy3z59DFvHnzKhdccEFl8eLFlcMOO6wyefLk1fbP448/XpTbrFmz1rrvatmG8i688MLK008/XbnuuuuK/fv666+vts2pp55aGT58eOWpp57qfO6mm26qLF26tPPn3XbbrXLIIYcUdTCde+65lU022aQof7qnlnbt3nvvrbS2tlamTZvW+dzMmTMrDz74YKm2j/q3a6tqb2+vbLHFFpWvf/3rK7VrWX6//OUvi5+XLFlSmTBhQuWggw5SJA1u11Z13HHHVbbddttKR0dH53O77LJL0ZbRu+3awQcfXNlrr706yyLrzk477VSZOnVq5zby2tqVGgP90Y9+tOhdyTPFdXnttdeKYQB33HFHvPjii6u9fuWVV8bhhx9eXC5I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\", \"__metadata__\": {\"image/png\": {\"width\": 720, \"height\": 197}}}"
+        }
+      ]
+    },
+    {
+      "id": "emfo",
+      "code_hash": "3631ef8ae210e7e1863be089bbde52be",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">A word on how I generated this plot. I import code from the module book_plots in the <code>kf_book</code> subdirectory. Generating this plot takes a lot of boilerplate Python that isn't interesting to read. I take this tack often in the book. When the cell is run <code>plot_errorbars()</code> gets called and the plot is inserted into the book.</span>\n<span class=\"paragraph\">If this is your first time using <a href=\"http://jupyter.org/\" rel=\"noopener noreferrer\" target=\"_blank\">Jupyter Notebook</a>, the code above is in a <em>cell</em>. The text \"In [2]:\" labels this as a cell where you can enter input, and the number in the bracket denotes that this cell was run second. To run the cell, click on it with your mouse so that it has focus, then press CTRL+ENTER on the keyboard. As we continue you will be able to alter the code inside the cells and rerun them. Try changing the values \"160\", \"170\", and \"8\" to some other value and run the cell. The printed output should change depending on what you entered.</span>\n<span class=\"paragraph\">If you want to view the code for plot_errorbars, either open it in an editor, or create a new cell and type the function name followed by two question marks. Press Ctrl+Enter, and your browser will open a window displaying the source code. This is a feature of Jupyter Notebooks. If you want to just view the documentation for the function, do the same but with one question mark.</span>\n<span class=\"paragraph\"><div class=\"language-Python codehilite\"><pre><span></span><code>    <span class=\"n\">plot_errorbars</span><span class=\"err\">??</span>\n</code></pre></div>\nor\n<div class=\"language-Python codehilite\"><pre><span></span><code>    <span class=\"n\">plot_errorbars</span><span class=\"err\">?</span>\n</code></pre></div></span>\n<span class=\"paragraph\">So 165 lbs looks like a reasonable estimate, but there is more information here that we might be able to take advantage of. The only weights that are possible lie in the intersection between the error bars of A and B. For example, a weight of 161 lbs is impossible because scale B could not give a reading of 170 lbs with a maximum error of 8 pounds. Likewise a weight of 169 lbs is impossible because scale A could not give a reading of 160 lbs with a maximum error of 8 lbs. In this example the only possible weights lie in the range of 162 to 168 lbs.</span>\n<span class=\"paragraph\">That doesn't yet allow us to find a better weight estimate, but let's play 'what if' some more. What if we are now told that A is three times more accurate than B? Consider the 5 options we listed above. It still makes no sense to choose a number outside the range of A and B, so we will not consider those. It perhaps seems more compelling to choose A as our estimate - after all, we know it is more accurate, why not use it instead of B? Can B possibly improve our knowledge over A alone?</span>\n<span class=\"paragraph\">The answer, perhaps counter intuitively, is yes, it can. First, let's look at the same measurements of A=160 and B=170, but with the error of A <marimo-tex class=\"arithmatex\">||(\\pm||)</marimo-tex> 3 lbs and the error of B is 3 times as much, <marimo-tex class=\"arithmatex\">||(\\pm||)</marimo-tex> 9 lbs.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Hstk",
+      "code_hash": "06611fccef63d40f4958c200034ccfb1",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "streamMedia",
+          "name": "media",
+          "mimetype": "application/vnd.marimo+mimebundle",
+          "data": "{\"image/png\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAtAAAADFCAYAAAB908WdAAAAOnRFWHRTb2Z0d2FyZQBNYXRwbG90bGliIHZlcnNpb24zLjExLjAsIGh0dHBzOi8vbWF0cGxvdGxpYi5vcmcvlcelbwAAAAlwSFlzAAAPYQAAD2EBqD+naQAAF45JREFUeJzt3QmQXFXZN/BnMglJwAxFIIEkhMhioRFFBI0EgogIUZBQoEEKikLAKH5o4YYFirxvYSGIu1CvLEHWkk1RVJBNP0SCYRFKIAGBjy+GJIQlkgUYEib91nNjj5O976R7pif5/apSPdN9u6frntxz//fcs7RUKpVKAAAANelX22YAAIAADQAAJWmBBgCAEgRoAAAoQYAGAIASBGgAAChBgAYAgBL6RwMtX7485s6dG0OGDImWlpZG/ikAALohlwRZvHhxjBw5Mvr107ba6wE6w/Po0aMb+ScAAKiD2bNnx/bbb29f9naAzpbn9Oyzz8bQoUMb+acoadmyZXH77bfHQQcdFAMGDLD/moiyaW7Kp3kpm+albJrbggULYscdd+zMbfRygK5228gCaWtra+SfohuV2eabb16UiwDdXJRNc1M+zUvZNC9l0/zlk3S3rZ2OLgAAUIIADQAAJQjQAABQggANAAAlCNAAAFCCAA0AACUI0AAAUIIADQAAJQjQAABQggANAAAlCNAAAFCCAA0AACUI0AAAUIIADQAAJQjQAABQggANAAAlCNAAAFCCAA0AACUI0AAAUIIADQAAJQjQAABQggANAAAlCNAAAFCCAA0AACUI0AAAUIIADQAAJQjQAABQggANAAAlCNAAAFCCAA0AACUI0AAAUIIADQAAJQjQAABQggANAAAlCNAAAFCCAA0AACUI0AAAUIIADQAAJQjQAABQggANAAAlCNAAAFCCAA0AACUI0AAAUIIADQAAJQjQAABQQv8yGwN91LQLIt5YHDFwSMT4U3r72wDQXerzpiBAw6bgvgsjFs+NGDJSgAboy9TnTUEXDgAAKEGABgCAEnThAACgLi695//F4vY3Y8ig/nHShJ0a/r7eIkADAFAXl97zbDy/qD22axtUMkB37329RYAGAGCt2tvb48UXX6xpD3V0dHQ+zp49u+a92t331dPAgQNj+PDhNW0rQAMAsNbw/MILL8SoUaOitbV1vXuptfUfEbGs2Hb06NE1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Jl+5lnmgz23YPNCjRo2Ke++9txhEmN03ttpqq9h9991j2rRpMXJktopvGMmEpnXShJ16+yvQg5Q3wEZq7GERbz+kR1civOKKK6KRBGgAABqrX2vEjhu+hHaz0AcaAABKEKABAKAEARoAAEoQoAEAoAQBGgAAShCgAQBYq1y9b1NQqVRq3laABgBgjYYNGxZz5szZJEL0Sy+9FFtuuWVN25oHGgCANRo0aFAMHz485s2bV1ML7VvecUz0W7Yklg94SyyZPbvmvdrd99XTwIEDo62traZtBWgAANYZorfffvva9tDob3b+uFWZfdrd9/USXTgAAKAEARoAAEoQoAEAoAQBGgAAShCgAQCgBAEaAABKEKABAKAEARoAAEoQoAEAoAQBGgAAShCgAQCgBAEaAABKEKABAKAEARoAAEoQoAEAoAQBGgAAShCgAQCgBAEaAABKEKABAKAEARoAAEoQoAEAoAQBGgAAShCgAQCgBAEaAABKEKABAKAEARoAAEoQoAEAoAQBGgAAShCgAQCgBAEaAABKEKABAKAEARoAAEoQoAEAoAQBGgAAShCgAQCgBAEaAABKEKABAKAEARoAAEoQoAEAoAQBGgAAShCgAQCgBAEaAABKEKABAKAEARoAAEoQoAEAoAQBGgAAShCgAQCgBAEaAABKEKABAKAEARoAAEroHw1UqVSKx8WLF8eAAQMa+acoadmyZfHaa6/FokWLlE2TUTbNTfk0L2XTvJRNc8uc1jW30csB+uWXXy4ed9xxx0b+GQAA6pDbttxyS/uxtwP00KFDi8d//vOfCqTJZMvz6NGjY/bs2dHW1tbbX4culE1zUz7NS9k0L2XT3BYuXBg77LBDZ26jlwN0v34ruljn1YyQ1pyyXJRNc1I2zU35NC9l07yUTXOr5jbWz54CAIASBGgAAGiWAD1w4MA466yzikeai7JpXsqmuSmf5qVsmpeyaW7Kp7yWijlLAACgZrpwAABACQI0AACUIEADAECj54F+8skn4+GHH4699947xowZs9JrM2bMiL///e8rPbfZZpvFEUccsdrn/O1vf4tZs2bF2972tthtt92681VYw2Tod955Z2y77bax7777rrZU5+9///vV9tmHPvShYvtat6F7crjBn/70p3jhhRdi8uTJa51vMxe3eeSRR2L77bePPfbYY7XX29vb4y9/+Uu8/vrr8YEPfCCGDRumSOpgXfVa1auvvhr33XdftLS0xPjx42Pw4MHdqvuoX7326KOPxuOPP77G933iE5+I/v3/c5qbM2dOPPjgg8XaBPvss08MGDBAUTSwXstyu/XWW9f4vve///2x0047FT/fdttt8a9//Wul13feeed43/vep3waXK/lEusPPPBAUX4jR46Mvfbaa43nJnltAwN0Vjxf//rXixP8U089FVddddVqBfKrX/0qfvSjH8WBBx7Y+dwWW2yx0knkjTfeiCOPPDKmT58e733ve4vHSZMmxc9//nOTeHdTBt+vfOUr8bvf/S6WL19eBKtVTzR58jj66KPjsMMOW+nEnxcv1XBcyzaUd9FFF8X5559f/PzMM8/E4YcfHoMGDVppmzfffDO+8IUvFMfVfvvtV6zclatC/frXv+48LjIoHHzwwUUAyNeyYrz00kvjU5/6lGLpplrqtXT99dfHZz/72dh1112Li5ZTTz01rrvuuhg7dmzNdR/1r9dmzpxZHCNd3XPPPUUw+OQnP9n53AUXXBCnnXZa8Rm5Om5ra2vccccdxeprNKZey/JbtWxy3+dFaIbmaoDO4y8vSvPYqjrggAME6AbXa4899lh87GMfK87173jHO4rzSf58++23dx4X8to6VEq48847K3fccUdl+fLllXzrVVddtdo2Z599dmXcuHHr/JzvfOc7leHDh1fmzJlT/D5jxozK4MGDK5dffnmZr0MX8+fPr1x00UWVJUuWVI488sjKpEmTVts/M2fOLMpt9uzZa913tWxDeRdffHHl6aefrtxwww3F/n399ddX2+b000+vDBs2rPLUU091PnfLLbdUli5d2vn7nnvuWTn88MOLYzCdf/75lc0337wof7qnlnrt/vvvr7S2tlamTp3a+dysWbMqDz/8cKm6j/rXa6tqb2+vbL311pWvfvWrK9VrWX6/+MUvit/feOONyvjx4yuHHnqoImlwvbaqE088sbLDDjtUOjo6Op/bfffdi7qMnq3XDjvssMq+++7bWRZ57Oy6666VKVOmdG4jr61dqT7QH/7wh4vWlbxSXJfXXnut6AZw1113xYsvvrja61dffXUcddRRxe2ClFc+H/3oR4vn6Z7hw4fHlClTihav9Zk2bVr89re/jX/84x8btA21+8xnPlPcklyb7Brwk5/8JL72ta/FLrvs0vl8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\", \"__metadata__\": {\"image/png\": {\"width\": 720, \"height\": 197}}}"
+        }
+      ]
+    },
+    {
+      "id": "nWHF",
+      "code_hash": "0433c62726c456e9274b5ecd45197fb3",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">The overlap of the error bars of A and B are the only possible true weight. This overlap is smaller than the error in A alone. More importantly, in this case we can see that the overlap doesn't include 160 lbs or 165 lbs. If we only used the measurement from A because it is more accurate than B we would give an estimate of 160 lbs. If we average A and B we would get 165 lbs. Neither of those weights are possible given our knowledge of the accuracy of the scales. By including the measurement of B we would give an estimate somewhere between 161 lbs and 163 lbs, the limits of the intersections of the two error bars.</span>\n<span class=\"paragraph\">Let's take this to the extreme limits.  Assume we know scale A is accurate to 1 lb. In other words, if we truly weigh 170 lbs, it could report 169, 170, or 171 lbs. We also know that scale B is accurate to 9 lbs. We do a weighing on each scale, and get A=160, and B=170. What should we estimate our weight to be? Let's look at that graphically.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "iLit",
+      "code_hash": "32b9f46aa22cd7e5f9c065627b2886df",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "streamMedia",
+          "name": "media",
+          "mimetype": "application/vnd.marimo+mimebundle",
+          "data": "{\"image/png\": \"data:image/png;base64,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X3017r///mhpaYm99947Nt988y61fdSvXXv00Ufj8ccfX+f7PvGJT0T//v85zM2ePTseeuih4t4E++yzTwwYMEBRNLBdy3K79dZb1/m+97///bHjjjsWP992223xr3/9a7XXd9ppp3jf+96nfBrcruUt1h988MGi/EaNGhV77rnnOo9N8lo3A3Q2PKeddlpxgH/66afjqquuWqtAfvnLX8YPf/jDOPDAAzue22KLLVY7iCxbtiyOOOKImD59erz3ve8tHidPnhw/+9nPLOLdRRl8v/rVr8Zvf/vbWLlyZRGs1jzQ5MHjqKOOikmTJq124M+Tl2o4rmUbyrvooovi/PPPL35+9tln47DDDotBgwatts0bb7wRX/ziF4t6td9++xV37sq7Qv3qV7/qqBcZFA4++OAiAORr2TBeeuml8alPfUqxdFEt7Vq6/vrr43Of+1zssssuxUnLySefHNddd12MGzeu5raP+rdrM2bMKOpIZ/fcc08RDD75yU92PHfBBRfEqaeeWnxG3h23tbU17rjjjuLuazSmXcvyW7Nsct/nSWiG5mqAzvqXJ6VZt6oOOOAAAbrB7dpjjz0WH/vYx4pj/Tve8Y7ieJI/33777R31Ql7bgEoJd955Z+WOO+6orFy5spJvveqqq9ba5uyzz66MHz9+g5/z7W9/uzJixIjK7Nmzi9+feOKJyuabb165/PLLy3wdOpk3b17loosuqixZsqRyxBFHVCZPnrzW/pkxY0ZRbrNmzVrvvqtlG8q7+OKLK88880zlhhtuKPbv66+/vtY2p59+emX48OGVp59+uuO5W265pbJ8+fKO3/fYY4/KYYcdVtTBdP7551cGDx5clD9dU0u79sADD1RaW1sr06ZN63hu5syZlYcffrhU20f927U1LV26tLL11ltXTjnllNXatSy/n//858Xvy5Ytq+y9996VQw89VJE0uF1b0/HHH1/ZfvvtK+3t7R3P7bbbbkVbRs+2a5MmTarsu+++HWWRdWeXXXapTJ06tWMbeW39So2B/vCHP1z0ruSZ4oa89tprxTCAu+66K1566aW1Xr/66qvjyCOPLC4XpDzz+ehHP1o8T9eMGDEipk6dWvR4bcx9990Xv/nNb+If//hHt7ahdp/97GeLS5Lrk0MDfvzjH8fXvva12HnnnTuez3pRvcz85JNPxl//+tf48pe/3FEHTzzxxOIS6k033aQ4uqiWdu28886LPfbYI4477riO57KH5j3veU+pto/GtWtV2eP58ssvxwknnNDx3LXXXltcQcvjTnVozUknnRS33HJLLFiwQLE0qF1bVzuXV22OP/74ta4253DObMceeOCBoteTxrdruZ+zHauWRa4Fnbls+fLlHdvIaz08iTArQoaBM844oyic73znO6tdps5LbmuOeX7Xu95VjGWjsbKifO973ysuZ2Yg+PjHP14MFSi7DfWVwTgPLgcddFBxGe3mm28uxtR2Vq0fnetOBou8DKruNNaf/vSnomzmzp0bv/71r4tL0Os6yG+o7aNnTJs2rRgC1Xk4QNaPd77znauFiTzm5LCQNesZjZPhOedudD4RrcphOll2OY767W9/e9GJQ2Odc845xRDaHOpxxRVXxBe+8IWYN29efOMb3yhel9caMIlwQ3LcUo7jzDGa6YYbbigqRE6G+shHPhJLliwpGq0cv9nZ1ltvHa+88kq9vw6dbLXVVsW4qOrEtOeff74YD5i9njmWrdZtqL+cwFFt0HKc81vf+ta49957Y8KECXHjjTcWPWY5IadaRp2pO42VPfzz588vJnbmRJwMXjkxJw8u2dv57ne/u6a2j8bLE5js/c8w0FnWnWHDhq1Vb5LjTs/JgDxx4sRignRn5557bjG3I09wcuz6Zz7zmWL8el4BLXP1gXKyt3m33XYr5m9kx2ZOgs4FA6p1RV7r4R7onJlePYCkrAR5gMnhAKl6W+8smM7y9zUnVVFfeQmz86oO2YjlpKhq2dS6DfVX/b+fKwZkb1n2xmRjdvfdd8dPfvKT1epO9lR3pu40Vh7U8wQmrxLkv6wLebDJHs6sG7W2fTReTkTPMsjVNzrLurOuY05y3OkZOQQte5Vz2MeaMlRXrw7kkLWzzjor5syZU9Q3GidP8HNVpyybvOqZHQN5Rebzn/988bq81gTrQLe1tXWMB8wZniNHjixm4q7Zc1CdkUvP6Vw23dmG7qmOI8wVG6oHkjFjxhRLPVUPItVtOted7B3NWdbqTmPlvv/gBz/Y0WuZKzjkigO5tFOWwfqoOz0nr2xmgD7mmGPWCsVZfus65iR1p+d6n/PYf8ghh2x026w3yXGncdrb24urnHnMyfasGphzyGYuS5jktR4O0DlGcM1GKg8ynddzzGVT8pJBFmDKMVHZS1NLxaJ+ZVOdfNa5bGrZhvrLibQ5eTB7AqpyiMAzzzxTBOmUZZCX1nJoQNUf/vCH4iCTdYrGyYNK9s50DsvZC51XaKonPLW0fTROrhOdIXldPZxZP/LKTuf6leNxc6ytAN14OSzjyiuvLIZmdF6XO+X6z9kL2lnmg5yLk3NwaIwMzXlCk+1YZ9V2rUpeq9MY6BxcXj0zSX/5y1+KytB5wfM8m8khAPkvxw1eeOGFxWXMzpc6v/nNbxaLdWcPThZONmR55pOrC9B12ejk7Nkct5wnJznzvPONHLIHIM84czJU9tBkEMthAjkTvaqWbSgvx5VnGM4JGyn3a16q3H///WPbbbctnsuhGnlJLVdyyIN6bpMHllxvOOX23//+94sZ7DmBLcN0rsGav6+5GgT1bddy/eAsjxwakCf6OU79pz/96WpjbWtp+6h/u9a57Ro/fnwxRn1dQwSy3A499ND40pe+VNTFyy+/3PCaHmjXUg5JyxP9bKvWlFfQjj766KI8c53iPOm85JJL4swzzyzmgtC4di33cc7byHqVbVVuk3ks591UyWvr15Jr2UWNctHtb33rW2s9n5NncqmhlA3dNddcU1SowYMHF5eg13XXtbxhRx6Asscg70SYy3FVL4/SNdk4rTk+Nidg5IGl82oC2dufq2rkGM5Pf/rTa03orGUbyskyyJs2rOn0008vJnFU5US17KnJSU/ZO5ZLca05aTDLpzqbPSd85CXrjS0tSffatWpPWbZZ2ROdPTe5JFrnE5da2z7q365lAMiVHXLceYbk9fWCXnbZZcUKKjlO+thjj9XD2UPtWp5M5jE/J0mvS76W7V7e8GP06NFF55re555p17K9yqvMGbhz3+dNudZcJU1eq0OABgCATZ2uEQAAKEGABgCAEgRoAAAoQYAGAIASBGgAAChBgAYAgBIEaAAAKEGABgCAEgRoAAAoQYAGAIASBGgAAChBgAYAgKjd/wdFHZh4gxTBwgAAAABJRU5ErkJggg==\", \"__metadata__\": {\"image/png\": {\"width\": 720, \"height\": 197}}}"
+        }
+      ]
+    },
+    {
+      "id": "ZHCJ",
+      "code_hash": "842a6f1d4a93894268097c4344283399",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Here we can see that the only possible weight is 161 lbs. This is an important result. With two relatively inaccurate sensors we are able to deduce an extremely accurate result.</span>\n<span class=\"paragraph\"><strong>So two sensors, even if one is less accurate than the other, is better than one.</strong> I will harp on this for the remainder of the book. We never throw information away, no matter how poor it is. We will be developing math and algorithms that allow us to include all possible sources of information to form the best estimate possible.</span>\n<span class=\"paragraph\">However, we have strayed from our problem. No customer is going to want to buy multiple scales, and besides, we initially started with an assumption that all scales were equally (in)accurate. This insight of using all measurements regardless of accuracy will play a large role later, so don't forget it.</span>\n<span class=\"paragraph\">What if I have one scale, but I weigh myself many times? We concluded that if we had two scales of equal accuracy we should average the results of their measurements. What if I weigh myself 10,000 times with one scale? We have already stated that the scale is equally likely to return a number too large as it is to return one that is too small. It is not that hard to prove that the average of a large number of weights will be very close to the actual weight, but let's write a simulation for now. I will use NumPy, part of the <a href=\"https://scipy.org/\" rel=\"noopener noreferrer\" target=\"_blank\">SciPy</a> ecosystem for numerical computation.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ROlb",
+      "code_hash": "7d97c68a68ad2d82a434738b297fb30d",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "Average of measurements is 164.9860\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "qnkX",
+      "code_hash": "4619ee463f5354ddd5712fa4be621478",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">The exact number printed depends on your random number generator, but it should be very close to 165.</span>\n<span class=\"paragraph\">This code makes one assumption that probably isn't true - that the scale is as likely to read 160 as 165 for a true weight of 165 lbs. This is almost never true. Real sensors are more likely to get readings nearer the true value, and are less and less likely to get readings the further away from the true value it gets. We will cover this in detail in the Gaussian chapter. For now, I will use without further explanation the <code>numpy.random.normal()</code> function, which will produce more values nearer 165 lbs, and fewer further away. Take it on faith for now that this will produce noisy measurements similar to how a real scale works.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "TqIu",
+      "code_hash": "dc3c6cc191177cc418fa460ac36b9f56",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "Average of measurements is 164.9781\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "Vxnm",
+      "code_hash": "b9e6a1db9fcf1d8dc9cac3835e32bcd6",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Again the answer is very close to 165.</span>\n<span class=\"paragraph\">Okay, great, we have an answer to our sensor problem! But it is not a very practical answer. No one has the patience to weigh themselves ten thousand, or even a dozen times.</span>\n<span class=\"paragraph\">So, let's play 'what if'. What if you measured your weight once a day, and got the readings 170, 161, and then 169. Did you gain weight, lose weight, or is this all just noisy measurements?</span>\n<span class=\"paragraph\">We really can't say. The first measurement was 170, and the last was 169, implying a 1 lb loss. But if the scale is only accurate to 10 lbs, that is explainable by noise. I could have actually gained weight; maybe my weight on day one was 165 lbs, and on day three it was 172. It is possible to get those weight readings with that weight gain. My scale tells me I am losing weight, and I am actually gaining weight! Let's look at that in a chart. I've plotted the measurements along with the error bars, and then some possible weight gain/losses that could be explained by those measurements in dotted green lines.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "DnEU",
+      "code_hash": "98011296669f4bf87c37e937b886f577",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ulZA",
+      "code_hash": "595ca5d97d7fcf7a39e6f7ec07fe7ce0",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">As we can see there is an extreme range of weight changes that could be explained by these three measurements. In fact, there are an infinite number of choices. Shall we give up? Not me! Recall that we are talking about measuring a human's weight. There is no reasonable way for a human to weigh 180 lbs on day 1 and 160 lbs on day 3. or to lose 30 lbs in one day only to gain it back the next (we will assume no amputations or other trauma has happened to the person).</span>\n<span class=\"paragraph\">The behavior of the physical system we are measuring should influence how we interpret the measurements. If we were weighing a rock each day we'd attribute all of the variance to noise. If we were weighing a cistern fed by rain and used for household chores we might believe such weight changes are real.</span>\n<span class=\"paragraph\">Suppose I take a different scale, and I get the following measurements: 169, 170, 169, 171, 170, 171, 169, 170, 169, 170. What does your intuition tell you? It is possible, for example, that you gained 1 lb each day, and the noisy measurements just happens to look like you stayed the same weight. Equally, you could have lost 1 lb a day and gotten the same readings. But is that likely? How likely is it to flip a coin and get 10 heads in a row? Not very likely. We can't prove it based solely on these readings, but it seems pretty likely that my weight held steady. In the chart below I've plotted the measurements with error bars, and a likely true weight in dashed green. This dashed line is not meant to be the 'correct' answer to this problem, merely one that is reasonable and could be explained by the measurement.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ecfG",
+      "code_hash": "b023122a767251282237abfbf654580a",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Pvdt",
+      "code_hash": "097adce4259d7bd532fcc2f200f65659",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Another what if: what if the readings were 158.0, 164.2, 160.3, 159.9, 162.1, 164.6, 169.6, 167.4, 166.4, 171.0? Let's look at a chart of that and then answer some questions.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ZBYS",
+      "code_hash": "39c3cf5c21304615be7ff61cd535b2d0",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "aLJB",
+      "code_hash": "e17c045185a514d820faeed9a0e7fbf9",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Does it 'seem' likely that I lost weight and this is just really noisy data? Not really. Does it seem likely that I held the same weight? Again, no. This data trends upwards over time; not evenly, but definitely upwards. We can't be sure, but that looks like a weight gain, and a significant weight gain at that. Let's test this assumption with some more plots. It is often easier to 'eyeball' data in a chart versus a table.</span>\n<span class=\"paragraph\">So let's look at two hypotheses. First, let's assume our weight did not change. To get that number we agreed that we should average the measurements. Let's look at that.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "nHfw",
+      "code_hash": "96a2b6c0a51ccc1cfa18c9f54322b34b",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "xXTn",
+      "code_hash": "872a42b424c2d795ba7c045ff0083d69",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">That doesn't look very convincing. In fact, we can see that there is no horizontal line that we could draw that is inside all of the error bars.</span>\n<span class=\"paragraph\">Now, let's assume we gained weight. How much? I don't know, but NumPy does! We want to draw a line through the measurements that looks 'about' right. NumPy has functions that will do this according to a rule called \"least squares fit\". Let's not worry about the details of that computation (I use <a href=\"https://docs.scipy.org/doc/numpy/reference/generated/numpy.polyfit.html\" rel=\"noopener noreferrer\" target=\"_blank\">polyfit()</a> if you are interested), and just plot the results.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "AjVT",
+      "code_hash": "d6c685044189abdb46d8ccff03ac1d6e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "pHFh",
+      "code_hash": "5f0a97ae4895e2b2ee938c6af7b6b641",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">This looks much better, at least to my eyes. Notice now the hypothesis lies very close to each measurement, whereas in the previous plot the hypothesis was often quite far from the measurement. It seems far more likely to be true that I gained weight than I didn't gain any weight. Did I actually gain 13 lbs? Who can say? That seems impossible to answer.</span>\n<span class=\"paragraph\">\"But is it impossible?\" pipes up a co-worker.</span>\n<span class=\"paragraph\">Let's try something crazy. Let's assume that I know I am gaining about one lb a day. It doesn't matter how I know that right now, assume I know it is approximately correct. Maybe I am on a 6000 calorie a day diet, which would result in such a weight gain. Or maybe there is another way to estimate the weight gain. This is a thought experiment, the details are not important. Let's see if we can make use of such information if it was available.</span>\n<span class=\"paragraph\">The first measurement was 158. We have no way of knowing any different, so let's accept that as our estimate. If our weight today is 158, what will it be tomorrow? Well, we think we are gaining weight at 1 lb/day, so our prediction is 159, like so:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "NCOB",
+      "code_hash": "d1b16969787564399f70d86c590827eb",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "aqbW",
+      "code_hash": "1e07884fcae112964bbfac0a578e4ea6",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Okay, but what good is this? Sure, we could assume the 1 lb/day is accurate, and predict our weight for the next 10 days, but then why use a scale at all if we don't incorporate its readings? So let's look at the next measurement. We step on the scale again and it displays 164.2 lbs.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "TRpd",
+      "code_hash": "8319d01bee1b93298b6e75a4fa2da58e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "TXez",
+      "code_hash": "96196269f18ec5778ed1cfae397b0ee6",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">We have a problem. Our prediction doesn't match our measurement. But, that is what we expected, right? If the prediction was always exactly the same as the measurement, it would not be capable of adding any information to the filter. And, of course, there would be no reason to ever measure since our predictions are perfect.</span>\n<blockquote>\n<span class=\"paragraph\"><strong>The key insight to this entire book is in the next paragraph. Read it carefully!</strong></span>\n</blockquote>\n<span class=\"paragraph\">So what do we do? If we only form estimates from the measurement then the prediction will not affect the result. If we only form estimates from the prediction then the measurement will be ignored. If this is to work we need to take some kind of <strong>blend of the prediction and measurement</strong> (I've bolded the key point).</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "dNNg",
+      "code_hash": "82fbc3058b5aacceb90e581e67d6cfc2",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Blending two values - this sounds a lot like the two scale problem earlier. Using the same reasoning as before we can see that the only thing that makes sense is to choose a number between the prediction and the measurement. For example, an estimate of 165 makes no sense, nor does 157. Our estimates should lie between 159 (the prediction) and 164.2 (the measurement).</span>\n<span class=\"paragraph\">One more time, this is so important. We agreed that when presented two values with errors, we should form an estimate part way between the two values. It does not matter how those values were generated. In the start of the chapter we had two measurements, but now we have one measurement and one prediction. The reasoning, and hence the math is the same in both cases. We <em>never</em> throw information away. I mean it. I see so much commercial software that throws away noisy data. Don't do it! Our prediction of a weight gain might not be very accurate, but so long as there is some information we should use it.</span>\n<span class=\"paragraph\">I have to insist you stop and really think about this. All I have done is replaced an inaccurate scale with an inaccurate weight prediction based on human physiology. It is still data. Math doesn't know if the data came from a scale or a prediction. We have two pieces of data with a certain amount of noise, and we want to combine them. In the remainder of this book we are going to develop some fairly complicated math to perform this computation, but the math never cares where the data come from, it only makes computations based on the value and accuracy of those values.</span>\n<span class=\"paragraph\">Should the estimate be half way between the measurement and prediction? Maybe, but in general it seems like we might know that our prediction is more or less accurate compared to the measurements. Probably the accuracy of our prediction differs from the accuracy of the scale. Recall what we did when scale A was much more accurate than scale B - we scaled the answer to be closer to A than B. Let's look at that in a chart.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "yCnT",
+      "code_hash": "84e3d45edeed2d80f0d8dc6b2cf44d96",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "wlCL",
+      "code_hash": "eb3d2ab114ab4beece226f16955ea4ea",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Now let's try a randomly chosen number to scale our estimate: <marimo-tex class=\"arithmatex\">||(\\frac{4}{10}||)</marimo-tex>. Our estimate will be four tenths the measurement and the rest will be from the prediction. In other words, we are expressing a belief here, a belief that the prediction is somewhat more likely to be correct than the measurement. We compute that as</span>\n<marimo-tex class=\"arithmatex\">||[\\mathtt{estimate} = \\mathtt{prediction} + \\frac{4}{10}(\\mathtt{measurement} - \\mathtt{prediction})||]</marimo-tex><span class=\"paragraph\">The difference between the measurement and prediction is called the <em>residual</em>, which is depicted by the black vertical line in the plot above. This will become an important value to use later on, as it is an exact computation of the difference between measurements and the filter's output. Smaller residuals imply better performance.</span>\n<span class=\"paragraph\">Let's code that and see the results when we test it against the series of weights from above. We have to take into account one other factor. Weight gain has units of lbs/time, so to be general we will need to add a time step <marimo-tex class=\"arithmatex\">||(t||)</marimo-tex>, which we will set to 1 (day).</span>\n<span class=\"paragraph\">I hand generated the weight data to correspond to a true starting weight of 160 lbs, and a weight gain of 1 lb per day. In other words on the first day (day zero) the true weight is 160lbs, on the second day (day one, the first day of weighing) the true weight is 161 lbs, and so on.</span>\n<span class=\"paragraph\">We need to make a guess for the initial weight. It is too early to talk about initialization strategies, so for now I will assume 160 lbs.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "kqZH",
+      "code_hash": "77f335ce208e7d6d219a12473163684f",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "previous estimate: 160.00, prediction: 161.00, estimate 159.80\nprevious estimate: 159.80, prediction: 160.80, estimate 162.16\nprevious estimate: 162.16, prediction: 163.16, estimate 162.02\nprevious estimate: 162.02, prediction: 163.02, estimate 161.77\nprevious estimate: 161.77, prediction: 162.77, estimate 162.50\nprevious estimate: 162.50, prediction: 163.50, estimate 163.94\nprevious estimate: 163.94, prediction: 164.94, estimate 166.80\nprevious estimate: 166.80, prediction: 167.80, estimate 167.64\nprevious estimate: 167.64, prediction: 168.64, estimate 167.75\nprevious estimate: 167.75, prediction: 168.75, estimate 169.65\nprevious estimate: 169.65, prediction: 170.65, estimate 170.87\nprevious estimate: 170.87, prediction: 171.87, estimate 172.16\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "wAgl",
+      "code_hash": "fb998fa99a232f560272586f065335ac",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "application/json": "[\"text/plain+float:158.0\", \"text/plain+float:164.2\", \"text/plain+float:160.3\", \"text/plain+float:159.9\", \"text/plain+float:162.1\", \"text/plain+float:164.6\", \"text/plain+float:169.6\", \"text/plain+float:167.4\", \"text/plain+float:166.4\", \"text/plain+float:171.0\", \"text/plain+float:171.2\", \"text/plain+float:172.6\"]"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "rEll",
+      "code_hash": "269f155d354be933d4826aa1490c4dcc",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">That is pretty good! There is a lot of data here, so let's talk about how to interpret it.  The thick blue line shows the estimate from the filter. It starts at day 0 with the initial guess of 160 lbs. The red line shows the prediction that is made from the previous day's weight. So, on day one the previous weight was 160 lbs, the weight gain is 1 lb, and so the first prediction is 161 lbs. The estimate on day one is then part way between the prediction and measurement at 159.8 lbs. Below the chart is a print out of the previous weight, predicted weight, and new estimate for each day. Finally, the thin black line shows the actual weight gain of the person being weighed.</span>\n<span class=\"paragraph\">Walk through this for each day, ensuring you understand how the prediction and estimates were formed at each step. Note how the estimate always falls between the measurement and prediction.</span>\n<span class=\"paragraph\">The estimates are not a straight line, but they are straighter than the measurements and somewhat close to the trend line we created. Also, it seems to get better over time.</span>\n<span class=\"paragraph\">The results of the filter may strike you as quite silly; of course the data will look good if we assume the conclusion, that our weight gain is around 1 lb/day! Let's see what the filter does if our initial guess is bad. Let's predict that there is a weight loss of 1 lb a day:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "dGlV",
+      "code_hash": "f5c5518f0d3964247dc46ed07dd9f068",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "SdmI",
+      "code_hash": "0aa850f8f7c9b828ede7d2cfb8205790",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">That is not so impressive. The estimates quickly divert from the measurements. Clearly a filter that requires us to correctly guess a rate of change is not very useful. Even if our initial guess was correct, the filter will fail as soon as that rate of change changes. If I stop overeating the filter will have extreme difficulty in adjusting to that change. Note that it is adjusting! The estimates are climbing even though we tell it we are losing 1 lb a day. It just can't adjust fast enough.</span>\n<span class=\"paragraph\">But, 'what if'? What if instead of leaving the weight gain at the initial guess of 1 lb (or whatever), we compute it from the existing measurements and estimates. On day one our estimate for the weight is:</span>\n<marimo-tex class=\"arithmatex\">||[\n(160 + 1) + \\frac{4}{10}(158-161) = 159.8\n||]</marimo-tex><span class=\"paragraph\">On the next day we measure 164.2, which implies a weight gain of 4.4 lbs (since 164.2 - 159.8 = 4.4), not 1. Can we use this information somehow? It seems plausible. After all, the weight measurement itself is based on a real world measurement of our weight, so there is useful information. Our estimate of our weight gain may not be perfect, but it is surely better than just guessing our gain is 1 lb. Data is better than a guess, even if it is noisy.</span>\n<span class=\"paragraph\">People really balk at this point, so make sure you are in agreement. Two noisy measurements of weight give us an implied weight gain/loss. That estimate is going to be very inaccurate if the measurements are inaccurate, but there is still information in this computation. Imagine weighing a cow with a scale accurate to 1 lb, and it shows that the cow gained 10 lbs. The cow might have gained 8 lbs up to 12 lbs, depending on the errors, but we know it gained weight, and roughly how much. This is information. What do we do with information? Never throw it away!</span>\n<span class=\"paragraph\">Back to my diet. Should we set the new gain/day to 4.4 lbs? Yesterday we thought the weight gain was 1 lb, today we think it is 4.4 lbs. We have two numbers, and want to combine them somehow. Hmm, sounds like our same problem again. Let's use our same tool, and the only tool we have so far - pick a value part way between the two. This time I will use another arbitrarily chosen number, <marimo-tex class=\"arithmatex\">||(\\frac{1}{3}||)</marimo-tex>. The equation is identical as for the weight estimate except we have to incorporate time because this is a rate (gain/day):</span>\n<span class=\"paragraph\">$$\\text{new gain} = \\text{old gain} + \\frac{1}{3}\\frac{\\text{measurement - predicted weight}}{1 \\text{ day}}</span>\n<span class=\"paragraph\">$$</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "lgWD",
+      "code_hash": "0c8a81ef55eb62380c9b8541c8bf1279",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "yOPj",
+      "code_hash": "7ac31bdeb3c1007d3300d6c30a850267",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">I think this is starting to look really good. Because of the poor initial guess of the weight gain being -1 it takes the filter several days to accurately predict the weight, but once it does that it starts to accurately track the weight. We used no methodology for choosing our scaling factors of <marimo-tex class=\"arithmatex\">||(\\frac{4}{10}||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(\\frac{1}{3}||)</marimo-tex> (actually, they are poor choices for this problem), but otherwise all of the math followed from very reasonable assumptions. Recall that you can change the value of the parameter <code>time_step</code> to a larger value and re-run the cell if you want to see the plot drawn step-by-step.</span>\n<span class=\"paragraph\">One final point before we go on. In the prediction step I wrote the line\n<div class=\"language-python codehilite\"><pre><span></span><code><span class=\"n\">gain_rate</span> <span class=\"o\">=</span> <span class=\"n\">gain_rate</span>\n</code></pre></div>\nThis obviously has no effect, and can be removed. I wrote this to emphasize that in the prediction step you need to predict the next value for all variables, both <code>weight</code> and <code>gain_rate</code>. This will become relevant shortly. In this case we are assuming that the gain does not vary, but when we generalize this algorithm we will remove that assumption.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "fwwy",
+      "code_hash": "6634c594b4a7dd112920aae441d6bd53",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"the-g-h-filter\">The g-h Filter</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "LJZf",
+      "code_hash": "3ed733348fa02e86bc719686ddbd5a84",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">This algorithm is known as the <a href=\"https://en.wikipedia.org/wiki/Alpha_beta_filter\" rel=\"noopener noreferrer\" target=\"_blank\">g-h filter</a> or the <marimo-tex class=\"arithmatex\">||(\\alpha||)</marimo-tex>-<marimo-tex class=\"arithmatex\">||(\\beta||)</marimo-tex> filter. <marimo-tex class=\"arithmatex\">||(g||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(h||)</marimo-tex> refer to the two scaling factors that we used in our example. <marimo-tex class=\"arithmatex\">||(g||)</marimo-tex> is the scaling we used for the measurement (weight in our example), and <marimo-tex class=\"arithmatex\">||(h||)</marimo-tex> is the scaling for the change in measurement over time (lbs/day in our example). <marimo-tex class=\"arithmatex\">||(\\alpha||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(\\beta||)</marimo-tex> are just different names used for this factors.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "urSm",
+      "code_hash": "2fbe500f62d854778a43a4095e4b0aeb",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">This filter is the basis for a huge number of filters, including the Kalman filter. In other words, the Kalman filter is a form of the g-h filter, which I will prove later in the book. So is the Least Squares filter, which you may have heard of, and so is the Benedict-Bordner filter, which you probably have not. Each filter has a different way of assigning values to <marimo-tex class=\"arithmatex\">||(g||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(h||)</marimo-tex>, but otherwise the algorithms are identical. For example, the Benedict-Bordner filter assigns a constant to <marimo-tex class=\"arithmatex\">||(g||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(h||)</marimo-tex>, constrained to a certain range of values. Other filters such as the Kalman will vary <marimo-tex class=\"arithmatex\">||(g||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(h||)</marimo-tex> dynamically at each time step.</span>\n<span class=\"paragraph\"><strong>Let me repeat the key points as they are so important</strong>. If you do not understand these you will not understand the rest of the book. If you do understand them, then the rest of the book will unfold naturally for you as mathematical elaborations to various 'what if' questions we will ask about <marimo-tex class=\"arithmatex\">||(g||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(h||)</marimo-tex>. The math may look profoundly different, but the algorithm will be exactly the same.</span>\n<ul>\n<li>Multiple data points are more accurate than one data point, so throw nothing away no matter how inaccurate it is.</li>\n<li>Always choose a number part way between two data points to create a more accurate estimate.</li>\n<li>Predict the next measurement and rate of change based on the current estimate and how much we think it will change.</li>\n<li>The new estimate is then chosen as part way between the prediction and next measurement scaled by how accurate each is.</li>\n</ul>\n<span class=\"paragraph\">Let's look at a visual depiction of the algorithm.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "jxvo",
+      "code_hash": "6df7abb618da9985c62f773eae53c89b",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "streamMedia",
+          "name": "media",
+          "mimetype": "application/vnd.marimo+mimebundle",
+          "data": "{\"image/png\": \"data:image/png;base64,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pZdesk1Vo606xB/98MMP9u86deqYxx57LCxe2bcnnnjC/o1Aeuihh0z9+vVNqvCZH3/8sf1tBgwYkPL7hRBCiHwTSoHevXvbuJUvvvgilbfZGJkuXbrEje+56KKLQn/++WfE+h07dgzVrFkz9Oyzz9o4E/f6DRo0CG3YsCFi/d27d4f69OkTs+1evXqFLrvssqRidkqVKhV3/+66664cY3bWrVtn9zfee6+44orQgQMHItZv2bJlqGHDhqF///vfoSJFikSs36RJk5j4lltvvTXutqtUqRJasWJFUse/Q4cOodq1a8c8v3btWnucnW0++uij9vlt27aFGjVqFH7+9ttvD+UVfiu2cf755+d5G0IIIUR+SEnscJPmxrV69eqUPqRfv37hwOVBgwaFXnrppdDAgQNDpUuXts8/8sgjEesjHkqWLGkFyIABA0LPP/986Iknngi1bt3ark/gq5t//OMf9vkKFSrYG/PLL78cuu2220Lly5cPlS1bNimx8/7774dFy7Bhw8LLrFmzchQ7ffv2tc/XqVMnNHjwYPvdrrvuOrv/PP/kk0/GiB2+N69fcskl9rs9/vjjoebNm9v177777vC6fGaxYsXs+jfeeKP9Xk8//XTommuusd919uzZuR57toGoOuWUU+K+PnbsWPsZfDb7NG3aNBuk7QgdBO7+/ftD+QHhxPERQgghsl7sVKtWzd4AuYEmy8qVK+17eO/69esjXhs3bpy9EderVy/ieUd0vPjiizGWCG7IWIncYJ0oUaJEzM1/5syZoeLFiyedjeVYh+IRT+wsWrQoLOI2b94csf7XX39tX2vWrFmM2OH56KworDSIjiOPPDL83K+//mrXRTxFw2u//fZbKDemT59ut3H11VcnXOfBBx+MsBg5fyNQon8z2Lt3rxVpZ555pj1m7N+cOXMSbr9bt252e1jghBBCiMImpWjVypUr28dNmzYl/R7iTeDCCy+MieUh/uXwww83q1evNhs3bowJIr744osjniPOh4wi9+fzXgKie/fubdq1axexfocOHezzBcXUqVPtI3WGouOIjj32WHPwwQebxYsXm99++y0msys6fqZBgwamXr16Ed+N4038EFlgjz76qJkyZYqNHXJeSyZmh6ByZ/1EECNF/BQ49YiKFy9u3n///ZjfjPikvn37mquuuspuk+9OTNUhhxxiRo4c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tm0bXpelevXqoYceeihm2xs3bgxdcMEFoRIlSoTX5e8BAwaEVq5cGV7v888/t6+x7Wic15599tmI5/kuLPPmzQsddthh4e1PnDgxvM67774batGiRcS+dujQITRu3LiYz6lZs6Y9njNnzgy1a9cuvH7jxo1DkyZNsuu89tpr9rs6rx166KGhNWvWxP1tnnnmmVC9evUiPrtbt252+2747XjtpJNOsp/TsmXL8PpVqlQJDRs2LGY/3dt0lmuvvTaUGy+++KJd95NPPol5rVy5cnG3616WLVsWyguDBg2y7//xxx9Tfq/EjsiR6dOnxwiezz77zA4sIYT/xM7jjz9u/+bmD8uXLw8VKVIkdP/999v/xxM7f/75Z+iEE06w72PdBg0ahNq0aRMqW7asfY6/d+7cGV5/165d4RtftWrVrHBo2LBh+LlosXL66afb54sWLRpq3rx5qFWrVqGSJUva57jx5lfs1K5d235+8eLF7fY7d+4cmjFjhn196NChEWIMAcM+83+OxdSpU2NEBNtim6VLlw61bt06VLlyZbt+rVq1Qm+//bb9G1HIa6zD/88555yYfb711lvDn832+GxHTPLoFg2O2EGsVqxYMVSmTBm7/apVq4bF4fz588Pr9+nTJ7xfBx98sP3OLA8//HCu50v//v3t+9auXRvzWo8ePcLbchbnPIgWO7z/q6++sksyk2jW4/0PPvhgKFUkdkSOMAObMGFCjOAZPXq0vcAJIfwldrCicGPkRgv33nuvFRmOBSWe2HFu4L169QotXbo0/Pzvv/8euvrqq+1rTz/9dPh5bmw33nhjaMWKFaENGzZYK8XkyZNDw4cPt1YILD5usGzUqVMntGrVqvBz+/fvD7311luhUaNG5Vvs8Hzv3r1D69ati3gNixSioUaNGqFvvvkm4rrId0YcIfLiWUwQL9u2bQt/3zPOOCNs7XrsscfC108sOohDjvHWrVvD25kzZ44Vjuwfx8aB3+iJJ56w27riiisinnfEBM9z7J3jdO2119rn//GPf0Ts67nnnmufd39uMiBeEVvJ8PLLL9vv4ewbImvv3r32tTfffDP8fPSxjwfnIOueeeaZoVRRzI7IU5Vl/MwTJ05UlWUhfEb16tXNySefbN544w0bW/Haa6/ZGL769esnfA9BzXDjjTfa2BjiNliIVRkwYIANav7222/D65O9w3XluOOOMzVr1rT1U8gKOv30020QKrEmbjp16mTTmymC6sA2+/fvb44//vi0fG++Z61atSKeGzFihI0T4jtUrVo1/L1YnBgS2uscOHAg4n1lypSxmUoVK1YMf9+//e1v9u+ePXvalG3nu9SpU8ecd955dhvu+J2PPvrIXl+vuuoqmzDifC5xO6RhN27cOOKYujOXSNF2yohwnO644w7796JFi9JyrDZs2GCqVKmS63rDhg0zV1xxRfg+Qd224cOH5zlV3fnMnOKWEqEcQpGU4Ondu7cNUl6zZk34eQLfKCTFhUgI4R8uu+wye1P6+9//blasWGEeeuihHNd3xMlpp52W4w3SgexOMr+4CZLRww2aQoVcaxBIBEm7IQPnmmuusZOu9u3bmw4dOphu3bpZcZTMTTc3EFwNGjRI+L0ee+wxu+QUZE0mqwP7SZp+tIgE9j8a5zWEXvRn33rrrQk/N14hP/odRpcHqFmzpn1EuKUDtuNsMxGcP2RqOUKQ34vCtQjBnCDr96effrJ/I7Dd/Rud9+YlUUZiRyQFswNmYdFVlidPnmxPwFatWulICuETKD9BC5mhQ4eaypUr51pEEMuFU305Ec2bNw//7WTUvP322+b888+PyPykQbE7O8qxfnz66af2Rvjzzz9b68brr79uBg4caK1Kffr0ses5N3kynaLJqT5LdDFV9/dy9h1RlojoitM51SLK6TV3lpHz2dzsEYLxiM6ESmX7+QGBmdPxRMxirXKywLCAkc2b6Dg7UPKA35LfmMr9WM3cOJ9ZrVq1lPdZYkekXGWZi467DscPP/xgBU/Dhg11NIXwyeQGl9R7771nTj311Lg3VTeIHCY+//73v02PHj3irrNjx47w36R/cwPnhugWCqR8//LLLzHv5XpTvnx5az3BbcVy880325k/1idH7NStWzecVh3NBx98kMIR+P/vBViQElm3+F653cTzgvPZuLGoMZPos/ND8f8JI6z2qYAVjBRyxEy0uBozZow544wzwunlWOFGjRoVduklAmveOeecY4UOk2e2E92z0bEO5uRSTYTEjshTlWUEDyW83VWW8fPnZtoUQngDRARLMhCP8sorr5iTTjrJupsQPMz+ia2YP3++efPNN614ogoucDMbP368FTs8xw2Tm9wjjzwS1/qAZYeWFsSqNGrUyN6cR48ebevduIVYs2bN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LVO2bFlzxhlnpO0zZ82aZV588UU7hkqXLp3Se3/44QezZMkSc8kllxi/Qizc3r17TcmSJTO9KyKfyLKTBezcudN4UexwkRw/fnzYZTB//nxz3XXXmQEDBmSsu/Tpp59uTjjhhJTfh9gZOXKk8bolQ3h3XCHeX3rppYSvv/POO1bMZwuInddee834HY0rfyDLThbgtYuym9atW5urrroq/H8sIzfccIN58sknzb333lvo+5POWa/X8PJ5VBDoeIh0nUeVK1fWwfQ4EjsZBouIny7K3bt3t26kqVOn2v9PmTLF/v2Xv/zF9nEaN26cnSk5pm++P+ssWLDA1kRp1aqVOeyww6xbLNp3PnbsWPvYpk0bc+ihh8b9fGJ2MMdHu7H4nGnTplnrE9tu27at6dixo33tlVdeMVu3brWp/8QvQMWKFc15551nvISfzqP8wrlELJyf+e6778yqVausJXXx4sXmp59+MsWLFzdHHnmkqVevXlyXzPfff29Wr15t6tata3r16hV3uzNmzDCTJk2KcE8zLg855JDwuCQubt68edbF44wZYF9wtTksWrTIjjvOTfapR48eKbvLMo3GlT+Q2MkCd5DfAkvddU0QOri7WrZsaV599VXTvn17M3v2bCt2NmzYYG6++Wb72LNnT1OiRAlrqm/UqJF5/PHHw/Enc+bMsdYiZldHHHGEDUrG5B+PeDE769evN7fccotZu3atvRHw+rfffmuqVatmHnroIeMXiNnhXCqMeKlsJwg3KMTOjz/+aGPNvvjiCzsJ+OWXX8wTTzxh7rnnHnPSSSeF10XM//Wvf7W91I4++mizYsUK89FHH1kBk5toRLC88MILdoKAxbZYsWK57hsi6L777jNjxowxvXv3NtWrV7cxSUOHDrXbYIx7hSCcS0FAYifD+G0gcfHF+sIMzg0XOuIREDROr6K///3vtnDX+++/HzYTYwHCosIF8fbbb7fWljvuuMPORLngOrPCd999115IES45wc0fQcU+8Z4aNWqEX0NEwWWXXWbjderUqRPhkvMiClIOVpwF3xMLCxMKrC6MK0TGAw88YA4++GA7buDhhx+2Yn/YsGH2PIe5c+eaG2+8MWabvI/FDePy7LPPtpOJs846y04msABhWYo3Zhi/TCgY8+3atQtblq699lo7npnURFtvsxWuQQpS9j6aAmYYr4sdLrSYsVmYTd50002mefPm5m9/+1vEev369bNCBxAoXCi52GLhcfvDsbaccsop1kzORWby5Mlm3bp11jzuNn9zwcVknxuY0HGRXXrppRFCB5yLsJ8Iyk3e7+MqFcswY8MRDjwiPrg5f/XVV+GsNCYGJ598cljoAJYgLK3xYELCBIAAZCYZjEcsrc4EIbd9wp18/PHHR4wxxn///v2tpQh3spfQuPI+suxkGL/EFXCRxVXFBbVLly4xpu6mTZtG/B8B4oglJwPFcX8tW7bM3qyI8SG1HJo0aRLxfoQOpvDNmzfnuF/EMgAxB0HAL+dTfgnKcShVqlRMfE7t2rVt3MzSpUvt/7G+4I6KHkPOuMQd5uabb74xgwYNsut36NDBHHTQQXZ84x5NpsgeY5bjj+vMnV3G+GZMAyn2JDd4haCcT35GYifDMAPzMtHZWIkgrsCNI2wQRVyIo7fJgiXHWS+eyVs9j2JRjyzvHgeEC2MBi2Y8qyUWk+jg3pxcQc5rqYwhjhsusK5du5pHH300pjxDMuQ0trHiUkfISzE7Xj2fRCQSOxkmqIOoWbNm9pHYgJwK+TVu3Ng+Mkt1z0y5iBJkyawzmc/BbE6AZSL8EtQb1PMp+mbrxePQoEGDsGXEOW8dsIgQ31a/fv0YAbRmzZpwbA7g9sUy6ggKtovwcCw9bqKfI4CZatxkRLoh3ifaqpNozDRs2NC6rLAweT0GzsGL55OIxB9XeA9flIPa6Zwqy1hviAfA3O2GY0I6OpBiXqtWLfPmm29GlLQnJiCZY0e2iZMJtnHjxojX3PEHVatWzVghxHSii/J/zx8vQjFMLDpUJnd/B64TlEfAMnPqqadGvAdLD5WV3RYagpURG05xTSYEZESRsUVmogMTADIj3RDXhoWJeDr3xOKZZ56Jsc4yZhBV0a1unCrPn332WcR2HBjb0RafbEfjyvvIspNBgjyAmBU+9thjNuOKqsdHHXWUDU7mYkz6LOmxxP5w8R8yZIhNPb/wwgtt6jnrUAcHq5AT05Pb5xA4TZYXWWK8l4swF2sn9bxPnz7m/vvvt4UQCeL0Yp2doJ9TXj8GWEQ4B//5z3/aQF6EOhYZ+ldhgbnttttisqQIGiYh4Morr7QBx5zXCJi77rorIpaHzEdSzwlmRvhwjLAInXnmmXbC4cB4owo6pR/IYMQqRPkI0tgXLlwY8dmM0ZdfftmOLQKdGWtOnZ2BAwfaoF4SAyj3wHdjUkOMHq4ssrW8hFfPKfH/FAkp8CFjcDHwWlZCdG8sLrDRaeZu3EUFE2VP0Z+HizTbRGhwkUf4uMGETiAljwQbE1NAOjv/d/fGSlRUkBR0p3ghs172m+BLN2SIYe1htlqhQgVPih3ghphMLRS/wjlBzyavQvYUBQIp/gdYNjnfo8ssEERMqQfGAULk559/TqqoIAHLjDNED+KDz7r44osj4oHYHpmMjBtcWrjV4vWPw5XM+3GxsW50UUECkRl3/CZYjRh38QKlsx2EXKdOnTK9GyIfSOxkEK9flEV2QmyS16rUphPiTrjJ+h232BEFT9AnEV5HMTsZxKuxBSK7Cfp5FfTvLwoGnVfeRmIng8iDKHReaVwJb6DrtbdRgHIG0eAROq80rvIKjTyji3WKgkPXa28jsSOEz9BFORgk6louCgaNK28jN5YQQgghfI3EjhA+wyvdpIXwEhpX3kZurAwSpMFDoUC6HVOojLoh1LihnHyqNXlE7gTpvAr696c2FAUHqc1D7RzSo6NrVP3www+2xMUll1ySsf30A0E6r/yILDsZJAiDhxYMV199ta3wStEzio+NHDnSVk2mKjKFyBwQOpS691op+WwjCOdV0L8/1Y8vuugiO4aosEzNLgpqnnzyybYKeLTYee211zK2r34hCOeVn9H0OZMHPwDWi0ceecRWSKbaMmXtHahUTPl7xI5fmnBmC0E4r4L+/e+77z5bCfndd9+NsJBSzZgxJ9JPEM4rP6NfL4PQtsDvTJ482Yoct9CBdu3amZdeeilckZRWEFh2gH47zvP07nGb5SlPzzaxEHGRp1WFu/P5pEmTrGmfbsvcDJjVkkVBTy0vlqnPC0E4r4L8/SluN336dHvuR7uCaSsxdOjQ8P+//PJL2xJi79695vnnnw8/H93WARcz7SFolUKrCbbtrsLN+GQ88b7FixdbUZVTawq/wYRM1ZO9jabUGcTvF2WoUqWK7TbOxTYaLtTJmoaxANG085xzzrGCBrHDrBZ3mLt7Oa4yXGFcnO+55x7bNHTixIm2zxXdof2OLsrGlCxZ0vgZRAa923Blud3ADnXr1k16W4xLmobiEnPcYUw2zj777Igmu4wnxs8nn3xi/vWvf9kx/fXXX5uzzjrLjBgxwvidIFyr/Y4sOxkkCAOITuWDBw82l112mTnjjDNMx44dbQfkaJMwNUNo0snskgDlUqVKRbz+xhtvmA8//NA88cQTpnv37vY5LvS4wliGDx8ecZMbO3astRw5n8Nsl4UmozQj9CtBOKdyIyjj6umnn7bxcKeeeqq1lNavXz/G+kBDXCydWGWwdkZD9/Fvv/3WjhW24TQMvfbaa80dd9xh3nnnnfCEhMbFWImYTPAcFlPcaQ888IANjE5FZHmNIJxTfkeWnQzCBcPvfmAuxE899ZS14nBxpkP5McccY/7+979b03kycFEdNmyY7b7sCB3HikG35g0bNliLjhuElfvYIra4EXz++efGz+iiHIzYiksvvdQ8/PDDpkyZMjZGBwvLcccdZ+6+++5wt/Tc2L17tw1qPv7448NCxzmH+vfvb8fn/PnzI9bHjeWIHx4RUFiHvvrqK+NnNK68j/+vCh4YRH5vMEccAYvTkXrChAl2dsiF85VXXsnV0rJlyxa7MHNkBuoWQcQYQHSX6+gy+sT1kPJOmq6f0UX5vzdhjgMWCj9z9NFH2wXWrVtnxo0bZ8cHj2+//ba19OQEbqo9e/aYrVu3xowrxpszrlq3bm3/xtoaHZ/DJIbYH40rke3IspNh/B5fEE316tVNv379zOOPP25F3nvvvZfre5y4BGbspKU7C88TRHnFFVck5ZriIu739FGJnWAeB0QHVlPcSkwAcOsm2/4Ai2f0uKpcubIdV40aNQqvn9PY0bgS2Y4sOxkmOjbFbxArEG+G2aBBA/u4efPm8HOJUtDJxqpUqZKpWLFi3LiDeDDTpHChA/EGuLscC5Nf8fv5lMpxcKx+fiQd44rYOUQhQimZcYUbi6Bod2wOFiWOs1sU+RGNK+8jy06Gcad/+pHrr7/efPHFFzHPO7EznTp1Cj9XtWpV+4hZ3Q0X6wsuuMB8//33NuU1GrKxqCDrhpmtuzghRdWwJJ1yyinGz5QrVy7Tu5AV+H1cEbNDhlSicUUgvntcIUgQK9HHiNi2zz77zMydOzdmW1Q0d48hrKhkZLkbYuKORjCdcMIJxs9oXHkfWXYyjN8vyl26dDFDhgyxYgOrCiZzgh6pqUNAJXE7DtT24KJy55132vexrlNnh1L3pMVSMfbwww+3MTkIHDK4WM9dWwSOOuoom9VF9hdWHtLVr7vuOtO2bVvjZwhYFf6/OZH9RLYUtaM6d+5sBcjs2bNtWxYEDIkBDsT1kE5+0003mfbt29vJg1NnZ+DAgdbqiXiiZg7WHiYbZF3hyiJby31MqZdFNXTcxggkPpPUdT/X2sF9HrRwAz9SJKS+9RmFw09qaLx6GX6BiylF0DC979q1y840ESHxTN/UxRk/fry94HJMoosKYjYn84oASmr4tGrVyi4OXJyp1syslAKEBEOzHYoKRgct+1Ho+DmtPhWwSDCu/Azin++Ia4lA4xo1aliLDj2yomEsYBWlPhXjIbqoIIHIjBm2yXY4j9xFOAcNGmR+/PFHM2rUKLNw4UI7BoNSVJCaRtFFUYX3kGUnwxDYx0Un2g3jJ5gRclFMBjKmSKNNBPEFp512WlLbYpbKEhT8biVMBax9xFkgAvwKcWzUp0rHWCDWx4n3yY0WLVrYJShoXPkDxexkARpMQueRxpXITnR99gcSO1mABpNIB36PU0kVjSuRDjSu/IHcWFmAu5GlyB9UWQ5iMCFBpwpOjkTjKn3gLvN7zFs8yDQL4vXEjyhAOUsgiyI6NVSIZKEGUbNmzXTAooL/Z82a5fsK5aLgIDkiSHF/fkZurCy6WQmRn2BVERv8r3El8oPGlX+Q2MkSNKhEftBNXcdFpN81XL58eR1WnyCxk0VBcEHo1iwK5twJWi+oVGqk+L1vkyi4cydRqw3hPfRLZgkyuYu8IqtgzvV2NDsXGldCYieL0E1L5AW5sDSuRPrRuPIXEjtZZjZlJipEstCcUSnnuU8i5MoSqYA1UGEF/kJiJ4vAP+x0/hYiGapXr64DlQvEM8lqKlJB48p/SOxkGRpkIlkkjjWuRPqROPYnEjtZ6JZQQKVIBrq+y+2ZHIwpxpYQyRQSlNvTf0jsZCGy7ohkqFGjhg6UxpVII4gcXX/9icROFkJ8geqmiNz6PikwOTWIh1PdFKFrbzCR2MnS2QWmVCESodln6uDyw/UnhMZV8JDYyWIXhWahIh6lSpUylStX1sHJA7Vq1VI8hkhYiVzxkv5FYidLocYDF2YhoqlTp45u2PkQirKainjUrVtXB8bHSOxkuXVHha2Em7Jly8qqk09q164tq6mIKegqq46/kdjJ8hgDLsxCuGefSovNHwT/K5NNuJFVx/9I7HggELVkyZKZ3g2RBTDzZAYq8g8uYtUoEkDQOhZT4W8kdrIcZvGadQjQeZA+ZDUVzvWVGDjhfyR2PACZN5p5BBvOAbJFRPqQ1VRwDhC0LvyPxI5HZh+NGjVSrEZAIUi9fv36md4N30FpB8aVCCaIHFlLg4PEjkegWq6ClYNJgwYNVFG7AOOgVKAxmDRs2FBZeQFCYsdjQZVyZwXPfaUCggULs3slAQQLsvGUah4sJHY8hNxZwULuq8ILVpY7KzjIfRVMJHY8htxZwUHuq8JD7qzgIPdVMJHY8ag7S5k5/kbuq8y4s5SZ42/kvgouEjsedWc1adJEQas+tt7JrZIZd1azZs0UtOpj6129evUyvRsiQ0jseBQCKps2bap0dB/G6eiGmzlKly5tJxLCf9dLfle1WgkuEjseBlcW/mfhD7gQI2CVGZRZKlasqPorPqunxARCTZWDjcSOx6lataqpWbNmpndDpCkg+aCDDtKxzJK4OHomCe/TuHFj6xoWwUZixyeBlWoQ6W0obFetWrVM74ZwgdVUda28DX2vKlWqlOndEFmAxI6PApZ1Yfau20TtILLX/aEMLe9avVV1XjhI7Pgok6R58+Y2wFJ4ByxyCpzMXkqUKGHHleKovFe6QfGMwo3Ejo8gAK9FixYSPB6B+BwCkrEgiOwFyw7jCuEjsh/cVsTpKPNKuNFV1mdwQZbg8UbND6WYe0/wyMKT/RYdWUpFPIqEQqFQ3FeEp9m3b59ZtGiR2bVrV6Z3RcRxXcmi40327NljFi5caPbu3ZvpXRFRkD1HMU5ZdEQ8JHZ8zP79+83ixYvNH3/8keldEVEmdrmuvAtCh4nE7t27M70r4n+QyUjpBgkdkQiJHZ9z4MABs3LlSrNly5ZM70rgITOERRdk7/Pnn3+aZcuWme3bt2d6VwIPmYz0vBIiJyR2AsKGDRvM6tWrM70bgQQrDuZ14gmEfyACYO3atWb9+vWZ3pXAZqDiDib+TYjckNgJEL/99ptZunSpnZWKwu1hphpI/uXXX381K1assFZUUThQYkM1kEQqSOwEDOIMlixZoniDQkwtV08e/7Nz504bH0digCj4IpzEvWHZESJZJHYCCJadVatWKY6ngHsrUape8TnBAaFDfNy2bdsyvSu+hLHEmKIXoMaVSBWJnQBDcCXmd81G02teJz6HjvQiuG4tRI/cxemD8cS4UoV4kVckdgIO6ekELitbK/9gzSHbSmnlQlae9CBrjkgXEjvCIitP3pE1RyRCVp68I2uOSCcSOyLCyrNu3TqzadMmm1YrcoYASeIHWGTNETlZeUhR37x5sw5SEhDQj4W0evXqis0RaUNiR8StEMvFWa6tBIOmSBFbxAy3lTKtRCqZkGvWrFEAcwKYMDCmGFvKtBLpRmJHJIS+WogeZZdElqVn1qmGkCKv0L4F0fP777/rIP5v8oAVh3GlyYMoKCR2RK7s2LHDip4gX5ypfkzaq7JBRDqLfDKugtq7DpFD807GlSYPoqCR2BEpWXqI58G9FYRqscwyseQw69TFWBRkQcKNGzfaYOYgxMoxlhhXLCVKlMj07oiAILEjUob6IVyYET4IID9WPkbgYM1R8TJRmAkCTCQYV3v27PHdga9QoYIdV1RA1rgShY3Ejsi3i4sLNHE9XKy9PNusVKmSnW2WKVMm07sjAgzWHVzGjCtKQni5OCFuX2dclSpVKtO7IwKMxI5I2wUaczyih4XMEy/U8WCWycU4kcAhrmLChAlhdxaLqiOLwoAyEFgXSV1nTCF8vGDxwTLKmGJsKcZNZAsSO6JA4KLMxRmxgAjKhpYUWG8QKpjTuRAnGy8wcuRIW/7fgQ7mjvipWrWqvbCXL19e6bIibROH6dOnm6lTp5r69eubPn36hN0+TCIQPlh+GFfZYE3FYuMeV8qoEtmIxI4oFBA7ZJ1wgXaWghRACBtECRdhHlnyehEmePSTTz7JcR1uRggex1LEI8UGEUNCJAsxcGPHjrUtXBy6dOliDjnkkIQ1saLHVUEKIIRN9LhSTRzhBSR2RMbgoszFGtETbyHji1muO0MFUcFCATIsM4gaHt0Lz6X7AjxixAhbGyVZ2MfTTjvNFkgTIlm31bfffmsFSzQnnniiqVevXlLbiR5H0WPMGVPxxhXjJno8FeS4EqKwkNgRIskb0eeff570scppNi6EGwKQcVnNnDkzYeo5FpWzzz7bWlKEEKmTN7u+EAGD6q4siJ7cwJpz8MEHF8p+CW9DxhVuK0o5JAKLS8eOHZUlKEQ+kNgRWR/D4I5faNy4ccYCIDt16pSU2MHcTyCpZuEiEbhoseRg0cmpQCexMcccc4ztGSWEyDsSOyKrIfOEma9D3bp1MyZ2+GyCjjds2JDjeoizDz74wPTo0cM0adKk0PZPeAOyFDmnCXzPCWJ0evfuLYuOEGmgaDo2IkQQwJ1w2GGHJZ16/80339jFCzWHRMFDPM6cOXPMhx9+mKPQIfie8+yEE06Q0BEiTciyI0QKELdD7ZNVq1Yltf7SpUut6+uII44wTZs2VZn8AFca//7773PN6KMxJtYclSwQIr1I7AiRIoceemiM2CFbJlF1W+KOxowZY+bPn2+6d+9uq+KKYEA8zty5c83kyZNzrCvlBCF37txZ6d1CFAASO0KkCNWTicXBagOtW7e2qebjx483y5YtS/i+tWvXmo8++sh06NDBBjur47O/4feeOHFijplWQOVhrDnEgwkhCgaJHSHyAOIGYcONqmvXrla4HHvssWbJkiW2l1YiKw8z/RkzZpjFixebbt26mYYNG8q15UOX1aRJk+y5kBtt2rQxhx9+uISvEAWMxI4QeYCWEK1atTItW7YM36hwRTRr1szUqVPHjBs3LqKfVrwb4ujRo238D64tRJPwfnHA2bNnm2nTpuXasoGU8p49eyZdFVkIkT9UQVl4qnLxhRdemDX1a7DSkDmTKPMGyw9ujHjl/91Qgp8ihMRsqImiNyGGi9+atPLcaN68ubXqEeclhCgcZNkRIo8kEjqOlYe4HmbuzPSZ8SdqBeC0C5g3b56N5cFipB5E3qkDhctqxYoVua5Lc1iseLLmCFH4SOwIUYBQTZmYnhYtWtgA5vXr1ydcFwsQ8T5U1qWvFu/JSVCJzIocRCyxV7mBm5Pfs127dhKxQmQIiR0hCgHqp5xyyilm0aJF1hJAOnpO8TzE/BDITCoy9XkkerwncoAYLgKQidERQmQOiR0hCglcW1hryMCi7gr1V3Lit99+s20Fpk+fbrO/6AvGNkT2ixyKAuKyUk8rIbIDiR0hChkCU4888kibyYXbKrceSdxoaTvBDZSYnkaNGsnSk6Uih98WYUrtJVnjhMgeJHaEyBDVq1c3p512mg1unTJlSq7F57Zs2WJFDy4RbqYEMmdLZpqfIJCctg5Y3pYvX57Ue7C48XtQXbt06dIFvo9CiNSQ2BEig3CTxFKDa4uKzIie3NKX//jjD7seFgcyvtq2bWtq1KghF1c+oWHrggULbFYcLsRkfz8sdJQOUK0kIbIXiR0hsgBumgQiE5eDy4RU9N9//z3XOj+sy0ILC0QP21CtntSsOBs2bLBWHOoiUQYg2d9LIkcI76CigiKryeaiggUJQgYrA9YbLDnJQswIQdCIHtxkCmiOz969e21mHFac3NyHbiRyhPAmsuwIkYUQ3EpcDtV26ZZO7Z1kRA89uShgyEJsD24uFrm5/tt9nvgo4nCIyUnWigMSOUJ4G4kdIbIYXFIUo6NhJDfqOXPmWGtXMiCO3MIHFxnCh+7aQbH4EHuDuGHBXZWoinVOBQGxlLVv314xOUJ4GIkdITxi6UGssOB2+eWXX6wbJreGk27hg1BiwQ1IUHTt2rXt4ie3IO4/jo9jwSGDLS8QA4XAxB3oNHoVQngXxeyIrCaoMTvJgMtq4cKFNrg2mQaUiSCLiOJ3zkIPJ69YfjgGWGyoVeQ87tu3L0/boh8ZFY8ROcQ7CSH8gyw7QngUgpFxr+DmWr16tbX20H07VVcNrh4WhBOUKVMmLHwqV65sxQ9usEwXycOKxX4iaOgxxiNF//IL39GJj1InciH8icSOEB4HK0z9+vXtgqUD9w1p1Agg3Dp5CeTl/SwOCB0sQAgf98JziKN0dGlHpNEMlZR7RI37kSWVrLTcQLxR2wg3FaLOK5YsIUTekNgRwkdgmaD+CwvCh9gVihXmVfg48F6sKIksKYgdYltY6PTufmRBLGGZwcXEY7yFdPBUMqRSBXFGzBPxSkrLFyJYSOwI4VOcmjssCAm38Em3qGB7LFQhziYQNYgbRE6lSpUyvTtCiAwhsSNEAMDKQkwKC6Jk06ZNNu6FAHACexFDfgDrDTWFSK9v0KCBOeiggzK9S0KILEBiR4iAgcvJCUCmpxMuqq1bt1rhgwBiIXbGCzWIEDaOuGFRE04hRDwkdoQIOMTTVK1a1S5kdhEoTEAw9WpIaXcWgoXTGSScijgrX758eKlSpYoVODxmOkNMCOENJHaEEBGQmUSWVbwu3gQYI3ocAYQowgXG8zw6fzv/j5cGz/axykQvBDLjdkLQ8NnOI9leypYSQuQHiR0hRNIgSBwrUG4gdIgPcuKBHFEja4wQorCR2BFCFAhuC44QQmQSObyFEEII4WskdoQQQgjhayR2hBBCCOFrJHaEEEII4WskdoQQQgjhayR2hBBCCOFrJHaEEEII4WskdoQQQgjha4qE4tVzFyLDzJkzxyxZssRW36VJpUP16tVtBd6OHTuaRo0aZXQfhRBCeANZdkRW0qBBA7Nx48YIoQObNm2yPZnq1q2bsX0TQgjhLSR2RFZCA8iWLVvGfa1Dhw62R5MQQgiRDBI7Ims5+OCDY7pdly5d2rRt2zZj+ySEEMJ7SOwIT1l3ZNURQgiRKhI7wjPWHVl1hBBC5AWJHeEZ646sOkIIIfKCxI7whHWnbNmyitURQgiRJ1RnR3gCUtArV66c6d0QQgjhQSR2hBBCCOFr5MYSQgghhK8pnukdEELkr63G5s2bTbVq1Uy7du10KIUQIg5yYwnhUVatWmVatWpldu7cacqVK2fmz59v6tWrl+ndEkKIrEOWnTSwZs0a89tvv5natWubSpUqGb/w559/mtmzZ+e4TsWKFU3jxo3T+rn79u0zv/zyi7VWBPXmvXbtWvPrr7/maK256aabrNA5/fTTzfDhw83NN99s3nvvvZQ/i35jfB6p/dEVq4UQwhfQ9Vykzv79+0NDhgwJ1alTh67x4aVGjRqha6+9NjR79uyI9Tds2BCaPn166Pfff0/L4Z41a1Zo4cKFBfrTbdq0KeK7xVtOO+20PG170aJF9jvEY9WqVXbbV111VShbmDNnTmj+/PmF8ll79uwJNW3aNHTRRRclXOfbb7+1x+jSSy+1/7/kkkvs/8eMGZPy582dOzdUtGjR0BtvvJGv/RZCiGxFlp08ctVVV5mXX37Z/l2+fHlTp04dOxOnU/fTTz9t9u/fb5577rnw+q+88oq54447zNixY02vXr3yLVJ79OhhXRg//fSTKWjKlCljWrRoEfe1vFp1LrnkEjNjxgyzY8eOmNdKlixpOnbsaOrXr2+yhWOOOcbUqlXL7nNBw/mzYsUKM2rUqITrfPTRR+bMM8+068Izzzxjfv/9d/t87969U/q81q1bm3PPPdfceeed5qyzzrK/txBC+AmJnTywdOlSK3S4Kb/00kvmggsuMMWKFbOvbdmyxXzwwQfmwIEDxi+0adPGTJkypdA+r0aNGoUiKrIRRPIjjzxiTjrpJNO0adOE6zkixwGB8uGHH+b5c6+77jozbNgw88Ybb1ghL4QQfkJiJw/MnTvXPhIrMWDAgIjXqlataq6++uoYcbRu3Tr79+LFi8NxPQcddJBp1qxZTJwMs3oeGzZsaAWVm127dpkFCxbY14nXcIuCJk2a2PYKbvbu3WtWrlxpxVejRo1itlcQhEIhGwdCIUCsM1Q/dsM+//HHH3af3PuPdQyhkyhmZ+HChfb7OHEsGzZssNYMvlfx4v9/KrNdgnd5zM3yxHHk+CAyGjRoYEqVKhXx+p49e8y8efPs6xx79/6ybWKW3LDv/H58Nr9f9PZy45NPPrHnSvR5tWjRInvMgN+Y39qBY+Kck8D3qFKlSkqfe8QRR9hz8fnnn5fYEUL4j0z70bzI1KlTbXxE3759k1q/T58+ceNdunfvHl5n/PjxoX79+oVKlCgRfr1UqVKhAQMGhLZs2RJej7ifRPEzn3/+eXg93nPZZZeFypYtG36dvwcOHBjavXt3SjE7nTt3TvrYPPXUU6H69euHP7NIkSKhQw89NPTll1/a1/ft25dw/4mByilmh/2oWrVqaMWKFaGjjjoq/D7ipkaNGmXX+eqrr0KNGzcOv9a2bdvQggULYvbzxx9/DJ155pmhkiVLhtfl7/PPPz+0cePG8Hrz5s1LuL8ffPBBeL1t27aFrrzyylC5cuXCr5cpU8bGb+3cuTPp43fWWWeFihUrFtqxY0fE8++//37EeeGOd7rhhhvCrxHrw77kBc4NtlFYsUlCCFFYSOzkAW7YhxxyiL0xnHPOOaGPPvootGbNmoTr//Wvfw3Vrl07fDPq2LGjXQgqdTjppJPCN7IWLVrY9Rzh07t37/B63Ih4LwGliBdnWyzjxo2z62zfvj3UqlUr+97ixYuHGjZsGGrSpIn9m+e4yacidtq0aWNFVrzFLcQQW85Nt1q1aqHWrVuHKlSoECHsCOxmXxEFfAf3/r/yyiu5ip2KFSuG2rVrZwUBx6hKlSp2XbbH5/MdOS7Nmze3YoPXevToEfPdOAaOwOF4N2vWLCx8unXrFl5v2bJldt/YbunSpSP29+uvv7brEHTeoUMH+172i+PNvjnHm982WapXrx5q37593Neuv/76CBG3a9eu0IgRI6ygdMTVjBkzwuuvXLnS7iPLgQMHcv3sYcOG2e08++yzSe+vEEJ4AYmdPIJ14fjjj4+Y6desWTN03nnnhb7//vuY9bFasM7YsWPjbu/hhx+2GTZ//PGHtURw05o4cWKoV69ecWfb3PQPP/zwuNu67bbb7HsuvvhimwXmgCA7+uij7WtYNtKRjfXiiy+G17/77rvtcy+88ELEzXXatGmhBx54IGLbiB8ESjxyEjs8zzFZu3ZtWDxhUXGExk033RS2XG3evDksQsg4cvP444+HRo8ebY83WW0cb47JcccdZ9d3iwbgt0XgxOPee++178EqtG7duvDz/O1Y9RL97m4QJ6x77rnnxn197969oa5du4aPff/+/a04cv7/6quvRqz/73//O/waAj03sBax7uWXX57rukII4SUUs5NHiIsgW2bZsmU2w2r69Olm/Pjxts7Ju+++ax566CFz6623Jr094n9uvPFGM3LkSBsfEs2SJUtMy5Ytk9rW+++/b+OBBg4caLPDiG1B2MJll11mxowZY77++mvTtWvXfGdjEaPkQAYVEMfirtfSqVMnu6SL1157zdY0AgLDb7nlFvPCCy/YgN5HH300/Nns2+WXX26uv/56GytF1lH08SYQmDibeMfb+T7JHO/SpUvbOjdUMyZeyTnefD7nCcc7tyw8fitIFG9TokQJ+1mHHHKI/Zy33347/BqfQ4ZbfnA+l/NFCCH8hMROPiFI1R0EO3nyZNO3b19z1113mbPPPjup1GyCbLkRUpyQmzcBt6SzFy1a1GZ3rV692gahJgOBsU6AbE4CI5UbWrLZWKQtDx482Fx55ZXm9ttvN4ceeqjdh1NOOcW0bdvWpAOEFIG/bqpXr24f27dvH1MUz3mNsgAOBHaTnr18+XJ7jNkeQb/8zXoENyd7vJ0AdAKZu3Tpkq/j7QQgRwd0uyHgmzTzc845J/wcQdxPPvlkUvuKSHKCrDnP3AHyzuc6+yGEEH5BjUDTDDd4RA7WmUmTJiX1ns8//9wKnfPOO89mMGEtmjVrlr0pRWd25QY3bAQTNy4sE4kWxzKSbu655x57QyWN+dhjj7UtDDp37myuueaatGzfnXWVymuOpQWwniF0zjjjDHu8+ds53jfccEPK+4TFBctOTsebTLPccKxk7FNO34OaTW4Qw5999lmu20c4I6qPO+44aw2LrvbtfC5ZcEII4Sdk2ckDpCCTwu3U1nGDRYXmjOB2jzg3YiwA0eD2AOr1YNFxYF1q9sT94YoXj7stwJpC6vbo0aNtKne8dOt4rrL8gkWAHk3s2+GHH26XK664wt7ohwwZYi0+jrWJdbCecPMu7BYFzvFGXLpT9fm9ErVbyOl441ZC2I4YMcLUrVs37jmRjKUICw3HYv369QnXwXKGWAN+W8f1hRsLUZXI1bl9+3Zz/PHH2/OC/cWtFu0uc6xP2VTMUQgh0oHETh6YMGGCFSZYBoh7IX6HuBbcR8y6eZ3ZvjtGg+q78OKLL1pBg+XFqbPj3KBw/ezevdvebHCNPPHEE2HhFA3bo7YKFhTej0XHqbNDrA77d9hhh5m//vWv9ubG81gAZs6caV599VXz8ccf5+h2cRNdX8YNdWScWBgK0+ECorJv8+bN7ffDsuPEluCuc+8/4uKxxx6zxwkx4dTZKWic43333XeH6w9h3fnPf/5jpk2bFvc97C/H7q233rLfF6Hr1NnheDvnwrXXXmuPK8cbax0WI4437zvyyCNz3C+2hctw6tSpcV9HvCJ2nONOLBBVuqmNw7HFjYjoiucGIzaJ74blkfdVrlw5Zh3HVZnbfgohhOfIdIS0F5kwYYLN/EmUoUTKcXT6Lpk57po30enYZFZFb4eaMjfffLP9e/jw4RHbu/POO3Oss3PPPfeEU5KjF/Y9undXXrOxSLF2oKZMovV69uxpv6fDO++8k+c6O9Fs3bo1YRaTk07tzlQiU8xdp8dZKlWqFLr11lvt37zPzeDBg3Oss0O2Gan08b47z0+ZMiWUDE7NnMWLF8dkapHO72xz6NCh9nnSz52MMxbqMsXLxmLhfKBcQCI4fpQ7+PXXX5PaVyGE8Aqy7OSBbt26WVcD1W4nTpxoLTp0PSfmgvgUqt/StyraMkAWFIGkVMPFJYL1A7ASfPvtt7ZNABldvMZ26Gr9888/W/dEdKXeQYMG2edwRxCLgYXCvQ4WgH79+pnXX3/dWiQcixFupIsvvjiuuyUarC25ZSRh1XLgu2HVoW0BFh1cN7hmTj31VGt1cLv9zj//fPs9WZdjiVutZs2aOfbGwiLjdvM5sF3Wx0ITDRYMXnO7bHAV4QrCqvT999/bY3PwwQfb402Xd9aPtnzQ1wwXHe8jJonj7Y55oa8U1hMyxbCCEQTN/rNdjneyriGy5bAw4U5jmw4PPPCA/c1YsNRhRQNihcjQwpKHexJL0jfffGPjpdxwPvKbEE/2ww8/hC2Nbhckbjiy1OJZfYQQwssUQfFkeieEEJFNXokrok1FfuKZcIOSXg+4RdkurjWy1hB5blHz5ptvmosuush89913pmfPnvo5hBC+QtlYQmQZDz74oO1/huUwXWBZwiqFNQrrFVYorE+AlYq6UH369JHQEUL4EokdIbIMLDCUHMiv2MHFeMwxx9iFAHYaqH766af2/wQxO53TnYB63HpCCOFH5MYSQgghhK+RZUcIIYQQvkZiRwghhBC+RmJHCCGEEL5GYkcIIYQQvkZiRwghhBC+RmJHCCGEEL5GYkcIIYQQvkZiRwghhBC+RmJHCCGEEL5GYkcIIYQQvkZiRwghhBC+RmJHCCGEEL5GYkcIIYQQvkZiRwghhBC+RmJHCCGEEL5GYkcIIYQQvkZiRwghhBC+RmJHCCGEEL5GYkcIIYQQvkZiRwghhBC+RmJHCCGEEL5GYkcIIYQQvkZiRwghhBC+RmJHCCGEEL5GYkcIIYQQvkZiRwghhBC+RmJHCCGEEL5GYkcIIYQQvkZiRwghhBC+RmJHCCGEEL5GYkcIIYQQvkZiRwghhBC+RmJHCCGEEL5GYkcIIYQQvkZiRwghhBC+RmJHCCGEEL5GYkcIIYQQvkZiRwghhBC+RmJHCCGEEL5GYkcIIYQQvkZiRwghhBC+RmJHCCGEEL5GYkcIIYQQvkZiRwghhBC+RmJHCCGEEL5GYkcIIYQQvkZiRwghhBC+RmJHCCGEEL5GYkcIIYQQvkZiRwghhBC+RmJHCCGEEL5GYkcIIYQQvkZiRwghhBC+RmJHCCGEEL5GYkcIIYQQvkZiRwghhBC+RmJHCCGEEL5GYkcIIYQQvkZiRwghhBC+RmJHCCGEEL5GYkcIIYQQxs/8H+CHtZ7lMkIdAAAAAElFTkSuQmCC\", \"__metadata__\": {\"image/png\": {\"width\": 571, \"height\": 420}}}"
+        }
+      ]
+    },
+    {
+      "id": "mWxS",
+      "code_hash": "1823709189280fdb9e9e707e53a832e9",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Let me introduce some more formal terminology. The <em>system</em> is the object that we want to estimate. In this chapter the system is whatever we are trying to weigh. Some texts call this the <em>plant</em>. That terminology comes from control system theory. <a href=\"https://en.wikipedia.org/wiki/Plant_(control_theory\" rel=\"noopener noreferrer\" target=\"_blank\">https://en.wikipedia.org/wiki/Plant_(control_theory</a>)</span>\n<span class=\"paragraph\">The <em>state</em> of the system is the current configuration or values of that system that is of interest to us. We are interested only in the weight reading. If I put a 100 kg weight on the scale, the state is 100kg. We define the state based on what is relevant to us. The color of the scale is irrelevant to us so we do not include those values in the state. A QA engineer for the manufacturer might include color in the state so that she can track and control the manufacturing process.</span>\n<span class=\"paragraph\">The <em>measurement</em> is a measured value of the system. Measurements can be inaccurate, so it may not have the same value as the state.</span>\n<span class=\"paragraph\">The <em>state estimate</em> is our filter's estimate of the state. For example, for the 100 kg weight our estimate might be 99.327 kg due to sensor errors. This is commonly abbreviated to <em>estimate</em>, and I have done that in this chapter.</span>\n<span class=\"paragraph\">In other words, the state should be understood as the actual value of the system. This value is usually <em>hidden</em> to us.  If I stepped on a scale you'd then have a <em>measurement</em>. We call this <em>observable</em> since you can directly observe this measurement. In contrast, you can never directly observe my weight, you can only measure it.</span>\n<span class=\"paragraph\">This language of <em>hidden</em> and <em>observable</em> is important. Any estimation problem consists of forming an estimate of a hidden state via observable measurements. If you read the literature these terms are used when defining a problem, so you need to be comfortable with them.</span>\n<span class=\"paragraph\">We use a <em>process model</em> to mathematically model the system. In this chapter our process model is the assumption that my weight today is yesterday's weight plus my weight gain for the last day. The process model does not model or otherwise account for the sensors. Another example would be a process model for an automobile. The process model might be \"distance equals velocity times time. This model is not perfect as the velocity of a car can vary over a non-zero amount of time, the tires can slip on the road, and so on. The <em>system error</em> or <em>process error</em> is the error in this model. We never know this value exactly; if we did we could refine our model to have zero error. Some texts use <em>plant model</em> and <em>plant error</em>. You may also see <em>system model</em>. They all mean the same thing.</span>\n<span class=\"paragraph\">The predict step is known as <em>system propagation</em>. It uses the <em>process model</em> to form a new <em>state estimate</em>. Because of the <em>process error</em> this estimate is imperfect. Assuming we are tracking data over time, we say we <em>propagate</em> the state into the future. Some texts call this the <em>evolution</em>.</span>\n<span class=\"paragraph\">The update step is known as the <em>measurement update</em>. One iteration of the system propagation and measurement update is known as an <em>epoch</em>.</span>\n<span class=\"paragraph\">Now let's explore a few different problem domains to better understand this algorithm. Consider the problem of trying to track a train on a track. The track constrains the position of the train to a very specific region. Furthermore, trains are large and slow. It takes many minutes for them to slow down or speed up significantly. So, if I know that the train is at kilometer marker 23 km at time t and moving at 18 kph, I can be extremely confident in predicting its position at time t + 1 second. Why is that important? Suppose we can only measure its position with an accuracy of <marimo-tex class=\"arithmatex\">||(\\pm||)</marimo-tex> 250 meters. The train is moving at 18 kph, which is 5 meters per second. At t+1 seconds the train will be at 23.005 km yet the measurement could be anywhere from 22.755 km to 23.255 km. So if the next measurement says the position is at 23.4 we know that must be inaccurate. Even if at time t the engineer slammed on the brakes the train will still be very near to 23.005 km because a train cannot slow down very much in 1 second. If we were to design a filter for this problem (and we will a bit further in the chapter!) we would want to design a filter that gave a very high weighting to the prediction vs the measurement.</span>\n<span class=\"paragraph\">Now consider the problem of tracking a thrown ball. We know that a ballistic object moves in a parabola in a vacuum when in a gravitational field. But a ball thrown on Earth is influenced by air drag, so it does not travel in a perfect parabola. Baseball pitchers take advantage of this fact when they throw curve balls. Let's say that we are tracking the ball inside a stadium using computer vision, something I do at work. The accuracy of the computer vision tracking might be modest, but predicting the ball's future positions by assuming that it is moving on a parabola is not extremely accurate either. In this case we'd probably design a filter that gave roughly equal weight to the measurement and the prediction.</span>\n<span class=\"paragraph\">Now consider trying to track a helium party balloon in a hurricane. We have no legitimate model that would allow us to predict the balloon's behavior except over very brief time scales (we know the balloon cannot go 10 miles in 1 second, for example). In this case we would design a filter that emphasized the measurements over the predictions.</span>\n<span class=\"paragraph\">Most of this book is devoted to expressing the concerns in the last three paragraphs mathematically, which then allows us to find an optimal solution (in some mathematical sense). In this chapter we will merely be assigning different values to <marimo-tex class=\"arithmatex\">||(g||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(h||)</marimo-tex> in a more intuitive, and thus less optimal way. But the fundamental idea is to blend somewhat inaccurate measurements with somewhat inaccurate models of how the systems behaves to get a filtered estimate that is better than either information source by itself.</span>\n<span class=\"paragraph\">We can express this as an algorithm:</span>\n<span class=\"paragraph\"><strong>Initialization</strong></span>\n<div class=\"language-cbmbas highlight\"><pre><span></span><code><span class=\"mf\">1.</span><span class=\"w\"> </span><span class=\"n\">Initialize</span><span class=\"w\"> </span><span class=\"n\">the</span><span class=\"w\"> </span><span class=\"n\">state</span><span class=\"w\"> </span><span class=\"n\">of</span><span class=\"w\"> </span><span class=\"n\">the</span><span class=\"w\"> </span><span class=\"n\">filter</span>\n\n<span class=\"mf\">2.</span><span class=\"w\"> </span><span class=\"n\">Initialize</span><span class=\"w\"> </span><span class=\"n\">our</span><span class=\"w\"> </span><span class=\"n\">belief</span><span class=\"w\"> </span><span class=\"n\">in</span><span class=\"w\"> </span><span class=\"n\">the</span><span class=\"w\"> </span><span class=\"n\">state</span>\n</code></pre></div>\n<span class=\"paragraph\"><strong>Predict</strong></span>\n<div class=\"language-cbmbas highlight\"><pre><span></span><code><span class=\"mf\">1.</span><span class=\"w\"> </span><span class=\"n\">Use</span><span class=\"w\"> </span><span class=\"kr\">sys</span><span class=\"n\">tem</span><span class=\"w\"> </span><span class=\"n\">behavior</span><span class=\"w\"> </span><span class=\"kr\">to</span><span class=\"w\"> </span><span class=\"n\">predict</span><span class=\"w\"> </span><span class=\"n\">state</span><span class=\"w\"> </span><span class=\"n\">at</span><span class=\"w\"> </span><span class=\"n\">the</span><span class=\"w\"> </span><span class=\"kr\">next</span><span class=\"w\"> </span><span class=\"n\">time</span><span class=\"w\"> </span><span class=\"kr\">step</span>\n\n<span class=\"mf\">2.</span><span class=\"w\"> </span><span class=\"n\">Adjust</span><span class=\"w\"> </span><span class=\"n\">belief</span><span class=\"w\"> </span><span class=\"kr\">to</span><span class=\"w\"> </span><span class=\"n\">account</span><span class=\"w\"> </span><span class=\"kr\">for</span><span class=\"w\"> </span><span class=\"n\">the</span><span class=\"w\"> </span><span class=\"n\">uncertainty</span><span class=\"w\"> </span><span class=\"n\">in</span><span class=\"w\"> </span><span class=\"n\">prediction</span>\n</code></pre></div>\n<span class=\"paragraph\"><strong>Update</strong></span>\n<div class=\"language-cbmbas highlight\"><pre><span></span><code><span class=\"mf\">1.</span><span class=\"w\"> </span><span class=\"kr\">Get</span><span class=\"w\"> </span><span class=\"n\">a</span><span class=\"w\"> </span><span class=\"n\">measurement</span><span class=\"w\"> </span><span class=\"ow\">and</span><span class=\"w\"> </span><span class=\"n\">associated</span><span class=\"w\"> </span><span class=\"n\">belief</span><span class=\"w\"> </span><span class=\"n\">about</span><span class=\"w\"> </span><span class=\"n\">its</span><span class=\"w\"> </span><span class=\"n\">accuracy</span>\n\n<span class=\"mf\">2.</span><span class=\"w\"> </span><span class=\"n\">Compute</span><span class=\"w\"> </span><span class=\"n\">residual</span><span class=\"w\"> </span><span class=\"n\">between</span><span class=\"w\"> </span><span class=\"n\">estimated</span><span class=\"w\"> </span><span class=\"n\">state</span><span class=\"w\"> </span><span class=\"ow\">and</span><span class=\"w\"> </span><span class=\"n\">measurement</span>\n\n<span class=\"mf\">3.</span><span class=\"w\"> </span><span class=\"kr\">New</span><span class=\"w\"> </span><span class=\"n\">estimate</span><span class=\"w\"> </span><span class=\"n\">is</span><span class=\"w\"> </span><span class=\"n\">somewhere</span><span class=\"w\"> </span><span class=\"kr\">on</span><span class=\"w\"> </span><span class=\"n\">the</span><span class=\"w\"> </span><span class=\"n\">residual</span><span class=\"w\"> </span><span class=\"n\">line</span>\n</code></pre></div>\n<span class=\"paragraph\">We will use this same algorithm throughout the book, albeit with some modifications.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "CcZR",
+      "code_hash": "4c0f3261f0efd81c0b386321a2271f35",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"notation\">Notation</h2>\n<span class=\"paragraph\">I'll begin to introduce the notations and variable names used in the literature. Some of this was already used in the above charts. Measurement is typically denoted <marimo-tex class=\"arithmatex\">||(z||)</marimo-tex> and that is what we will use in this book (some literature uses <marimo-tex class=\"arithmatex\">||(y||)</marimo-tex>). Subscript <marimo-tex class=\"arithmatex\">||(k||)</marimo-tex> indicates the time step, so <marimo-tex class=\"arithmatex\">||(z_k||)</marimo-tex> is the data for this time step. A bold font denotes a vector or matrix. So far we have only considered having one sensor, and hence one sensor measurement, but in general we may have <em>n</em> sensors and <em>n</em> measurements. <marimo-tex class=\"arithmatex\">||(\\mathbf{x}||)</marimo-tex> denotes our state, and is bold to denote that it is a vector. For our scale example, it represents both the initial weight and initial weight gain rate, like so:</span>\n<marimo-tex class=\"arithmatex\">||[\\mathbf{x} = \\begin{bmatrix}x \\\\ \\dot{x}\\end{bmatrix}||]</marimo-tex><span class=\"paragraph\">Here I use Newton's notation of a dot over the x to denote velocity. More precisely, the dot implies the derivative of x with respect to time, which of course is the velocity. For a weight of 62 kg with a gain of 0.3 kg/day we have</span>\n<marimo-tex class=\"arithmatex\">||[\\mathbf{x} = \\begin{bmatrix}62 \\\\ 0.3\\end{bmatrix}||]</marimo-tex><span class=\"paragraph\">So, the algorithm is simple. The state is initialized with <marimo-tex class=\"arithmatex\">||(\\mathbf{x_0}||)</marimo-tex>, the initial estimate. We then enter a loop, predicting the state for time or step <marimo-tex class=\"arithmatex\">||(k||)</marimo-tex> from the values from time (or step) <marimo-tex class=\"arithmatex\">||(k-1||)</marimo-tex>. We then get the measurement <marimo-tex class=\"arithmatex\">||(z_k||)</marimo-tex> and choose some intermediate point between the measurements and prediction, creating the estimate <marimo-tex class=\"arithmatex\">||(\\mathbf{x}_k||)</marimo-tex>.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "YWSi",
+      "code_hash": "3524e77cc8d590db04dca9289860e48a",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"exercise-write-generic-algorithm\">Exercise: Write Generic Algorithm</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "zlud",
+      "code_hash": "493026834d15966c4270b040816da3e3",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">In the example above, I explicitly coded this to solve the weighing problem that we've been discussing throughout the chapter. For example, the variables are named \"weight_scale\", \"gain\", and so on. I did this to make the algorithm easy to follow - you can easily see that we correctly implemented each step. But, that is code written for exactly one problem, and the algorithm is the same for any problem. So let's rewrite the code to be generic - to work with any problem. Use this function signature:</span>\n<div class=\"language-python codehilite\"><pre><span></span><code><span class=\"k\">def</span><span class=\"w\"> </span><span class=\"nf\">g_h_filter</span><span class=\"p\">(</span><span class=\"n\">data</span><span class=\"p\">,</span> <span class=\"n\">x0</span><span class=\"p\">,</span> <span class=\"n\">dx</span><span class=\"p\">,</span> <span class=\"n\">g</span><span class=\"p\">,</span> <span class=\"n\">h</span><span class=\"p\">,</span> <span class=\"n\">dt</span><span class=\"p\">):</span>\n    \\<span class=\"s2\">&quot;</span><span class=\"se\">\\&quot;\\&quot;</span>\n    <span class=\"n\">Performs</span> <span class=\"n\">g</span><span class=\"o\">-</span><span class=\"n\">h</span> <span class=\"nb\">filter</span> <span class=\"n\">on</span> <span class=\"mi\">1</span> <span class=\"n\">state</span> <span class=\"n\">variable</span> <span class=\"k\">with</span> <span class=\"n\">a</span> <span class=\"n\">fixed</span> <span class=\"n\">g</span> <span class=\"ow\">and</span> <span class=\"n\">h</span><span class=\"o\">.</span>\n\n    <span class=\"s1\">&#39;data&#39;</span> <span class=\"n\">contains</span> <span class=\"n\">the</span> <span class=\"n\">data</span> <span class=\"n\">to</span> <span class=\"n\">be</span> <span class=\"n\">filtered</span><span class=\"o\">.</span>\n    <span class=\"s1\">&#39;x0&#39;</span> <span class=\"ow\">is</span> <span class=\"n\">the</span> <span class=\"n\">initial</span> <span class=\"n\">value</span> <span class=\"k\">for</span> <span class=\"n\">our</span> <span class=\"n\">state</span> <span class=\"n\">variable</span>\n    <span class=\"s1\">&#39;dx&#39;</span> <span class=\"ow\">is</span> <span class=\"n\">the</span> <span class=\"n\">initial</span> <span class=\"n\">change</span> <span class=\"n\">rate</span> <span class=\"k\">for</span> <span class=\"n\">our</span> <span class=\"n\">state</span> <span class=\"n\">variable</span>\n    <span class=\"s1\">&#39;g&#39;</span> <span class=\"ow\">is</span> <span class=\"n\">the</span> <span class=\"n\">g</span><span class=\"o\">-</span><span class=\"n\">h</span><span class=\"s1\">&#39;s g scale factor</span>\n    <span class=\"s1\">&#39;h&#39;</span> <span class=\"ow\">is</span> <span class=\"n\">the</span> <span class=\"n\">g</span><span class=\"o\">-</span><span class=\"n\">h</span><span class=\"s1\">&#39;s h scale factor</span>\n    <span class=\"s1\">&#39;dt&#39;</span> <span class=\"ow\">is</span> <span class=\"n\">the</span> <span class=\"n\">length</span> <span class=\"n\">of</span> <span class=\"n\">the</span> <span class=\"n\">time</span> <span class=\"n\">step</span>\n    \\<span class=\"s2\">&quot;</span><span class=\"se\">\\&quot;\\&quot;</span>\n</code></pre></div>\n<span class=\"paragraph\">Return the data as a NumPy array, not a list. Test it by passing in the same weight data as before, plot the results, and visually determine that it works.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "tZnO",
+      "code_hash": "ae64638560266acdcad677cdde842969",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "xvXZ",
+      "code_hash": "fdec4a726dc8155319592de4c6c758ad",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"solution-and-discussion\">Solution and Discussion</h3></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "CLip",
+      "code_hash": "1fb8da6812f3f53314503c63d8787059",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "name '_cell_CLip_data' is not defined",
+          "traceback": null
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stderr",
+          "text": "<span class=\"codehilite\"><div class=\"highlight\"><pre><span></span><span class=\"gt\">Traceback (most recent call last):</span>\n  File <span class=\"nb\">&quot;C:\\Users\\goper\\AppData\\Local\\Temp\\marimo_22068\\__marimo__cell_CLip_.py&quot;</span>, line <span class=\"m\">15</span>, in <span class=\"n\">&lt;module&gt;</span>\n<span class=\"w\">    </span><span class=\"n\">_data</span> <span class=\"o\">=</span> <span class=\"n\">g_h_filter_1</span><span class=\"p\">(</span><span class=\"n\">data</span><span class=\"o\">=</span><span class=\"n\">weights</span><span class=\"p\">,</span> <span class=\"n\">x0</span><span class=\"o\">=</span><span class=\"mf\">160.0</span><span class=\"p\">,</span> <span class=\"n\">dx</span><span class=\"o\">=</span><span class=\"mf\">1.0</span><span class=\"p\">,</span> <span class=\"n\">g</span><span class=\"o\">=</span><span class=\"mf\">6.0</span> <span class=\"o\">/</span> <span class=\"mi\">10</span><span class=\"p\">,</span> <span class=\"n\">h</span><span class=\"o\">=</span><span class=\"mf\">2.0</span> <span class=\"o\">/</span> <span class=\"mi\">3</span><span class=\"p\">,</span> <span class=\"n\">dt</span><span class=\"o\">=</span><span class=\"mf\">1.0</span><span class=\"p\">)</span>\n<span class=\"w\">            </span><span class=\"pm\">^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</span>\n  File <span class=\"nb\">&quot;C:\\Users\\goper\\AppData\\Local\\Temp\\marimo_22068\\__marimo__cell_CLip_.py&quot;</span>, line <span class=\"m\">6</span>, in <span class=\"n\">g_h_filter_1</span>\n<span class=\"w\">    </span><span class=\"k\">for</span> <span class=\"n\">z</span> <span class=\"ow\">in</span> <span class=\"n\">_data</span><span class=\"p\">:</span>\n<span class=\"w\">             </span><span class=\"pm\">^^^^^</span>\n<span class=\"gr\">NameError</span>: <span class=\"n\">name &#39;_cell_CLip_data&#39; is not defined</span>\n</pre></div>\n</span>",
+          "mimetype": "application/vnd.marimo+traceback"
+        }
+      ]
+    },
+    {
+      "id": "YECM",
+      "code_hash": "8e200c7315377331171020bfee5d1c0f",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">This should have been straightforward. I just subtituted the variable names <code>x0</code>, <code>dx</code>, etc., for the variable names in the weight gain code. Nothing else needed to change.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "cEAS",
+      "code_hash": "6adbc51debe06e66f58a10f0785e2294",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"choice-of-g-and-h\">Choice of <marimo-tex class=\"arithmatex\">||(g||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(h||)</marimo-tex></h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "iXej",
+      "code_hash": "a9afe6e6c482d5805d8b7db9d3093757",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">The g-h filter is not one filter - it is a classification for a family of filters. Eli Brookner in <em>Tracking and Kalman Filtering Made Easy</em> lists 11, and I am sure there are more. Not only that, but each type of filter has numerous subtypes. Each filter is differentiated by how <marimo-tex class=\"arithmatex\">||(g||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(h||)</marimo-tex> are chosen. So there is no 'one size fits all' advice that I can give here. Some filters set <marimo-tex class=\"arithmatex\">||(g||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(h||)</marimo-tex> as constants, others vary them dynamically. The Kalman filter varies them dynamically at each step. Some filters allow <marimo-tex class=\"arithmatex\">||(g||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(h||)</marimo-tex> to take any value within a range, others constrain one to be dependent on the other by some function <marimo-tex class=\"arithmatex\">||(f(\\dot{}), \\mbox{where }g = f(h)||)</marimo-tex>.</span>\n<span class=\"paragraph\">The topic of this book is not the entire family of g-h filters; more importantly, we are interested in the <em>Bayesian</em> aspect of these filters, which I have not addressed yet. Therefore I will not cover selection of <marimo-tex class=\"arithmatex\">||(g||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(h||)</marimo-tex> in depth. <em>Tracking and Kalman Filtering Made Easy</em> is an excellent resource for that topic. If this strikes you as an odd position for me to take, recognize that the typical formulation of the Kalman filter does not use <marimo-tex class=\"arithmatex\">||(g||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(h||)</marimo-tex> at all. The Kalman filter is a g-h filter because it mathematically reduces to this algorithm. When we design the Kalman filter we use design criteria that can be mathematically reduced to <marimo-tex class=\"arithmatex\">||(g||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(h||)</marimo-tex>, but the Kalman filter form is usually a much more powerful way to think about the problem. Don't worry if this is not too clear right now, it will clear once we develop the Kalman filter theory.</span>\n<span class=\"paragraph\">It is worth seeing how varying <marimo-tex class=\"arithmatex\">||(g||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(h||)</marimo-tex> affects the results, so we will work through some examples. This will give us strong insight into the fundamental strengths and limitations of this type of filter, and help us understand the behavior of the rather more sophisticated Kalman filter.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "EJmg",
+      "code_hash": "1a6a83d50c445e7683b44718d5704922",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"exercise-create-measurement-function\">Exercise: create measurement function</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "UmEG",
+      "code_hash": "2a367850f0cbe1c361308d60e7ff5964",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Now let's write a function that generates noisy data for us. In this book I model a noisy signal as the signal plus <a href=\"https://en.wikipedia.org/wiki/White_noise\" rel=\"noopener noreferrer\" target=\"_blank\">white noise</a>. We've not yet covered the statistics to fully understand the definition of white noise. In essence, think of it as data that randomly varies higher and lower than the signal with no pattern. We say that it is a serially uncorrelated random variable with zero mean and finite variance. If you don't follow that, you will by the end of the <em>Gaussians</em> chapter. You may not be successful at this exercise if you have no knowledge of statistics. If so, just read the solution and discussion.</span>\n<span class=\"paragraph\">White noise can be generated by <code>numpy.random.randn()</code>. We want a function that we call with the starting value, the amount of change per step, the number of steps, and the amount of noise we want to add. It should return a list of the data. Test it by creating 30 points, filtering it with <code>g_h_filter()</code>, and plot the results with <code>plot_g_h_results()</code>.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vEBW",
+      "code_hash": "c8eefd80f5ccaa989dde69fb402cfd83",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "kLmu",
+      "code_hash": "a9a8236a4aee4527fb2569f4aa26d669",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"solution\">Solution</h3></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "IpqN",
+      "code_hash": "29f72006ae55b69afe9687fd91389d72",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (NameError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "dxZZ",
+      "code_hash": "00deb274d4697e6db74c22c8701f582f",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"discussion\">Discussion</h3>\n<span class=\"paragraph\"><code>randn()</code> returns random numbers centered around 0 - it is just as likely to be greater than zero as under zero. It varies by <em>one standard deviation</em> - don't worry if you don't know what that means. I've plotted 3000 calls to <code>randn()</code> - you can see that the values are centered around zero and mostly range from a bit under -1 to a bit more than +1, though occasionally they are much larger.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "dlnW",
+      "code_hash": "1d342ed29d3b7843a515c4c710d2bbc0",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (NameError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "TTti",
+      "code_hash": "f946fa79f00c6eeffcdbc66b0f636e7c",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"exercise-bad-initial-conditions\">Exercise: Bad Initial Conditions</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "RKFZ",
+      "code_hash": "5380e45fa6c6818d62b4fecd64c78550",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Now write code that uses <code>gen_data</code> and <code>g_h_filter</code> to filter 100 data points that starts at 5, has a derivative of 2, a noise scaling factor of 10, and uses g=0.2 and h=0.02. Set your initial guess for x to be 100.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "IaQp",
+      "code_hash": "c8eefd80f5ccaa989dde69fb402cfd83",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "IWgg",
+      "code_hash": "fdec4a726dc8155319592de4c6c758ad",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"solution-and-discussion\">Solution and Discussion</h3></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "fCoF",
+      "code_hash": "ceaa4677368758190553544567e4cbb7",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (NameError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "LkGn",
+      "code_hash": "bbac5297f7be0583549b4277c723f78a",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">The filter starts out with estimates that are far from the measured data due to the bad initial guess of 100. You can see that it 'rings' before settling in on the measured data. 'Ringing' means that the signal overshoots and undershoots the data in a sinusoidal type pattern. This is a very common phenomena in filters, and a lot of work in filter design is devoted to minimizing ringing. That is a topic that we are not yet prepared to address, but I wanted to show you the phenomenon.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "zVRe",
+      "code_hash": "22b527d9ca335d5602860906ed2bcef3",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"exercise-extreme-noise\">Exercise: Extreme Noise</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "woaO",
+      "code_hash": "6eb92698d1539ff6011b375dcc0dc586",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Rerun the same test, but this time use a noise factor of 100. Remove the initial condition ringing by changing the initial condition from 100 down to 5.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "HnMC",
+      "code_hash": "c8eefd80f5ccaa989dde69fb402cfd83",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "wadT",
+      "code_hash": "fdec4a726dc8155319592de4c6c758ad",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"solution-and-discussion\">Solution and Discussion</h3></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "VCRE",
+      "code_hash": "1f8d516e655b62ab0f9326f2adaf2380",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (NameError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "hgqU",
+      "code_hash": "b27b4d41cb28f3e65f553c90fa3dd119",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">This doesn't look so wonderful to me. We can see that perhaps the filtered signal varies less than the noisy signal, but it is far from the straight line. If we were to plot just the filtered result no one would guess that the signal starts at 5 and increments by 2 at each time step. And while in locations the filter does seem to reduce the noise, in other places it seems to overshoot and undershoot.</span>\n<span class=\"paragraph\">At this point we don't know enough to really judge this. We added <strong>a lot</strong> of noise; maybe this is as good as filtering can get. However, the existence of the multitude of chapters beyond this one should suggest that we can do much better.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "PSUk",
+      "code_hash": "429317f31aeebfea79e078340415355c",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"exercise-the-effect-of-acceleration\">Exercise: The Effect of Acceleration</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "mfOT",
+      "code_hash": "fc5a4e0504799c93fdf5276cadd42e71",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Write a new data generation function that adds in a constant acceleration factor to each data point. In other words, increment dx as you compute each data point so that the velocity (dx) is ever increasing. Set the noise to 0, <marimo-tex class=\"arithmatex\">||(g=0.2||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(h=0.02||)</marimo-tex> and plot the results using <code>plot_g_h_results</code> or your own routine. Play around with different accererations and times steps. Explain what you see.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vGiW",
+      "code_hash": "c8eefd80f5ccaa989dde69fb402cfd83",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "SYQT",
+      "code_hash": "fdec4a726dc8155319592de4c6c758ad",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"solution-and-discussion\">Solution and Discussion</h3></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "bMrW",
+      "code_hash": "f421fb6df1deb73486db81a43b12764f",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (NameError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "PSQn",
+      "code_hash": "0857904e48a5b4ee50d99a34acc36a1e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Each prediction lags behind the signal. If you think about what is happening this makes sense. Our model assumes that velocity is constant. The g-h filter computes the first derivative of <marimo-tex class=\"arithmatex\">||(x||)</marimo-tex> (we use <marimo-tex class=\"arithmatex\">||(\\dot{x}||)</marimo-tex> to denote the derivative) but not the second derivative <marimo-tex class=\"arithmatex\">||(\\ddot{x}||)</marimo-tex>. So we are assuming that <marimo-tex class=\"arithmatex\">||(\\ddot{x}=0||)</marimo-tex>. At each prediction step we predict the new value of x as <marimo-tex class=\"arithmatex\">||(x + \\dot{x}*t||)</marimo-tex>. But because of the acceleration the prediction must necessarily fall behind the actual value. We then try to compute a new value for <marimo-tex class=\"arithmatex\">||(\\dot{x}||)</marimo-tex>, but because of the <marimo-tex class=\"arithmatex\">||(h||)</marimo-tex> factor we only partially adjust <marimo-tex class=\"arithmatex\">||(\\dot{x}||)</marimo-tex> to the new velocity. On the next iteration we will again fall short.</span>\n<span class=\"paragraph\">Note that there is no adjustment to <marimo-tex class=\"arithmatex\">||(g||)</marimo-tex> or <marimo-tex class=\"arithmatex\">||(h||)</marimo-tex> that we can make to correct this problem. This is called the <em>lag error</em> or <em>systemic error</em> of the system. It is a fundamental property of g-h filters. Perhaps your mind is already suggesting solutions or workarounds to this problem. As you might expect, a lot of research has been devoted to this problem, and we will be presenting various solutions to this problem in this book.</span>\n<blockquote>\n<span class=\"paragraph\">The 'take home' point is that the filter is only as good as the mathematical model used to express the system.</span>\n</blockquote></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "OfTS",
+      "code_hash": "2ae76aa4110186538406c31eceb99cdc",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"exercise-varying-g\">Exercise: Varying <marimo-tex class=\"arithmatex\">||(g||)</marimo-tex></h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "lQxp",
+      "code_hash": "b96eb573f9ee16c522cc0dc8f5cbb9c3",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Now let's look at the effect of varying <marimo-tex class=\"arithmatex\">||(g||)</marimo-tex>. Before you perform this exercise, recall that <marimo-tex class=\"arithmatex\">||(g||)</marimo-tex> is the scale factor for choosing between the measurement and prediction. What do you think the effect of a large value of <marimo-tex class=\"arithmatex\">||(g||)</marimo-tex> will be? A small value?</span>\n<span class=\"paragraph\">Now, let the <code>noise_factor=50</code> and <code>dx=5</code>. Plot the results of <marimo-tex class=\"arithmatex\">||(g = 0.1\\mbox{, } 0.4,\\mbox{ and } 0.8||)</marimo-tex>.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Plbk",
+      "code_hash": "c8eefd80f5ccaa989dde69fb402cfd83",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "rSYo",
+      "code_hash": "fdec4a726dc8155319592de4c6c758ad",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"solution-and-discussion\">Solution and Discussion</h3></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "HuZB",
+      "code_hash": "b7edc4e41d95097766b9989118c372e3",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (NameError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "WfYj",
+      "code_hash": "d103ec352c29a9653fca6aa9eef46e5c",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">It is clear that as <marimo-tex class=\"arithmatex\">||(g||)</marimo-tex> is larger we more closely follow the measurement instead of the prediction. When <marimo-tex class=\"arithmatex\">||(g=0.8||)</marimo-tex> we follow the signal almost exactly, and reject almost none of the noise. One might naively conclude that <marimo-tex class=\"arithmatex\">||(g||)</marimo-tex> should always be very small to maximize noise rejection. However, that means that we are mostly ignoring the measurements in favor of our prediction. What happens when the signal changes not due to noise, but an actual state change? Let's have a look. I will create data that has <marimo-tex class=\"arithmatex\">||(\\dot{x}=1||)</marimo-tex> for 9 steps before changing to <marimo-tex class=\"arithmatex\">||(\\dot{x}=0||)</marimo-tex>.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Ynfw",
+      "code_hash": "e9d3f261e11e5c3a7ae272d04437467e",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (NameError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "LqFA",
+      "code_hash": "fa166098e80b60dbf258fd284d35faf7",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Here we can see the effects of ignoring the signal. We not only filter out noise, but legitimate changes in the signal as well.</span>\n<span class=\"paragraph\">Maybe we need a 'Goldilocks' filter, where <marimo-tex class=\"arithmatex\">||(g||)</marimo-tex> is not too large, not too small, but just right? Well, not exactly. As alluded to earlier, different filters choose <marimo-tex class=\"arithmatex\">||(g||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(h||)</marimo-tex> in different ways depending on the mathematical properties of the problem. For example, the Benedict-Bordner filter was invented to minimize the transient error in this example, where <marimo-tex class=\"arithmatex\">||(\\dot{x}||)</marimo-tex> makes a step jump. We will not discuss this filter in this book, but here are two plots chosen with different allowable pairs of <marimo-tex class=\"arithmatex\">||(g||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(h||)</marimo-tex>. This filter design minimizes transient errors for step jumps in <marimo-tex class=\"arithmatex\">||(\\dot{x}||)</marimo-tex> at the cost of not being optimal for other types of changes in <marimo-tex class=\"arithmatex\">||(\\dot{x}||)</marimo-tex>.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "uDnK",
+      "code_hash": "994d39d68fbfe674e097f8d5624ec27d",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (NameError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "aWBL",
+      "code_hash": "5d304a6d04e6e88ceec8d91a4f9af960",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"varying-h\">Varying <marimo-tex class=\"arithmatex\">||(h||)</marimo-tex></h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "MIsd",
+      "code_hash": "7798f182c7636b6ce97ec8f836341ee1",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Now let's leave <marimo-tex class=\"arithmatex\">||(g||)</marimo-tex> unchanged and investigate the effect of modifying <marimo-tex class=\"arithmatex\">||(h||)</marimo-tex>. We know that <marimo-tex class=\"arithmatex\">||(h||)</marimo-tex> affects how much we favor the measurement of <marimo-tex class=\"arithmatex\">||(\\dot{x}||)</marimo-tex> vs our prediction. But what does this <em>mean</em>? If our signal is changing a lot (quickly relative to the time step of our filter), then a large <marimo-tex class=\"arithmatex\">||(h||)</marimo-tex> will cause us to react to those transient changes rapidly. A smaller <marimo-tex class=\"arithmatex\">||(h||)</marimo-tex> will cause us to react more slowly.</span>\n<span class=\"paragraph\">We will look at three examples. We have a noiseless measurement that slowly goes from 0 to 1 in 50 steps. Our first filter uses a nearly correct initial value for <marimo-tex class=\"arithmatex\">||(\\dot{x}||)</marimo-tex> and a small <marimo-tex class=\"arithmatex\">||(h||)</marimo-tex>. You can see from the output that the filter output is very close to the signal. The second filter uses the very incorrect guess of <marimo-tex class=\"arithmatex\">||(\\dot{x}=2||)</marimo-tex>. Here we see the filter 'ringing' until it settles down and finds the signal. The third filter uses the same conditions but it now sets <marimo-tex class=\"arithmatex\">||(h=0.5||)</marimo-tex>. If you look at the amplitude of the ringing you can see that it is much smaller than in the second chart, but the frequency is greater. It also settles down a bit quicker than the second filter, though not by much.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "IrqS",
+      "code_hash": "f72336e8d956af6994d81cc3660f9555",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (NameError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Lpqv",
+      "code_hash": "06f50394b295d67aeb7519e20dee97c8",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"interactive-example\">Interactive Example</h2>\n<span class=\"paragraph\">For those of you running this in Jupyter Notebook I've written an interactive version of the filter so you can see the effect of changing <marimo-tex class=\"arithmatex\">||(\\dot{x}||)</marimo-tex>, <marimo-tex class=\"arithmatex\">||(g||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(h||)</marimo-tex> in real time. As you adjust the sliders for <marimo-tex class=\"arithmatex\">||(\\dot{x}||)</marimo-tex>, <marimo-tex class=\"arithmatex\">||(g||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(h||)</marimo-tex> the data will be refiltered and the results plotted for you.</span>\n<span class=\"paragraph\">If you really want to test yourself, read the next paragraph and try to predict the results before you move the sliders.</span>\n<span class=\"paragraph\">Some things to try include setting <marimo-tex class=\"arithmatex\">||(g||)</marimo-tex>  and <marimo-tex class=\"arithmatex\">||(h||)</marimo-tex> to their minimum values. See how perfectly the filter tracks the data! This is only because we are perfectly predicting the weight gain. Adjust <marimo-tex class=\"arithmatex\">||(\\dot{x}||)</marimo-tex> to larger or smaller than 5. The filter should diverge from the data and never reacquire it. Start adding back either <marimo-tex class=\"arithmatex\">||(g||)</marimo-tex> or <marimo-tex class=\"arithmatex\">||(h||)</marimo-tex> and see how the filter snaps back to the data. See what the difference in the line is when you add only <marimo-tex class=\"arithmatex\">||(g||)</marimo-tex> vs only <marimo-tex class=\"arithmatex\">||(h||)</marimo-tex>. Can you explain the reason for the difference? Then try setting <marimo-tex class=\"arithmatex\">||(g||)</marimo-tex> greater than 1. Can you explain the results? Put <marimo-tex class=\"arithmatex\">||(g||)</marimo-tex> back to a reasonable value (such as 0.1), and then make <marimo-tex class=\"arithmatex\">||(h||)</marimo-tex> very large. Can you explain these results? Finally, set both <marimo-tex class=\"arithmatex\">||(g||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(h||)</marimo-tex> to their largest values.</span>\n<span class=\"paragraph\">If you want to explore with this more, change the value of the array <code>zs</code> to the values used in any of the charts above and rerun the cell to see the result.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "upgv",
+      "code_hash": "db727c21eaed8f6cc6c516352d1add6d",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (NameError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "WJUG",
+      "code_hash": "228fdd31be68f2b4efbd2786db0982b1",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"dont-lie-to-the-filter\">Don't Lie to the Filter</h2>\n<span class=\"paragraph\">You are free to set <marimo-tex class=\"arithmatex\">||(g||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(h||)</marimo-tex> to any value. Here is a filter that performs perfectly despite extreme noise.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "pCao",
+      "code_hash": "e5b60bad9af8370263faee23201cc575",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (NameError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "wEIy",
+      "code_hash": "fb29a42ee40ba19cf6172af7bccb73c7",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">I brilliantly extracted a straight line out of very noisy data! Maybe I shouldn't try to collect my Fields Medal in mathematics just yet. I did this by setting both <marimo-tex class=\"arithmatex\">||(g||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(h||)</marimo-tex> to 0. What does this do? It makes the filter ignore the measurements, and so for each update it computes the new position as <marimo-tex class=\"arithmatex\">||(x + \\Delta x \\Delta t||)</marimo-tex>. Of course the result is a straight line if we ignore the measurements.</span>\n<span class=\"paragraph\">A filter that ignores measurements is useless. I know you would never set both <marimo-tex class=\"arithmatex\">||(g||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(h||)</marimo-tex> to zero as that takes a special kind of genius that only I possess, but I promise that if you are not careful you will set them lower than they should be. You can always make great looking results from test data. When you try your filter on different data you will be disappointed in the results because you finely tuned the constants for a specific data set. <marimo-tex class=\"arithmatex\">||(g||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(h||)</marimo-tex> must reflect the real world behavior of the system you are filtering, not the behavior of one specific data set. In later chapters we will learn a lot about how to do that. For now I can only say be careful, or you will be getting perfect results with your test data, but results like this once you switch to real data:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "wlyU",
+      "code_hash": "e40e2041f789afe25e4d3b58180053e7",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (NameError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "PieA",
+      "code_hash": "3d37f1d96bf85a2f2b5b6b9d819b0347",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"tracking-a-train\">Tracking a Train</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "GrQN",
+      "code_hash": "e0c05c413e4d39a1a29c8abdcc832873",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">We are ready for a practical example. Earlier in the chapter we talked about tracking a train. Trains are heavy and slow, thus they cannot change speed quickly. They are on a track, so they cannot change direction except by slowing to a stop and then reversing course. Hence, we can conclude that if we already know the train's approximate position and velocity then we can predict its position in the near future with a great deal of accuracy. A train cannot change its velocity much in a second or two.</span>\n<span class=\"paragraph\">So let's write a filter for a train. Its position is expressed as its position on the track in relation to some fixed point which we say is 0 km. I.e., a position of 1 means that the train is 1 km away from the fixed point. Velocity is expressed as meters per second. We perform measurement of position once per second, and the error is <marimo-tex class=\"arithmatex\">||(\\pm||)</marimo-tex> 500 meters. How should we implement our filter?</span>\n<span class=\"paragraph\">First, let's simulate the situation without a filter. We will assume that the train is currently at kilometer 23, and moving at 15 m/s. We can code this as</span>\n<div class=\"language-python codehilite\"><pre><span></span><code><span class=\"n\">pos</span> <span class=\"o\">=</span> <span class=\"mi\">23</span><span class=\"o\">*</span><span class=\"mi\">1000</span>\n<span class=\"n\">vel</span> <span class=\"o\">=</span> <span class=\"mi\">15</span>\n</code></pre></div>\n<span class=\"paragraph\">Now we can compute the position of the train at some future time, <em>assuming</em> no change in velocity, with</span>\n<div class=\"language-python codehilite\"><pre><span></span><code><span class=\"k\">def</span><span class=\"w\"> </span><span class=\"nf\">compute_new_position</span><span class=\"p\">(</span><span class=\"n\">pos</span><span class=\"p\">,</span> <span class=\"n\">vel</span><span class=\"p\">,</span> <span class=\"n\">dt</span><span class=\"o\">=</span><span class=\"mi\">1</span><span class=\"p\">):</span>\n    <span class=\"k\">return</span> <span class=\"n\">pos</span> <span class=\"o\">+</span> <span class=\"p\">(</span><span class=\"n\">vel</span> <span class=\"o\">*</span> <span class=\"n\">dt</span><span class=\"p\">)</span>\n</code></pre></div>\n<span class=\"paragraph\">We can simulate the measurement by adding in some random noise to the position. Here our error is 500m, so the code might look like:</span>\n<div class=\"language-python codehilite\"><pre><span></span><code><span class=\"k\">def</span><span class=\"w\"> </span><span class=\"nf\">measure_position</span><span class=\"p\">(</span><span class=\"n\">pos</span><span class=\"p\">):</span>\n        <span class=\"k\">return</span> <span class=\"n\">pos</span> <span class=\"o\">+</span> <span class=\"n\">random</span><span class=\"o\">.</span><span class=\"n\">randn</span><span class=\"p\">()</span><span class=\"o\">*</span><span class=\"mi\">500</span>\n</code></pre></div>\n<span class=\"paragraph\">Let's put that in a cell and plot the results of 100 seconds of simulation. I will use NumPy's <code>asarray</code> function to convert the data into an NumPy array. This will allow me to divide all of the elements of the array at once by using the '/' operator.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Ilkb",
+      "code_hash": "e36612515b1b544de4724acc934e62ac",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (NameError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "mySd",
+      "code_hash": "932976d3f0e6c7bf36b1ef91749ebc42",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">We can see from the chart how poor the measurements are. No real train could ever move like that.</span>\n<span class=\"paragraph\">So what should we set <marimo-tex class=\"arithmatex\">||(g||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(h||)</marimo-tex> to if we want to filter this data? We have not developed the theory for this, but let's try to get a reasonable answer by the seat of our pants. We know that the measurements are very inaccurate, so we don't want to give them much weight at all. To do this we need to choose a very small <marimo-tex class=\"arithmatex\">||(g||)</marimo-tex>. We also know that trains can not accelerate or decelerate quickly, so we also want a very small <marimo-tex class=\"arithmatex\">||(h||)</marimo-tex>. For example:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vGkK",
+      "code_hash": "d71459904fc21d40c4f065d37a6b585a",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (NameError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "zmIa",
+      "code_hash": "a92becc271975e21be92ae470fd1c6eb",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">That is pretty good for an initial guess. Let's make <marimo-tex class=\"arithmatex\">||(g||)</marimo-tex> larger to see the effect.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "NOfw",
+      "code_hash": "492cf02ac98499c593b8a027f6e1bdc5",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (NameError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "jXAc",
+      "code_hash": "490a4a7559d9aba3b3907c61177e1863",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">We made <code>g=0.2</code> and we can see that while the train's position is smoothed, the estimated position (and hence velocity) fluctuates a lot in a very tiny frame, far more than a real train can do. So empirically we know that we want <code>g&lt;&lt;0.2</code>.</span>\n<span class=\"paragraph\">Now let's see the effect of a poor choice for <marimo-tex class=\"arithmatex\">||(h||)</marimo-tex>.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "mSxP",
+      "code_hash": "7100bf105257a59a06c9292dbfccb9e9",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (NameError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "IZEX",
+      "code_hash": "daafc80c2549c11d253d7dfeef4f99d3",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Here the position changes smoothly thanks to the small <marimo-tex class=\"arithmatex\">||(g||)</marimo-tex>, but the large <marimo-tex class=\"arithmatex\">||(h||)</marimo-tex> makes the filter very reactive to the measurements. This happens because in the course of a few seconds the rapidly changing measurement implies a very large velocity change, and a large <marimo-tex class=\"arithmatex\">||(h||)</marimo-tex> tells the filter to react to those changes quickly. Trains cannot change velocity quickly, so the filter is not doing a good job of filtering the data - the filter is changing velocity faster than a train can.</span>\n<span class=\"paragraph\">Finally, let's add some acceleration to the train. I don't know how fast a train can actually accelerate, but let's say it is accelerating at 0.2 m/sec^2.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "UFLA",
+      "code_hash": "104e0f04c40966a09f15392a4f57309d",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (NameError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "RCUM",
+      "code_hash": "b28820f7530ac8c72535b34712d4ce56",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (NameError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ynmH",
+      "code_hash": "429633d58d62703c55b9fe5b60139739",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Here we see that the filter is not quite tracking the train anymore due to the acceleration. We can fiddle with <marimo-tex class=\"arithmatex\">||(h||)</marimo-tex> to let it track better, at the expense of a less smooth filtered estimate.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "NBGo",
+      "code_hash": "635b62c70f2ea7ab3fe9ce5e86aae043",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (NameError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "eooq",
+      "code_hash": "4ed17bbc42672e61f7d76e2316d12df5",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">There are two lessons to be learned here. First, use the <marimo-tex class=\"arithmatex\">||(h||)</marimo-tex> term to respond to changes in velocity that you are not modeling. But, far more importantly, there is a trade off here between responding quickly and accurately to changes in behavior and producing ideal output for when the system is in a steady state that you have. If the train never changes velocity we would make <marimo-tex class=\"arithmatex\">||(h||)</marimo-tex> extremely small to avoid having the filtered estimate unduly affected by the noise in the measurement. But in an interesting problem there are almost always changes in state, and we want to react to them quickly. The more quickly we react to them, the more we are affected by the noise in the sensors.</span>\n<span class=\"paragraph\">I could go on, but my aim is not to develop g-h filter theory here so much as to build insight into how combining measurements and predictions leads to a filtered solution. There is extensive literature on choosing <marimo-tex class=\"arithmatex\">||(g||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(h||)</marimo-tex> for problems such as this, and there are optimal ways of choosing them to achieve various goals. As I explained earlier it is easy to 'lie' to the filter when experimenting with test data like this. In the subsequent chapters we will learn how the Kalman filter solves this problem in the same basic manner, but with far more sophisticated mathematics.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ChmK",
+      "code_hash": "b5b4f5807c6c062af8d780218e297f60",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"g-h-filters-with-filterpy\">g-h Filters with FilterPy</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "KdvC",
+      "code_hash": "ea098709ea2a8bdbe26ed3da7fbb3f7c",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\"><a href=\"https://github.com/rlabbe/filterpy\" rel=\"noopener noreferrer\" target=\"_blank\">FilterPy</a> is an open source filtering library that I wrote. It has all of the filters in this book, along with others. It is rather easy to program your own g-h filter, but as we progress we will rely on FilterPy more. As a quick introduction, let's look at the g-h filter in FilterPy.</span>\n<span class=\"paragraph\">If you do not have FilterPy installed just issue the following command from the command line.</span>\n<div class=\"language-text highlight\"><pre><span></span><code>pip install filterpy\n</code></pre></div>\n<span class=\"paragraph\">Read Appendix A for more information on installing or downloading FilterPy from GitHub.</span>\n<span class=\"paragraph\">To use the g-h filter import it and create an object from the class <code>GHFilter</code>.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vkvV",
+      "code_hash": "cbc6db2be34a06f02a1ab178da940675",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "EKSN",
+      "code_hash": "9fc89cdbb858f06740825fdb168ba186",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">When you construct the object you specify the initial value and rate of change for the signal (<code>x</code> and 'dx'), the time step between updates(<code>dt</code>) and the two filter parameter (<code>g</code> and <code>h</code>). <code>dx</code> must have the same units of <code>x</code>/<code>dt</code> - if <code>x</code> is in meters and <code>dt</code> is in seconds then <code>dx</code> must be in meters per second.</span>\n<span class=\"paragraph\">To run the filter call update, passing the measurement in the parameter <code>z</code>, which you'll recall is a standard name for measurements in the literature.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "tasN",
+      "code_hash": "4b6e9243168e9880077d10d2301a3b17",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "application/json": "[\"text/plain+float:0.96\", \"text/plain+float:0.24\"]"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "SXvM",
+      "code_hash": "94fa67add5a0a31299ffb40fb7635b02",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\"><code>update()</code> returns the new value of <code>x</code> and <code>dx</code> in a tuple, but you can also access them from the object.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "CFll",
+      "code_hash": "5cc7a2e04c92b4c33a9e62dc2e219c0c",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "0.96 0.24\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "wbrJ",
+      "code_hash": "e2bfe0c7c5e82be9c356eafca3e26846",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">You can dynamically alter <code>g</code> and <code>h</code>.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "viyg",
+      "code_hash": "a6b5b6ed128dae0620d8e684e1cdcc1c",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "(1.965, 0.375)\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "GbuD",
+      "code_hash": "4c3f5bb224e99eb1a5f1102cbec43c82",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">You can filter a sequence of measurements in a batch.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "bHhy",
+      "code_hash": "cf634f2c35aab5c8790a6cd87a66d547",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "[[1.965 0.375]\n [2.868 0.507]\n [3.875 0.632]\n [4.901 0.731]]\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "ctlq",
+      "code_hash": "9f35b257e36547f8b5520a1fb70c6fdd",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">You can filter multiple independent variables. If you are tracking an aircraft you'll need to track it in 3D space. Use NumPy arrays for <code>x</code>, <code>dx</code>, and the measurements.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "NtNR",
+      "code_hash": "0b336349805ad4be7ef2407026d25277",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": " x = [  3.8   13.2  101.64]\ndx = [8.2  9.8  0.56]\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "nebC",
+      "code_hash": "9208f50becdc47fa9c0c19a545d2cd6c",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">The class <code>GHFilterOrder</code> allows you to create a filter of order 0, 1, or 2. A g-h filter is order 1. The g-h-k filter, which we haven't talked about, also tracks accelerations. Both classes have functionality required by real applications, such as computing the Variance Reduction Factor (VRF), which we haven't discussed in this chapter. I could fill a book just on the theory and applications of g-h filters, but we have other goals in this book. If you are interested, explore the FilterPy code and do some further reading.</span>\n<span class=\"paragraph\">The documentation for FilterPy is at <a href=\"https://filterpy.readthedocs.org/\" rel=\"noopener noreferrer\" target=\"_blank\">https://filterpy.readthedocs.org/</a>.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ZsHO",
+      "code_hash": "fbee05903c979c0a5eb3bc3523ece590",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"summary\">Summary</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "HNXk",
+      "code_hash": "40b720352362915cc78b663113984b8a",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">I encourage you to experiment with this filter to develop your understanding of how it reacts. It shouldn't take too many attempts to come to the realization that ad-hoc choices for <marimo-tex class=\"arithmatex\">||(g||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(h||)</marimo-tex> do not perform very well. A particular choice might perform well in one situation, but very poorly in another. Even when you understand the effect of <marimo-tex class=\"arithmatex\">||(g||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(h||)</marimo-tex> it can be difficult to choose proper values. In fact, it is extremely unlikely that you will choose values for <marimo-tex class=\"arithmatex\">||(g||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(h||)</marimo-tex> that is optimal for any given problem. Filters are <em>designed</em>, not selected <em>ad hoc</em>.</span>\n<span class=\"paragraph\">In some ways I do not want to end the chapter here, as there is a significant amount that we can say about selecting <marimo-tex class=\"arithmatex\">||(g||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(h||)</marimo-tex>. But the g-h filter in this form is not the purpose of this book. Designing the Kalman filter requires you to specify a number of parameters - indirectly they do relate to choosing <marimo-tex class=\"arithmatex\">||(g||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(h||)</marimo-tex>, but you will never refer to them directly when designing Kalman filters. Furthermore, <marimo-tex class=\"arithmatex\">||(g||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(h||)</marimo-tex> will vary at every time step in a very non-obvious manner.</span>\n<span class=\"paragraph\">There is another feature of these filters we have barely touched upon - Bayesian statistics. You will note that the term 'Bayesian' is in the title of this book; this is not a coincidence! For the time being we will leave <marimo-tex class=\"arithmatex\">||(g||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(h||)</marimo-tex> behind, largely unexplored, and develop a very powerful form of probabilistic reasoning about filtering. Yet suddenly this same g-h filter algorithm will appear, this time with a formal mathematical edifice that allows us to create filters from multiple sensors, to accurately estimate the amount of error in our solution, and to control robots.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    }
+  ]
+}

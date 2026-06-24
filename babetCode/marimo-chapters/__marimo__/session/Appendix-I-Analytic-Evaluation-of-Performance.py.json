@@ -1,0 +1,81 @@
+{
+  "version": "1",
+  "metadata": {
+    "marimo_version": "0.23.10",
+    "script_metadata_hash": null
+  },
+  "cells": [
+    {
+      "id": "Hbol",
+      "code_hash": "1d0db38904205bec4d6f6f6a1f6cec3e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "WNxn",
+      "code_hash": "b35bdc40f2177738c7fd7e18de8fbee8",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "MJUe",
+      "code_hash": "aae9eb2d3ea3a449680bedd58a67c8f0",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\"><a href=\"./table_of_contents.ipynb\">Table of Contents</a></span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vblA",
+      "code_hash": "56ba3624b163046ab6683a6c85cf198f",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h1 id=\"analytic-evaluation-of-performance\">Analytic Evaluation of Performance</h1></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "bkHC",
+      "code_hash": "403803daa2f7b08960179e8cd5f8e527",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "cannot import name 'load_style' from 'book_format' (C:\\Users\\goper\\Files\\vsCode\\Kalman-and-Bayesian-Filters-in-Python\\book_format.py)",
+          "traceback": null
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stderr",
+          "text": "<span class=\"codehilite\"><div class=\"highlight\"><pre><span></span><span class=\"gt\">Traceback (most recent call last):</span>\n  File <span class=\"nb\">&quot;C:\\Users\\goper\\AppData\\Local\\Temp\\marimo_23288\\__marimo__cell_bkHC_.py&quot;</span>, line <span class=\"m\">3</span>, in <span class=\"n\">&lt;module&gt;</span>\n<span class=\"w\">    </span><span class=\"kn\">from</span><span class=\"w\"> </span><span class=\"nn\">book_format</span><span class=\"w\"> </span><span class=\"kn\">import</span> <span class=\"n\">load_style</span>\n<span class=\"gr\">ImportError</span>: <span class=\"n\">cannot import name &#39;load_style&#39; from &#39;book_format&#39; (C:\\Users\\goper\\Files\\vsCode\\Kalman-and-Bayesian-Filters-in-Python\\book_format.py)</span>\n</pre></div>\n</span>",
+          "mimetype": "application/vnd.marimo+traceback"
+        }
+      ]
+    }
+  ]
+}

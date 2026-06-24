@@ -1,0 +1,1238 @@
+{
+  "version": "1",
+  "metadata": {
+    "marimo_version": "0.23.10",
+    "script_metadata_hash": null
+  },
+  "cells": [
+    {
+      "id": "Hbol",
+      "code_hash": "1d0db38904205bec4d6f6f6a1f6cec3e",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "bkVz",
+      "code_hash": null,
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "MJUe",
+      "code_hash": "aae9eb2d3ea3a449680bedd58a67c8f0",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\"><a href=\"./table_of_contents.ipynb\">Table of Contents</a></span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vblA",
+      "code_hash": "70c40f9bc77e3e447d4cb15c88d96162",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h1 id=\"multivariate-gaussians\">Multivariate Gaussians</h1>\n<span class=\"paragraph\">Modeling Uncertainty in Multiple Dimensions</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "bkHC",
+      "code_hash": "e8538e1461e4aa6f23e893d65c7f11e3",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "lEQa",
+      "code_hash": "eafb355248acc454199a7ab51eddc522",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "PKri",
+      "code_hash": "e74c57cbcaaf2389c3c4b86fe4837e57",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"introduction\">Introduction</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Xref",
+      "code_hash": "e14ac52a073692fcfb69ef6915b4146c",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">The techniques in the last chapter are very powerful, but they only work with one variable or dimension. They provide no way to represent multidimensional data, such as the position and velocity of a dog in a field. Position and velocity are related to each other, and as we learned in the g-h chapter we should never throw away information. In this chapter we learn how to describe this relationship probabilistically. Through this key insight we will achieve markedly better filter performance.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "SFPL",
+      "code_hash": "e566cd4e2ffb16f9eaa45b15eff08ba9",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"multivariate-normal-distributions\">Multivariate Normal Distributions</h2>\n<span class=\"paragraph\">We've been using Gaussians for a scalar random variable, expressed as <marimo-tex class=\"arithmatex\">||(\\mathcal{N}(\\mu, \\sigma^2)||)</marimo-tex>. A more formal term for this is <em>univariate normal</em>, where univariate means 'one variable'. The probability distribution of the Gaussian is known as the <em>univariate normal distribution</em>.</span>\n<span class=\"paragraph\">What might a <em>multivariate normal distribution</em> be? <em>Multivariate</em> means multiple variables. Our goal is to be able to represent a normal distribution with multiple dimensions. I don't necessarily mean spatial dimensions - if we track the position, velocity, and acceleration of an aircraft in (x, y, z) that gives us a nine dimensional problem. Consider a two dimensional case. It might be the <em>x</em> and <em>y</em> coordinates of a robot, it might be the position and velocity of a dog on the x-axis, or milk production and feed rate at a dairy. It doesn't really matter. We can see that for <marimo-tex class=\"arithmatex\">||(N||)</marimo-tex> dimensions, we need <marimo-tex class=\"arithmatex\">||(N||)</marimo-tex> means, which we will arrange in a column matrix (vector) like so:</span>\n<marimo-tex class=\"arithmatex\">||[\n\\mu = \\begin{bmatrix}\\mu_1\\\\\\mu_2\\\\ \\vdots \\\\\\mu_n\\end{bmatrix}\n||]</marimo-tex><span class=\"paragraph\">Let's say we believe that <marimo-tex class=\"arithmatex\">||(x = 2||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(y = 17||)</marimo-tex>. We would have</span>\n<marimo-tex class=\"arithmatex\">||[\n\\mu = \\begin{bmatrix}2\\\\17\\end{bmatrix}\n||]</marimo-tex><span class=\"paragraph\">The next step is representing our variances. At first blush we might think we would also need N variances for N dimensions. We might want to say the variance for x is 10 and the variance for y is 4, like so.</span>\n<marimo-tex class=\"arithmatex\">||[\\sigma^2 = \\begin{bmatrix}10\\\\4\\end{bmatrix}||]</marimo-tex><span class=\"paragraph\">This is incomplete because it does not consider the more general case. In the <strong>Gaussians</strong> chapter we computed the variance in the heights of students. That is a measure of how the heights vary relative to each other. If all students are the same height, then the variance is 0, and if their heights are wildly different, then the variance will be large.</span>\n<span class=\"paragraph\">There is also a relationship between height and weight. In general, a taller person weighs more than a shorter person.  Height and weight are <em>correlated</em>. We want a way to express not only what we think the variance is in the height and the weight, but also the degree to which they are correlated. In other words, we want to know how weight varies compared to the heights. We call that the <em>covariance</em>.</span>\n<span class=\"paragraph\">Before we can understand multivariate normal distributions we need to understand the mathematics behind correlations and covariances.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "BYtC",
+      "code_hash": "b56d6a6d0cc4b9b98160e2c797021c76",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"correlation-and-covariance\">Correlation and Covariance</h2>\n<span class=\"paragraph\"><em>Covariance</em> describes how much two variables vary together. Covariance is short for <em>correlated variances</em>. In other words, <em>variance</em> is a measure for how a population vary amongst themselves, and <em>covariance</em> is a measure for how much two variables change in relation to each other.  For example, as height increases weight also generally increases. These variables are <em>correlated</em>. They are <em>positively correlated</em> because as one variable gets larger so does the other. As the outdoor temperature decreases home heating bills increase. These are <em>inversely correlated</em> or <em>negatively correlated</em> because as one variable gets larger the other variable lowers. The price of tea and the number of tail wags my dog makes have no relation to each other, and we say they are <em>uncorrelated</em> or <em>independent</em>- each can change independent of the other.</span>\n<span class=\"paragraph\">Correlation allows prediction. If you are significantly taller than me I can predict that you also weigh more than me. As winter comes I predict that I will be spending more to heat my house. If my dog wags his tail more I don't conclude that tea prices will be changing.</span>\n<span class=\"paragraph\">For example, here is a plot of height and weight of students on the school's track team. If a student is 68 inches tall I can predict they weigh roughly 160 pounds. Since the correlation is not perfect neither is my prediction.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "RGSE",
+      "code_hash": "e76ab71d443f27e0e0b59497fef07528",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "Kclp",
+      "code_hash": "9e0856112338ed1d8292c15eddd2f7e3",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">In this book we only consider <em>linear correlation</em>. We assume that the relationship between variables is linear. That is, a straight line is a good fit for the data. I've fit a straight line through the data in the above chart. The concept of <em>nonlinear correlation</em> exists, but we will not be using it.</span>\n<span class=\"paragraph\">The equation for the covariance between <marimo-tex class=\"arithmatex\">||(X||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(Y||)</marimo-tex> is</span>\n<marimo-tex class=\"arithmatex\">||[ COV(X, Y) = \\sigma_{xy} = \\mathbb E\\big[(X-\\mu_x)(Y-\\mu_y)\\big]||]</marimo-tex><span class=\"paragraph\">Where <marimo-tex class=\"arithmatex\">||(\\mathbb E[X]||)</marimo-tex> is the <em>expected value</em> of X, defined as</span>\n<marimo-tex class=\"arithmatex\">||[\\mathbb E[X] =  \\begin{cases} \\sum_{i=1}^n p_ix_i &amp; \\mbox{discrete}\\\\ \\int_{-\\infty}^\\infty f(x)\\, x dx &amp; \\mbox{continuous}\\end{cases}||]</marimo-tex><span class=\"paragraph\">We assume each data point is equally likely, so the probability of each is <marimo-tex class=\"arithmatex\">||(\\frac{1}{N}||)</marimo-tex>, giving</span>\n<marimo-tex class=\"arithmatex\">||[\\mathbb E[X] =  \\frac{1}{N}\\sum_{i=1}^n x_i||]</marimo-tex><span class=\"paragraph\">for the discrete case we will be considering.</span>\n<span class=\"paragraph\">Compare the covariance equation to the equation for the variance. As you can see they are very similar:</span>\n<marimo-tex class=\"arithmatex\">||[\\begin{aligned}VAR(X) = \\sigma_x^2 &amp;= \\mathbb E[(X - \\mu)^2]\\\\\nCOV(X, Y) = \\sigma_{xy} &amp;= \\mathbb E\\big[(X-\\mu_x)(Y-\\mu_y)\\big]\\end{aligned}||]</marimo-tex><span class=\"paragraph\">In particular, if you compute <marimo-tex class=\"arithmatex\">||(COV(X, X)||)</marimo-tex> you get the equation for <marimo-tex class=\"arithmatex\">||(VAR(X)||)</marimo-tex>, which supports my statement that the variance computes how a random variable varies amongst itself.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "emfo",
+      "code_hash": "993e4b39d28da0a93473cf7e10f8e169",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">We use a <em>covariance matrix</em> to denote covariances of a multivariate normal distribution, and it looks like this:</span>\n<marimo-tex class=\"arithmatex\">||[\n\\Sigma = \\begin{bmatrix}\n  \\sigma_1^2 &amp; \\sigma_{12} &amp; \\cdots &amp; \\sigma_{1n} \\\\\n  \\sigma_{21} &amp;\\sigma_2^2 &amp; \\cdots &amp; \\sigma_{2n} \\\\\n  \\vdots  &amp; \\vdots  &amp; \\ddots &amp; \\vdots  \\\\\n  \\sigma_{n1} &amp; \\sigma_{n2} &amp; \\cdots &amp; \\sigma_n^2\n \\end{bmatrix}\n||]</marimo-tex><span class=\"paragraph\">The diagonal contains the variance for each variable, and the off-diagonal elements contain the covariance between the <marimo-tex class=\"arithmatex\">||(i^{th}||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(j^{th}||)</marimo-tex> variables. So <marimo-tex class=\"arithmatex\">||(\\sigma_3^2||)</marimo-tex> is the variance of the third variable, and <marimo-tex class=\"arithmatex\">||(\\sigma_{13}||)</marimo-tex> is the covariance between the first and third variables.</span>\n<span class=\"paragraph\">A covariance of 0 indicates no correlation. If the variance for <marimo-tex class=\"arithmatex\">||(x||)</marimo-tex> is 10, the variance for <marimo-tex class=\"arithmatex\">||(y||)</marimo-tex> is 4, and there is no linear correlation between <marimo-tex class=\"arithmatex\">||(x||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(y||)</marimo-tex>, then we would write</span>\n<marimo-tex class=\"arithmatex\">||[\\Sigma = \\begin{bmatrix}10&amp;0\\\\0&amp;4\\end{bmatrix}||]</marimo-tex><span class=\"paragraph\">If there was a small amount of positive correlation between <marimo-tex class=\"arithmatex\">||(x||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(y||)</marimo-tex> we might have</span>\n<marimo-tex class=\"arithmatex\">||[\\Sigma = \\begin{bmatrix}10&amp;1.2\\\\1.2&amp;4\\end{bmatrix}||]</marimo-tex><span class=\"paragraph\">where 1.2 is the covariance between <marimo-tex class=\"arithmatex\">||(x||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(y||)</marimo-tex>. I say the correlation is \"small\" because the covariance of 1.2 is small relative to the variances of 10.</span>\n<span class=\"paragraph\">If there was a large amount of negative correlation between  between <marimo-tex class=\"arithmatex\">||(x||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(y||)</marimo-tex> we might have</span>\n<marimo-tex class=\"arithmatex\">||[\\Sigma = \\begin{bmatrix}10&amp;-9.7\\\\-9.7&amp;4\\end{bmatrix}||]</marimo-tex><span class=\"paragraph\">The covariance matrix is symmetric. After all, the covariance between <marimo-tex class=\"arithmatex\">||(x||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(y||)</marimo-tex> is always equal to the covariance between <marimo-tex class=\"arithmatex\">||(y||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(x||)</marimo-tex>. That is, <marimo-tex class=\"arithmatex\">||(\\sigma_{xy}=\\sigma_{yx}||)</marimo-tex> for any <marimo-tex class=\"arithmatex\">||(x||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(y||)</marimo-tex>.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Hstk",
+      "code_hash": "2f098c6079c5b4fcdb3685dd1f373e0f",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">I fear I might be losing you, so let's work an example. In the <strong>Gaussians</strong> chapter we had a class of students with heights H=[1.8, 2.0, 1.7, 1.9, 1.6] meters. We computed:</span>\n<marimo-tex class=\"arithmatex\">||[\\begin{aligned}\n\\mathit{VAR}(H) &amp;= E[(H - \\mu_H)^2] \\\\\n&amp;= \\frac{1}{N}\\sum_{i=1}^n (H_i - \\mu_H)^2 \\\\\n&amp;= \\frac{1}{5}\\left[(1.8-1.8)^2 + (2-1.8)^2 + (1.7-1.8)^2 + (1.9-1.8)^2 + (1.6-1.8)^2\\right] \\\\\n&amp;= 0.02\n\\end{aligned}||]</marimo-tex></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "nWHF",
+      "code_hash": "a6e73a9d27e756fe1ce5fe4d7feb22aa",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Easy, right? If we weigh the students we might find their weights to be W = [70.1, 91.2, 59.5, 93.2, 53.5]. Can we use the covariance equation to create the covariance matrix? Sure. It will look like:</span>\n<marimo-tex class=\"arithmatex\">||[\\Sigma = \\begin{bmatrix}\\sigma_H^2 &amp; \\sigma_{H,W} \\\\\n\\sigma_{W,H} &amp; \\sigma_{W}^2\\end{bmatrix}||]</marimo-tex><span class=\"paragraph\">We just computed the variance of the height, and it will go in the upper left hand corner of the matrix. The lower right corner contains the variance in weights. Using the same equation we get:</span>\n<marimo-tex class=\"arithmatex\">||[\\begin{aligned}\n\\mu_W &amp;= \\frac{1}{5}(70.1 + 91.2 + 59.5 + 93.2 + 53.5) = 73.5 \\\\\n\\sigma_W^2 &amp;= \\frac{1}{5}\\left[(70.1-73.5)^2 + (91.2-73.5)^2 + (59.5-73.5)^2 + (93.2-73.5)^2 + (53.5-73.5)^2\\right] \\\\\n&amp;= 261.8\n\\end{aligned}||]</marimo-tex><span class=\"paragraph\">Now the covariances. Using the formula above, we compute:</span>\n<marimo-tex class=\"arithmatex\">||[\\begin{aligned}\n\\sigma_{H,W} &amp;= \\mathbb E\\big[(H-\\mu_H)(W-\\mu_W)\\big] \\\\\n&amp;= \\frac{1}{N}\\sum_{i=1}^n (H_i-\\mu_H)(W_i-\\mu_W) \\\\\n&amp;= \\frac{1}{5}[(1.8-1.8)(70.1-73.5) + (2-1.8)(91.2-73.5) + (1.7-1.8)(59.5-73.5)\\, +\\\\\n&amp;\\, \\, \\, \\,  \\, (1.9-1.8)(93.2-73.5) + (1.6-1.8)(53.5-73.5)] \\\\\n&amp;= 2.18\n\\end{aligned}||]</marimo-tex><span class=\"paragraph\">That was tedious, but easy enough. We will never do that again because, of course, NumPy will compute it for you.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "iLit",
+      "code_hash": "2b93a3dd43f24c227eff7c846b10a3a7",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "ZHCJ",
+      "code_hash": "7664fcecffc29de6d5d2c6cb7361f422",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">That doesn't agree with our calculation! What went wrong? Nothing. NumPy applies a correction for small sample sizes; it uses <marimo-tex class=\"arithmatex\">||(\\frac{1}{N-1}||)</marimo-tex> as the normalization term instead of <marimo-tex class=\"arithmatex\">||(\\frac{1}{N}||)</marimo-tex>.</span>\n<span class=\"paragraph\">This is a bit beyond the scope of this book. Briefly, suppose the actual class size is 200 students, and we took a sample of 5 students to perform this computation because we couldn't afford to measure and weigh all 200 students. It is nearly certain that there will be some error in our estimator because the sample is unlikely to perfectly represent the class. As our sample size approaches 200 the error will approach 0. We say there is no <em>bias</em> in the latter, and that we have an <em>unbiased estimator</em>. In contrast, when we take a small sample there is bias (error is nonzero), and we have a <em>biased estimator</em>.</span>\n<span class=\"paragraph\">If the error is zero it makes sense to divide by <marimo-tex class=\"arithmatex\">||(N||)</marimo-tex>. I will not prove why, but for biased estimators we use <marimo-tex class=\"arithmatex\">||(\\frac{1}{N-1}||)</marimo-tex> to correct for the small sample size. NumPy does this by default because in practice we are almost always working from data samples from a larger collection. If you want the unbiased estimator, which we computed above, use <code>bias=1</code> in the call to `np.cov'.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ROlb",
+      "code_hash": "2fa5399b88e179384f57a37473603e18",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "qnkX",
+      "code_hash": "8825d0efcd0f4ce5a4fce8c7722518f6",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">This agrees with our computation. We will not use <code>bias=1</code> again in this book since we are using <em>random variables</em> which are sampling from the infinite set of positions of the objects we are tracking. Here we are computing the variance and covariance for the entire population, so <code>bias=1</code> is correct.</span>\n<span class=\"paragraph\">What does this matrix tell us? It tells us the variance in heights is 0.02 <marimo-tex class=\"arithmatex\">||(m^2||)</marimo-tex> and the variance in weights is 261.788 <marimo-tex class=\"arithmatex\">||(kg^2||)</marimo-tex>. Furthermore, it tells us the weights and heights are positively correlated - as heights increase so do the weights.</span>\n<span class=\"paragraph\">Let's create perfectly correlated data. By this I mean that the data perfectly fits on a line - there is no variance from the line.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "TqIu",
+      "code_hash": "965a6dd10143702211e50b22b350f4e5",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "Vxnm",
+      "code_hash": "3b5514719e2e12faf898cba3e1519901",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">We can see from the covariance matrix that the covariance is equal to the variance in x and in y.</span>\n<span class=\"paragraph\">Now let's add some noise to one of the variables so that they are no longer perfectly correlated. I will make <marimo-tex class=\"arithmatex\">||(Y||)</marimo-tex> negative to create a negative correlation.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "DnEU",
+      "code_hash": "f13cb6fb125674e94700eb78599d85cc",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "ulZA",
+      "code_hash": "ae498e6edd2f13d580afcddafd09fa0b",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">The data no longer forms a straight line. The covariance is <marimo-tex class=\"arithmatex\">||(\\sigma_{xy}=-3.08||)</marimo-tex>. It is not close to zero compared to the magnitudes of <marimo-tex class=\"arithmatex\">||(\\sigma_x^2||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(\\sigma_y^2||)</marimo-tex>, and so we know there is still a high degree of correlation. We can verify this by looking at the chart. The data forms nearly a straight line.</span>\n<span class=\"paragraph\">Now I will add random noise to a straight line.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ecfG",
+      "code_hash": "b118e698fccc694c9406851a000745bd",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "Pvdt",
+      "code_hash": "8bb720397939d63c9410e0f4fdd603be",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">We see that the covariance is smaller in relation to the variances, reflecting the lower correlation between <marimo-tex class=\"arithmatex\">||(X||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(Y||)</marimo-tex>. We can still fit a straight line through this data, but there is much greater variation in the data.</span>\n<span class=\"paragraph\">Finally, here is the covariance between completely random data.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ZBYS",
+      "code_hash": "3e11f1ae2ee4b80718780ac7b49de03d",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "aLJB",
+      "code_hash": "ac07fcf695bd9d55b6c72df0bfa15cc0",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Here the covariances are very near zero. As you can see with the plot, there is no clear way to draw a line to fit the data. A vertical line would be as unconvincing as the horizontal line I've shown.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "nHfw",
+      "code_hash": "ead410ff34c4431413855180951397fb",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"multivariate-normal-distribution-equation\">Multivariate Normal Distribution Equation</h2>\n<span class=\"paragraph\">Recall the equation for the normal distribution from the <strong>Gaussians</strong> chapter:</span>\n<marimo-tex class=\"arithmatex\">||[\nf(x, \\mu, \\sigma) = \\frac{1}{\\sqrt{2\\pi\\sigma^2}} \\exp \\Big [{-\\frac{1}{2}}{(x-\\mu)^2}/\\sigma^2 \\Big ]\n||]</marimo-tex><span class=\"paragraph\">Here is the multivariate normal distribution in <marimo-tex class=\"arithmatex\">||(n||)</marimo-tex> dimensions.</span>\n<marimo-tex class=\"arithmatex\">||[\nf(\\mathbf{x},\\, \\mu,\\,\\Sigma) = \\frac{1}{\\sqrt{(2\\pi)^n|\\Sigma|}}\\, \\exp  \\Big [{ -\\frac{1}{2}(\\mathbf{x}-\\mu)^\\mathsf{T}\\Sigma^{-1}(\\mathbf{x}-\\mu) \\Big ]}\n||]</marimo-tex><span class=\"paragraph\">The multivariate version merely replaces the scalars of the univariate equations with matrices. If you are reasonably well-versed in linear algebra this equation should look quite manageable. If not, don't worry, both FilterPy and SciPy provide functions to compute it for you. Let's ignore the computation for a moment and plot it to see what it looks like.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "xXTn",
+      "code_hash": "33332484f484ad80083882e90bd63f05",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "AjVT",
+      "code_hash": "5faeca0c728835869af03a4ac7aea7c7",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">This is a plot of multivariate Gaussian with a mean of <marimo-tex class=\"arithmatex\">||(\\mu=[\\begin{smallmatrix}2\\\\17\\end{smallmatrix}]||)</marimo-tex> and a covariance of <marimo-tex class=\"arithmatex\">||(\\Sigma=[\\begin{smallmatrix}10&amp;0\\\\0&amp;4\\end{smallmatrix}]||)</marimo-tex>. The three dimensional shape shows the probability density for any value of <marimo-tex class=\"arithmatex\">||((X, Y)||)</marimo-tex> in the z-axis. I have projected the variance for x and y onto the walls of the chart - you can see that they take on the Gaussian bell curve shape. The curve for <marimo-tex class=\"arithmatex\">||(X||)</marimo-tex> is wider than the curve for <marimo-tex class=\"arithmatex\">||(Y||)</marimo-tex>, which is explained by <marimo-tex class=\"arithmatex\">||(\\sigma_x^2=10||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(\\sigma_y^2=4||)</marimo-tex>. The highest point of the 3D surface is at the the means for <marimo-tex class=\"arithmatex\">||(X||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(Y||)</marimo-tex>.</span>\n<span class=\"paragraph\">All multivariate Gaussians have this shape. If we think of this as the Gaussian for the position of a dog, the z-value at each point of (<marimo-tex class=\"arithmatex\">||(X, Y||)</marimo-tex>) is the probability density of the dog being at that position. Strictly speaking this is the <em>joint probability density function</em>, which I will define soon. So, the dog has the highest probability of being near (2, 17), a modest probability of being near (5, 14), and a very low probability of being near (10, 10). As with the univariate case this is a <em>probability density</em>, not a <em>probability</em>. Continuous distributions have an infinite range, and so the probability of being exactly at (2, 17), or any other point, is 0%. We can compute the probability of being within a given range by computing the volume under the surface with an integral.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "pHFh",
+      "code_hash": "37909ab084c7a76c9df28297f3106561",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">FilterPy [2] implements the equation with the function <code>multivariate_gaussian()</code> in the <code>filterpy.stats.</code> module. SciPy's <code>stats</code> module implements the multivariate normal equation with <code>multivariate_normal()</code>. It implements a 'frozen' form where you set the mean and covariance once, and then calculate the probability density for any number of values for x over any arbitrary number of calls. I named my function <code>multivariate_gaussian()</code> to ensure it is never confused with the SciPy version.</span>\n<blockquote>\n<span class=\"paragraph\">The <a href=\"http://docs.scipy.org/doc/scipy/reference/tutorial/stats.html\">tutorial</a>[1] for the <code>scipy.stats</code> module explains 'freezing' distributions and other very useful features.</span>\n</blockquote></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "NCOB",
+      "code_hash": "fea957549eadddcfc288c42ac5ccfa90",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "aqbW",
+      "code_hash": "1819410ed25a71210375b3ad10a7a191",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">I'll demonstrate using it, and then move on to more interesting things.</span>\n<span class=\"paragraph\">First, let's find the probability density for our dog being at (2.5, 7.3) if we believe he is at (2, 7) with a variance of 8 for <marimo-tex class=\"arithmatex\">||(x||)</marimo-tex> and a variance of 3 for <marimo-tex class=\"arithmatex\">||(y||)</marimo-tex>.</span>\n<span class=\"paragraph\">Start by setting <marimo-tex class=\"arithmatex\">||(x||)</marimo-tex> to (2.5, 7.3). You can use a tuple, list, or NumPy array.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "TRpd",
+      "code_hash": "a94301d0e4e7f2c0bc9136ce3fb01ea1",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "TXez",
+      "code_hash": "2cef68b54ba73b28a103e8df3d650409",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Next, we set the mean of our belief:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "dNNg",
+      "code_hash": "5a3e60e15f090bdf36ed1243d6b2e3f3",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "yCnT",
+      "code_hash": "0ddee2df84b1a3cccfd3fd8d392be83c",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Finally, we have to define our covariance matrix. In the problem statement we did not mention any correlation between <marimo-tex class=\"arithmatex\">||(x||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(y||)</marimo-tex>, and we will assume there is none. This makes sense; a dog can choose to independently wander in either the <marimo-tex class=\"arithmatex\">||(x||)</marimo-tex> direction or <marimo-tex class=\"arithmatex\">||(y||)</marimo-tex> direction without affecting the other. I will use the variable name <code>P</code>. Kalman filters use the name <marimo-tex class=\"arithmatex\">||(\\textbf{P}||)</marimo-tex> for the covariance matrix, and we need to become familiar with the conventions.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "wlCL",
+      "code_hash": "bedd899c0dc84b6a197a3090d35608ca",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "kqZH",
+      "code_hash": "11616768d14c29cafa6946cf378ae661",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Now call the function</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "wAgl",
+      "code_hash": "a54fafb157da87465658312f6ad0e140",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "rEll",
+      "code_hash": "b64f0a6f79ad154648fa06f65cb13cec",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">We can get the same result from the <code>scipy.stats</code> module.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "dGlV",
+      "code_hash": "45b52f425ca2a0d90c67c53e801e9cef",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "SdmI",
+      "code_hash": "877264d7365cf65ec0bedaae9fba2ef7",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">It's time to define some terms. The <em>joint probability</em>, denoted <marimo-tex class=\"arithmatex\">||(P(x,y)||)</marimo-tex>, is the probability of both <marimo-tex class=\"arithmatex\">||(x||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(y||)</marimo-tex> happening.  For example, if you roll two die <marimo-tex class=\"arithmatex\">||(P(2,5)||)</marimo-tex> is the probability of the first die rolling a 2 and the second die rolling a 5. Assuming the die are six sided and fair, the probability <marimo-tex class=\"arithmatex\">||(P(2,5) = \\frac{1}{6}\\times \\frac{1}{6}=\\frac{1}{36}||)</marimo-tex>. The 3D chart above shows the <em>joint probability density function</em>.</span>\n<span class=\"paragraph\">The <em>marginal probability</em> is the probability of an event happening without regard of any other event. In the chart above the Gaussian curve drawn to the left is the marginal for <marimo-tex class=\"arithmatex\">||(Y||)</marimo-tex>. This is the probability for the dog being at any position in <marimo-tex class=\"arithmatex\">||(Y||)</marimo-tex> disregarding the value for <marimo-tex class=\"arithmatex\">||(X||)</marimo-tex>. Earlier I wrote \"I have projected the variance for x and y onto the walls of the chart\"; these are the marginal probabilities for <marimo-tex class=\"arithmatex\">||(x||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(y||)</marimo-tex>. Another computational benefit of Gaussians is that the marginal of a multivariate Gaussian is another Gaussian!</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "lgWD",
+      "code_hash": "3c5cb1a442c514edf2d62083c64fa7eb",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Let's look at this in a slightly different way. Instead of plotting a surface showing the probability distribution I will generate 1,000 points with the distribution of <marimo-tex class=\"arithmatex\">||([\\begin{smallmatrix}8&amp;0\\\\0&amp;3\\end{smallmatrix}]||)</marimo-tex>.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "yOPj",
+      "code_hash": "63c616684a477f9191e320c047f9833c",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "fwwy",
+      "code_hash": "21fec767f1fe6dfeb223e1127609c7b2",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">We can think of the sampled points as being possible locations for our dog given those particular mean and covariances. The contours on the side show the marginal probability for <marimo-tex class=\"arithmatex\">||(X||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(Y||)</marimo-tex>. We can see that he is far more likely to be at (2, 7) where there are many points, than at (-5, 5) where there are few.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "LJZf",
+      "code_hash": "d51a2a7dbe979bfa352c7f6204ca214d",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">As beautiful as these plots are, it is hard to get useful information from them. For example, it is not easy to tell if <marimo-tex class=\"arithmatex\">||(X||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(Y||)</marimo-tex> both have the same variance, and how much they are correlated. In most of the book I'll display Gaussians as contour plots.</span>\n<span class=\"paragraph\">The contour plots display the range of values that the multivariate Gaussian takes for a specific standard deviation. This is like taking a horizontal slice out of the 3D plot.</span>\n<span class=\"paragraph\">These plots show the shape of the slice for 3 standard deviations.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "urSm",
+      "code_hash": "b6c8c255bdd2e0daee90e4823490443c",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "jxvo",
+      "code_hash": "ced5420ae2fde42111e418c8dfca6e04",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">For those of you viewing this online or in Juptyer Notebook on your computer, here is an animation of varying the covariance while holding the variance constant.</span>\n<span class=\"paragraph\"><img src='animations/multivariate_ellipse.gif'></span>\n<span class=\"paragraph\">(source: <a href=\"http://git.io/vqxLS\" rel=\"noopener noreferrer\" target=\"_blank\">http://git.io/vqxLS</a>)</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "mWxS",
+      "code_hash": "03952374b2294c7e217b035107b30602",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">These plots look like circles and ellipses. Indeed, it turns out that any slice through the multivariate Gaussian is an ellipse. Hence, in statistics we do not call these 'contour plots', but either <em>error ellipses</em> or <em>confidence ellipses</em>; the terms are interchangable.</span>\n<span class=\"paragraph\">This code uses the function <code>plot_covariance_ellipse()</code> from <code>filterpy.stats</code>. By default the function displays one standard deviation, but you can use either the <code>variance</code> or <code>std</code> parameter to control what is displayed. For example, <code>variance=3**2</code> or <code>std=3</code> would display the 3rd standard deviation, and <code>variance=[1,4,9]</code> or <code>std=[1,2,3]</code> would display the 1st, 2nd, and 3rd standard deviations.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "CcZR",
+      "code_hash": "2dac4f2706062c7e2964eef8d3763dfd",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "YWSi",
+      "code_hash": "dd398b81cd001faa856977aa02146cd6",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">The solid colors may suggest to you that the probability distribution is constant between the standard deviations. This is not true, as you can tell from the 3D plot of the Gaussian. Here is a 2D shaded representation of the probability distribution for the covariance (<marimo-tex class=\"arithmatex\">||(\\begin{smallmatrix}2&amp;1.2\\\\1.2&amp;1.3\\end{smallmatrix})||)</marimo-tex>. Darker gray corresponds to higher probability density.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "zlud",
+      "code_hash": "6594a8c2f17b2bcc38ec1dc3187e8fd8",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "tZnO",
+      "code_hash": "8ef6c3966a1787e5e2ee3a3a5cf197f5",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Thinking about the physical interpretation of these plots clarifies their meaning. The mean and covariance of the first plot is</span>\n<marimo-tex class=\"arithmatex\">||[\n\\mathbf{\\mu} =\\begin{bmatrix}2\\\\7\\end{bmatrix},\\, \\,\n\\Sigma = \\begin{bmatrix}2&amp;0\\\\0&amp;2 \\end{bmatrix}\n||]</marimo-tex></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "xvXZ",
+      "code_hash": "47d2d2870327efd4b4e0cc76811b29a5",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "CLip",
+      "code_hash": "86cc353cdb1a65f706b8beee6f8ba402",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">A Bayesian way of thinking about this is that the ellipse shows us the amount of error in our belief. A tiny circle would indicate that we have a very small error, and a very large circle indicates a lot of error in our belief. The shape of the ellipse shows us the geometric relationship of the errors in <marimo-tex class=\"arithmatex\">||(X||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(Y||)</marimo-tex>. Here we have a circle so errors in <marimo-tex class=\"arithmatex\">||(X||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(Y||)</marimo-tex> are equally likely.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "YECM",
+      "code_hash": "042700f9a4c240d27e1e089f56c1d5d2",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">The mean and covariance of the second plot are</span>\n<marimo-tex class=\"arithmatex\">||[\n\\mu =\\begin{bmatrix}2\\\\7\\end{bmatrix}, \\, \\, \\,\n\\Sigma = \\begin{bmatrix}2&amp;0\\\\0&amp;6\\end{bmatrix}\n||]</marimo-tex></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "cEAS",
+      "code_hash": "e34b13414a30063430d023c5a00957a5",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "iXej",
+      "code_hash": "2e92b685978fb44f0ad860ecdc2b2624",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">This time we use a different variance for <marimo-tex class=\"arithmatex\">||(X||)</marimo-tex> (<marimo-tex class=\"arithmatex\">||(\\sigma_x^2=2||)</marimo-tex>) vs <marimo-tex class=\"arithmatex\">||(Y||)</marimo-tex> (<marimo-tex class=\"arithmatex\">||(\\sigma^2_y=6||)</marimo-tex>). The result is a tall and narrow ellipse. We can see that a lot more uncertainty in <marimo-tex class=\"arithmatex\">||(Y||)</marimo-tex> vs <marimo-tex class=\"arithmatex\">||(X||)</marimo-tex>. In both cases we believe the dog is at (2, 7), but the uncertainties are different.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "EJmg",
+      "code_hash": "a9833dba80962d7bfd0fb97f8a807fc3",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">The third plot shows the mean and covariance</span>\n<marimo-tex class=\"arithmatex\">||[\n\\mu =\\begin{bmatrix}2\\\\7\\end{bmatrix}, \\, \\, \\,\n\\Sigma = \\begin{bmatrix}2&amp;1.2\\\\1.2&amp;2\\end{bmatrix}\n||]</marimo-tex></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "UmEG",
+      "code_hash": "88317fb2b63bfb5130d3c46727071492",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "vEBW",
+      "code_hash": "1316ae194ec8704ce3a4da27d062af12",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">This is the first contour that has values in the off-diagonal elements of the covariance, and this is the first contour plot with a slanted ellipse. This is not a coincidence. The two facts are telling us the same thing. A slanted ellipse tells us that the <marimo-tex class=\"arithmatex\">||(x||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(y||)</marimo-tex> values are somehow correlated. The off-diagonal elements in the covariance matrix are non-zero, indicating that a correlation exists.</span>\n<span class=\"paragraph\">Recall the plot for height versus weight. It formed a slanted grouping of points. We can use NumPy's <code>cov()</code> function to compute the covariance of two or more variables by placing them into a 2D array. Let's do that, then plot the <marimo-tex class=\"arithmatex\">||(2\\sigma||)</marimo-tex> covariance ellipse on top of the data. We will need to use <code>bias=1</code> because the data represents the entire population; it is not a sample.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "kLmu",
+      "code_hash": "e4279a1bec8c242c9830eb2c957569d4",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "IpqN",
+      "code_hash": "19363d98504f0f79aab505c6a4e02c38",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "dxZZ",
+      "code_hash": "600252699e5d4f58928b24d926ff530d",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">This should help you form a strong intuition on the meaning and use of covariances. The covariance ellipse shows you how the data is 'scattered' in relation to each other. A narrow ellipse like this tells you that the data is very correlated. There is only a narrow range of weights for any given height. The ellipse leans towards the right, telling us there is a positive correlation - as x increases y also increases. If the ellipse leaned towards the left then the correlation would be negative - as x increases y decreases. We can see this in the following plot:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "dlnW",
+      "code_hash": "1edc17f1b3444dffa66520b0a4a09b5f",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "TTti",
+      "code_hash": "ffd10d8ec267e95744283720baa30b2a",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">The relationships between variances and covariances can be hard to puzzle out by inspection, so here is an interactive plot. (If you are reading this in a static form instructions to run this online are here: <a href=\"https://git.io/vza7b\" rel=\"noopener noreferrer\" target=\"_blank\">https://git.io/vza7b</a>)</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "RKFZ",
+      "code_hash": "b717e966fbf723769fea0f9055de9370",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "IaQp",
+      "code_hash": "923b6d369fbca8c986387797f4747b4c",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"pearsons-correlation-coefficient\">Pearson's Correlation Coefficient</h3>\n<span class=\"paragraph\">We will not be using this coefficient in this book, but you may see it elsewhere. You can safely skip this section if uninterested.</span>\n<span class=\"paragraph\">The correlation between two variables can be given a numerical value with <em>Pearson's Correlation Coefficient</em>. It is defined as</span>\n<marimo-tex class=\"arithmatex\">||[\\rho_{xy} = \\frac{COV(X, Y)}{\\sigma_x \\sigma_y}||]</marimo-tex><span class=\"paragraph\">This value can range in value from -1 to 1. If the covariance is 0 than <marimo-tex class=\"arithmatex\">||(\\rho=0||)</marimo-tex>. A value greater than 0 indicates that the relationship is a positive correlation, and a negative value indicates that there is a negative correlation. Values near -1 or 1 indicate a very strong correlation, and values near 0 indicate a very weak correlation.</span>\n<span class=\"paragraph\">Correlation and covariance are very closely related. Covariance has units associated with it, and correlation is a unitless ratio. For example, for our dog <marimo-tex class=\"arithmatex\">||(\\sigma_{xy}||)</marimo-tex> has units of meters squared.</span>\n<span class=\"paragraph\">We can use <code>scipy.stats.pearsonr</code> function to compute the Pearson coefficient. It returns a tuple of the Pearson coefficient and of the 2 tailed p-value. The latter is not used in this book. Here we compute <marimo-tex class=\"arithmatex\">||(\\rho||)</marimo-tex> for height vs weight of student athletes:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "IWgg",
+      "code_hash": "1ff65e258008d3280372d416d3408ab0",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "fCoF",
+      "code_hash": "a1aafd2a6855ac853a19ea900b2e600c",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Here we compute the correlation between engine temperature and lifespan.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "LkGn",
+      "code_hash": "ff237cd2531bea0b7c35231ae559c5d1",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "zVRe",
+      "code_hash": "8bf8c090712b8250e485b1b9764919a4",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"using-correlations-to-improve-estimates\">Using Correlations to Improve Estimates</h2>\n<span class=\"paragraph\">Suppose we believe our dog is at position (5, 10) with some given covariance. If the standard deviation in x and y is each 2 meters, but they are strongly correlated, the covariance contour would look something like this.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "woaO",
+      "code_hash": "4b3f3eba7da2c37bb693330e4e47675b",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "HnMC",
+      "code_hash": "fdd8d54ee66af2abbb291a83b2a2fa59",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Now suppose I were to tell you that we know that <marimo-tex class=\"arithmatex\">||(x=7.5||)</marimo-tex>. What can we infer about the value for <marimo-tex class=\"arithmatex\">||(y||)</marimo-tex>? The position is extremely likely to lie within the 3<marimo-tex class=\"arithmatex\">||(\\sigma||)</marimo-tex> covariance ellipse. We can infer the position in <em>y</em> based on the covariance matrix because there is a correlation between <em>x</em> and <em>y</em>. I've illustrated the likely range of values for y as a blue filled circle.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "wadT",
+      "code_hash": "e649c39635c09803cfd86b66c850a887",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "VCRE",
+      "code_hash": "28fe5997f046ed60d33718b48fe89a62",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">The circle not mathematically correct, but it gets the idea across. We will tackle the mathematics in the next section. For now recognize that we can predict that <marimo-tex class=\"arithmatex\">||(y||)</marimo-tex> is likely near 12. A value of <marimo-tex class=\"arithmatex\">||(y=-10||)</marimo-tex> is extremely improbable.</span>\n<span class=\"paragraph\">A word about <em>correlation</em> and <em>independence</em>. If variables are <em>independent</em> they can vary separately. If you walk in an open field, you can move in the <marimo-tex class=\"arithmatex\">||(x||)</marimo-tex> direction (east-west), the <marimo-tex class=\"arithmatex\">||(y||)</marimo-tex> direction(north-south), or any combination thereof. Independent variables are always also <em>uncorrelated</em>. Except in special cases, the reverse does not hold true. Variables can be uncorrelated, but dependent. For example, consider <marimo-tex class=\"arithmatex\">||(y=x^2||)</marimo-tex>. Correlation is a linear measurement, so <marimo-tex class=\"arithmatex\">||(x||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(y||)</marimo-tex> are uncorrelated. However, <marimo-tex class=\"arithmatex\">||(y||)</marimo-tex> is dependent on <marimo-tex class=\"arithmatex\">||(x||)</marimo-tex>.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "hgqU",
+      "code_hash": "6d6ac8a8428fb5b09da544a0fcdf564f",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"multiplying-multidimensional-gaussians\">Multiplying Multidimensional Gaussians</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "PSUk",
+      "code_hash": "6d0100ef480b2ed367174736b23a9936",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">In the previous chapter we incorporated an uncertain measurement with an uncertain estimate by multiplying their Gaussians together. The result was another Gaussian with a smaller variance. If two pieces of uncertain information corroborate each other we should be more certain in our conclusion. The graphs look like this:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "mfOT",
+      "code_hash": "8c51aa37c2c53326e3becdca9b551ebc",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "vGiW",
+      "code_hash": "c4e0c219b3a7c57f30ad10d4747416c1",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">The combination of measurements 1 and 2 yields more certainty, so the new Gaussian is taller and narrower - the variance became smaller. The same happens in multiple dimensions with multivariate Gaussians.</span>\n<span class=\"paragraph\">Here are the equations for multiplying multivariate Gaussians. The capital sigma (<marimo-tex class=\"arithmatex\">||(\\Sigma||)</marimo-tex>) indicates that these are matrices, not scalars. Specifically, they are covariance matrices:</span>\n<marimo-tex class=\"arithmatex\">||[\\begin{aligned}\n\\mu &amp;= \\Sigma_2(\\Sigma_1 + \\Sigma_2)^{-1}\\mu_1 + \\Sigma_1(\\Sigma_1 + \\Sigma_2)^{-1}\\mu_2 \\\\\n\\Sigma &amp;= \\Sigma_1(\\Sigma_1+\\Sigma_2)^{-1}\\Sigma_2\n\\end{aligned}||]</marimo-tex><span class=\"paragraph\">They are generated by plugging the multivariate Gaussians for the prior and the estimate into Bayes Theorem. I gave you the algebra for the univariate case in the  <strong>Gaussians</strong> chapter.</span>\n<span class=\"paragraph\">You will not need to remember these equations as they are computed by Kalman filter equations that will be presented shortly. This computation is also available in FilterPy using the <code>multivariate_multiply()</code> method, which you can import from <code>filterpy.stats</code>.</span>\n<span class=\"paragraph\">To give you some intuition about this, recall the equations for multiplying univariate Gaussians:</span>\n<marimo-tex class=\"arithmatex\">||[\\begin{aligned}\n\\mu &amp;=\\frac{\\sigma_1^2 \\mu_2 + \\sigma_2^2 \\mu_1} {\\sigma_1^2 + \\sigma_2^2}, \\\\\n\\sigma^2 &amp;= \\frac{\\sigma_1^2\\sigma_2^2}{\\sigma_1^2+\\sigma_2^2}\n\\end{aligned}||]</marimo-tex><span class=\"paragraph\">This looks similar to the equations for the multivariate equations. This will be more obvious if you recognize that matrix inversion, denoted by the -1 power, is <em>like</em> a reciprocal since <marimo-tex class=\"arithmatex\">||(AA^{-1} =I||)</marimo-tex>. I will rewrite the inversions as divisions - this is not a mathematically correct thing to do as division for matrices is not defined, but it does help us compare the equations.</span>\n<marimo-tex class=\"arithmatex\">||[\\begin{aligned}\n\\mu &amp;\\approx \\frac{\\Sigma_2\\mu_1 + \\Sigma_1\\mu_2}{\\Sigma_1 + \\Sigma_2} \\\\ \\\\\n\\Sigma &amp;\\approx \\frac{\\Sigma_1\\Sigma_2}{(\\Sigma_1+\\Sigma_2)}\n\\end{aligned}||]</marimo-tex><span class=\"paragraph\">In this form the relationship between the univariate and multivariate equations is clear.</span>\n<span class=\"paragraph\">Now let's explore multivariate Gaussians in terms of a concrete example. Suppose that we are tracking an aircraft with two radar systems. I will ignore altitude so I can use two dimensional plots. Radar provides the range and bearing to a target. We start out being uncertain about the position of the aircraft, so the covariance, which is our uncertainty about the position, might look like this. In the language of Bayesian statistics this is our <em>prior</em>.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "SYQT",
+      "code_hash": "df7d711df0b0dbc454f77174a500f8d0",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "bMrW",
+      "code_hash": "3d0f94eec58aab14648936b75aa83d7c",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Now suppose that there is a radar to the lower left of the aircraft. Further suppose that the radar's bearing measurement is accurate, but the range measurement is inaccurate. The covariance for the error in the measurement might look like this (plotted in green on top of the yellow prior):</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "PSQn",
+      "code_hash": "44491cfbd276bb8917829657c17bc7f4",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "OfTS",
+      "code_hash": "eba0647ff1988cf9f928973eeee10283",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Recall that Bayesian statistics calls this the <em>evidence</em>. The ellipse points towards the radar. It is very long because the range measurement is inaccurate, and the aircraft could be within a considerable distance of the measured range. It is very narrow because the bearing estimate is very accurate and thus the aircraft must be very close to the bearing estimate.</span>\n<span class=\"paragraph\">We want to find the <em>posterior</em> - the mean and covariance that results from incorporating the evidence into the prior. As in every other chapter we combine evidence by multiplying them together.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "lQxp",
+      "code_hash": "b191bd492912c74551aecba4fcfb0c6c",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "Plbk",
+      "code_hash": "b92abc2f4e0572084cb34949008e9bf3",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">I have plotted the original estimate (prior) in a very transparent yellow, the radar reading in green (evidence), and the finale estimate (posterior) in blue.</span>\n<span class=\"paragraph\">The posterior retained the same shape and position as the radar measurement, but is smaller. We've seen this with one dimensional Gaussians. Multiplying two Gaussians makes the variance smaller because we are incorporating more information, hence we are less uncertain.  Another point to recognize is that the covariance shape reflects the physical layout of the aircraft and the radar system. The importance of this will become clear in the next step.</span>\n<span class=\"paragraph\">Now let's say we get a measurement from a second radar, this one to the lower right. The posterior from the last step becomes our new prior, which I plot in yellow. The new measurement is plotted in green.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "rSYo",
+      "code_hash": "500ca748d5db7e105a2fa7479ac23cc5",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "HuZB",
+      "code_hash": "f4f48df71e337af1d79fe0abaf95d96b",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">We incorporate this  information by multiplying the Gaussians:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "WfYj",
+      "code_hash": "5176c55c6289b40f3be4078341c4a552",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "Ynfw",
+      "code_hash": "e97d7c952d7a309a88fcc0311af4b9f4",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">The only likely place for the aircraft is where the two ellipses intersect. The intersection, formed by multiplying the prior and measurement, is a new Gaussian. The shapes reflects the geometry of the problem. This allows us to <em>triangulate</em> on the aircraft, resulting in a very accurate estimate. We didn't explicitly write any code to perform triangulation; it was a natural outcome of multiplying the Gaussians of each measurement together.</span>\n<span class=\"paragraph\">Think back to the <strong>g-h Filter</strong> chapter where we displayed the error bars of two weighings on a scale. The estimate must fall somewhere within the region where the error bars overlap. Here the estimate must fall between 161 to 163 pounds.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "LqFA",
+      "code_hash": "6d6122f01593cc9712c9fab77a114e70",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "uDnK",
+      "code_hash": "6ae76b7f5aa121bc752f78460a8bf22c",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Let's consider a different layout. Suppose the first radar is directly to the left of the aircraft. I can model the measurement error with</span>\n<marimo-tex class=\"arithmatex\">||[\\Sigma = \\begin{bmatrix}2&amp;0\\\\0&amp;0.2\\end{bmatrix}||]</marimo-tex><span class=\"paragraph\">Here we see the result of multiplying the prior with the measurement.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "aWBL",
+      "code_hash": "7d35097ac0dc1d695951231903ffe9a7",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "MIsd",
+      "code_hash": "2126f576b07892dfa6589e63844232d2",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Now we can incorporate the measurement from the second radar system, which we will leave in the same position as before.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "IrqS",
+      "code_hash": "038230e0522b5514da0b355e534454bb",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "Lpqv",
+      "code_hash": "b1e568743bd6bdceafa75cb8ef80e0d0",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Our estimate is not as accurate as the previous example.  The two radar stations are no longer orthogonal to each other relative to the aircraft's position so the triangulation is not optimal.</span>\n<span class=\"paragraph\">For a final example, imagine taking two measurements from the same radar a short time apart. The covariance ellipses will nearly overlap, leaving a very large error in our new estimate:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "upgv",
+      "code_hash": "608278bb1c22fe30c2a4234b41afa4cc",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "WJUG",
+      "code_hash": "7337d5ed7a057c1177b17ea4fd8927ea",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"hidden-variables\">Hidden Variables</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "pCao",
+      "code_hash": "46b6c59b6b385749a6e925f9328dfd23",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">You can already see why a multivariate Kalman filter can perform better than a univariate one. Correlations between variables can significantly improve our estimates. We can take this much further. <strong>This section contains the key insight to this chapter, so read carefully</strong>.</span>\n<span class=\"paragraph\">Let's say we are tracking an aircraft and we get the following data for the <marimo-tex class=\"arithmatex\">||(x||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(y||)</marimo-tex> coordinates at time <marimo-tex class=\"arithmatex\">||(t||)</marimo-tex>=1, 2, and 3 seconds. What does your intuition tell you the value of <marimo-tex class=\"arithmatex\">||(x||)</marimo-tex> will be at time <marimo-tex class=\"arithmatex\">||(t||)</marimo-tex>=4 seconds?</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "wEIy",
+      "code_hash": "1a88440ebc1b90c235a318cee5f38a69",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "wlyU",
+      "code_hash": "25192c80202f0ad354265ed116f623f1",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">It appears that the aircraft is flying in a straight line and we know that aircraft cannot turn on a dime. The most reasonable guess is that at <marimo-tex class=\"arithmatex\">||(t||)</marimo-tex>=4 the aircraft is at (4,4). I will depict that with a green arrow.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "PieA",
+      "code_hash": "b603627532d549c3fe5b8a9619e944e0",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "GrQN",
+      "code_hash": "def13e816e595943292a47776b32fdbd",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">You made this inference because you <em>inferred</em> a constant velocity for the airplane. The reasonable\nassumption is that the aircraft is moving one unit each in <em>x</em> and <em>y</em> per time step.</span>\n<span class=\"paragraph\">Think back to the <strong>g-h Filter</strong> chapter when we were trying to improve the weight predictions of a noisy scale. We incorporated <em>weight gain</em> into the equations because it allowed us to make a better prediction of the weight the next day. The g-h filter uses the <marimo-tex class=\"arithmatex\">||(g||)</marimo-tex> parameter to scale the amount of significance given to the current weight measurement, and the <marimo-tex class=\"arithmatex\">||(h||)</marimo-tex> parameter scaled the amount of significance given to the weight gain.</span>\n<span class=\"paragraph\">We are going to do the same thing with our Kalman filter. After all, the Kalman filter is a form of a g-h filter. In this case we are tracking an airplane, so instead of weight and weight gain we need to track position and velocity. Weight gain is the <em>derivative</em> of weight, and of course velocity is the derivative of position. It's impossible to plot and understand the 4D chart that would be needed to plot <em>x</em> and <em>y</em> and their respective velocities so let's do it for <marimo-tex class=\"arithmatex\">||(x||)</marimo-tex>, knowing that the math generalizes to more dimensions.</span>\n<span class=\"paragraph\">At time 1 we might be fairly certain about the position (x=0) but have no idea about the velocity. We can plot that with a covariance matrix like this. The narrower width expresses our relative certainty about position, and the tall height expresses our lack of knowledge about velocity.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Ilkb",
+      "code_hash": "8d1b5ffc7f3be9cb4b5edfc412e5ce11",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "mySd",
+      "code_hash": "4c70be087e6f817b2173d999804ddc8a",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">However, position and velocity are correlated. If the velocity is 5 m/s, then in 1 second the position will be 5 m. If the velocity is -10 m/s then in 1 second the position will be -10 m. Let's visualize this with a velocity covariance drawn on the diagonal.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vGkK",
+      "code_hash": "21ca448117ff6d92ce26381b69d18b7d",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "zmIa",
+      "code_hash": "528b3d2e358e838fc70e59a4b5e24a18",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">At this point the velocity covariance doesn't help us. We can't predict a new position because we have no idea what the velocity is. But after one second we get a position update of x=5.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "NOfw",
+      "code_hash": "e697e01ba4670681a7f6c2fa0c6bf646",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "jXAc",
+      "code_hash": "91cbd81b78f4004ac117279c0c60cc54",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">It won't be clear until the next chapter how I calculate what I'm about to say. Ignore the calculation, and think about what this implies. We have no easy way to say where the object really is because we are so uncertain about the velocity. Hence the ellipse stretches very far in the x-axis. Our uncertainty in velocity of course means it is also very spread in the y-axis. But as I said in the last paragraph, position is correlated to velocity. If the velocity is 5 m/s the next position would be 5, and if the velocity is 10 the next position would be 10. They are very correlated, so the ellipse must be very narrow.</span>\n<span class=\"paragraph\">This superposition of the two covariances is where the magic happens. The only reasonable estimate at time t=1 (where position=5) is roughly the intersection between the velocity covariance and measurement covariance! More exactly, we can use the math from the last section and multiply the two covariances together. From a Bayesian point of view we multiply the prior with the probability of the evidence (the <em>likelihood</em>) to get the posterior. If we multiply the position covariance with the velocity covariance using the Bayesian equations we get this result:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "mSxP",
+      "code_hash": "a723fcd9c9efd41612b00dece10d68a7",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "IZEX",
+      "code_hash": "40dfdf4784937dc95a435f34b8e6399b",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">The new covariance (the posterior) lies at the intersection of the position covariance and the velocity covariance. It is slightly tilted, showing that there is some correlation between the position and velocity. Far more importantly, it is much smaller than either the position or velocity covariances. In the previous chapter our variance would get smaller each time we performed an <code>update()</code> because the previous estimate was multiplied by the new measurement. The same happens here. However, here the improvement is markedly better. This is because we are using two different pieces of information which are nevertheless correlated. Knowing the velocity approximately and their correlation and the position approximately allows us to make a very accurate estimate. It is not easy to see in this diagram, but the uncertainty in position has become smaller. We know this because the new covariance doesn't reach as far in the x-axis as the measurement covariance at t=1. So we are not just more certain about velocity, but we are also more certain about the position than we would be if we only used position measurement without considering the velocity!</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "UFLA",
+      "code_hash": "4909c7794d78776799aa91af5bebace4",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">This is a key point, so read carefully! The radar is only detecting the position of the aircraft. This is called an <em>observed variable</em>. Based on the position estimates we can compute velocity. We call the velocity a <em>hidden variable</em>. Hidden means what it sounds like - there is no sensor that is measuring velocity, thus its value is hidden from us. We are able to use the correlation between position and velocity to infer its value very accurately.</span>\n<span class=\"paragraph\">To round out the terminology there are also <em>unobserved variables</em>. For example, the aircraft's state includes things such as as heading, engine RPM, weight, color, the first name of the pilot, and so on. We cannot sense these directly using the position sensor so they are not <em>observed</em>. There is no way to <em>infer</em> them from the sensor measurements and correlations (red planes don't go faster than white planes), so they are not <em>hidden</em>. Instead, they are <em>unobservable</em>. If you include an unobserved variable in your filter state the estimate for that variable will be nonsense.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "RCUM",
+      "code_hash": "00a91d012c5a016965c5d453526242c2",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">What makes this possible? Imagine for a moment that we superimposed the velocity from a different airplane over the position graph. Clearly the two are not related, and there is no way that combining the two could possibly yield any additional information. In contrast, the velocity of this airplane tells us something very important - the direction and speed of travel. So long as the aircraft does not alter its velocity the velocity allows us to predict where the next position is. After a relatively small amount of error in velocity the probability that it is a good match with the position is very small. Think about it - if you suddenly change direction your position is also going to change a lot. If the measurement of the position is not in the direction of the velocity change it is very unlikely to be true. The two are correlated, so if the velocity changes so must the position, and in a predictable way.</span>\n<span class=\"paragraph\">It is important to understand that we are taking advantage of the fact that velocity and position are correlated. We get a rough estimate of velocity from the distance and time between two measurements, and use Bayes theorem to produce very accurate estimates after only a few observations. Please reread this section if you have any doubts. If you do not understand this you will quickly find it impossible to reason about what you will learn in the following chapters.</span>\n<span class=\"paragraph\">The effect of including velocity appears to me minor if only care about the position. But this is only after one update. In the next chapter we will see what a dramatic increase in certainty we have after multiple updates. The measurment variance will be large, but the estimated position variance will be small. Each time you intersect the velocity covariance with position it gets narrower on the x-axis, hence the variance is also smaller each time.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ynmH",
+      "code_hash": "ae15221ac54d832d356924ce76b21435",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"higher-dimensions\">Higher Dimensions</h2>\n<span class=\"paragraph\">So far I have shown you two dimensional Gaussians, but the math does not limit you to two dimensions. In later chapters we will be working in 9, or even 12 dimensions. If you work in areas such as weather prediction, you can end up with thousands of dimensions.</span>\n<span class=\"paragraph\">What do these higher dimensions 'look like? Well, a two dimensional Gaussian can be represented by an error ellipse, so it stands to reason a three dimensional Gaussian could be represented by a 3D error ellipsoid. We won't delve into the math here, but this turns out to be true. <code>FilterPy</code> provides a function to plot this ellipse.</span>\n<span class=\"paragraph\">First, let's make some noisy data with a given covariance, just so we can plot it inside the ellipsoid.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "NBGo",
+      "code_hash": "fb1c8cc979e306f5a5f29a4612e95304",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "eooq",
+      "code_hash": "8f22a5582e5a5afcfa52d16e031c39e3",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Now we plot the ellipsoid with the <code>FilterPy</code> function <code>plot_3d_covariance</code>, and then scatter plot the samples.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ChmK",
+      "code_hash": "28fff495c29a420a690cc8f336924e36",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "KdvC",
+      "code_hash": "e9c2a4733e4e30f79dd031aa5323ff5c",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Theory states that roughly 99% of a distribution will fall within 3 standard deviations, and this appears to be the case.</span>\n<span class=\"paragraph\">Nine dimensions? I haven't quite figured out how to plot a 9D ellipsoid on a 2D screen, so there will be no graphs. The concept is the same; the standard deviation error of the distribution can be described by a 9D ellipsoid.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vkvV",
+      "code_hash": "ef8278a75b12fc65431ceef69c1802cb",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"summary\">Summary</h2>\n<span class=\"paragraph\">We have taken advantage of the geometry and correlations of the system to produce a very accurate estimate. The math does not care whether we are working with two positions, or a position and a correlated velocity, or if these are spatial dimensions. If floor space is correlated to house price you can write a Kalman filter to track house prices. If age is correlated to disease incidence you can write a Kalman filter to track diseases. If the zombie population is inversely correlated with the number of shotguns then you can write a Kalman filter to track zombie populations. I showed you this in terms of geometry and talked about <em>triangulation</em>. That was just to build your intuition. You can write a Kalman filter for state variables that have no geometric representation, such as filters for stock prices or milk production of cows (I received an email from someone tracking milk production!) Get used to thinking of these as Gaussians with correlations. If we can express our uncertainties as a multidimensional Gaussian we can then multiply the prior with the likelihood and get a much more accurate result.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "EKSN",
+      "code_hash": "7f292a84e59f0f976328ffd6f1332812",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"references\">References</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "tasN",
+      "code_hash": "6570d970e127dbcd5294d3320e76a80a",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><ul>\n<li>[1] <a href=\"http://docs.scipy.org/doc/scipy/reference/tutorial/stats.html\" rel=\"noopener noreferrer\" target=\"_blank\">http://docs.scipy.org/doc/scipy/reference/tutorial/stats.html</a></li>\n<li>[2] <code>FilterPy</code> library. Roger Labbe.\n<a href=\"https://github.com/rlabbe/filterpy\" rel=\"noopener noreferrer\" target=\"_blank\">https://github.com/rlabbe/filterpy</a></li>\n</ul></span>"
+          }
+        }
+      ],
+      "console": []
+    }
+  ]
+}

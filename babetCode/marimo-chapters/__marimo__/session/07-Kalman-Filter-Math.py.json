@@ -1,0 +1,930 @@
+{
+  "version": "1",
+  "metadata": {
+    "marimo_version": "0.23.10",
+    "script_metadata_hash": null
+  },
+  "cells": [
+    {
+      "id": "Hbol",
+      "code_hash": "1d0db38904205bec4d6f6f6a1f6cec3e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Twhk",
+      "code_hash": "b35bdc40f2177738c7fd7e18de8fbee8",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "MJUe",
+      "code_hash": "aae9eb2d3ea3a449680bedd58a67c8f0",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\"><a href=\"./table_of_contents.ipynb\">Table of Contents</a></span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vblA",
+      "code_hash": "72435fce572f0c470acb9e0d39899cea",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h1 id=\"kalman-filter-math\">Kalman Filter Math</h1></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "bkHC",
+      "code_hash": "e8538e1461e4aa6f23e893d65c7f11e3",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "lEQa",
+      "code_hash": "eafb355248acc454199a7ab51eddc522",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "\n        <style>\n        .output_wrapper, .output {\n            height:auto !important;\n            max-height:100000px;\n        }\n        .output_scroll {\n            box-shadow:none !important;\n            webkit-box-shadow:none !important;\n        }\n        </style>\n    "
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "PKri",
+      "code_hash": "5fdb9be03dec0251f517388b747a6826",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">If you've gotten this far I hope that you are thinking that the Kalman filter's fearsome reputation is somewhat undeserved. Sure, I hand waved some equations away, but I hope implementation has been fairly straightforward for you. The underlying concept is quite straightforward - take two measurements, or a measurement and a prediction, and choose the output to be somewhere between the two. If you believe the measurement more your guess will be closer to the measurement, and if you believe the prediction is more accurate your guess will lie closer to it. That's not rocket science (little joke - it is exactly this math that got Apollo to the moon and back!).</span>\n<span class=\"paragraph\">To be honest I have been choosing my problems carefully. For an arbitrary problem designing the Kalman filter matrices can be extremely difficult. I haven't been <em>too tricky</em>, though. Equations like Newton's equations of motion can be trivially computed for Kalman filter applications, and they make up the bulk of the kind of problems that we want to solve.</span>\n<span class=\"paragraph\">I have illustrated the concepts with code and reasoning, not math. But there are topics that do require more mathematics than I have used so far. This chapter presents the math that you will need for the rest of the book.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Xref",
+      "code_hash": "65120e09c045cef86a35398f86ee37e5",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"modeling-a-dynamic-system\">Modeling a Dynamic System</h2>\n<span class=\"paragraph\">A <em>dynamic system</em> is a physical system whose state (position, temperature, etc) evolves over time. Calculus is the math of changing values, so we use differential equations to model dynamic systems. Some systems cannot be modeled with differential equations, but we will not encounter those in this book.</span>\n<span class=\"paragraph\">Modeling dynamic systems is properly the topic of several college courses. To an extent there is no substitute for a few semesters of ordinary and partial differential equations followed by a graduate course in control system theory. If you are a hobbyist, or trying to solve one very specific filtering problem at work you probably do not have the time and/or inclination to devote a year or more to that education.</span>\n<span class=\"paragraph\">Fortunately, I can present enough of the theory to allow us to create the system equations for many different Kalman filters. My goal is to get you to the stage where you can read a publication and understand it well enough to implement the algorithms. The background math is deep, but in practice we end up using a few simple techniques.</span>\n<span class=\"paragraph\">This is the longest section of pure math in this book. You will need to master everything in this section to understand the Extended Kalman filter (EKF), the most common nonlinear filter. I do cover more modern filters that do not require as much of this math. You can choose to skim now, and come back to this if you decide to learn the EKF.</span>\n<span class=\"paragraph\">We need to start by understanding the underlying equations and assumptions that the Kalman filter uses. We are trying to model real world phenomena, so what do we have to consider?</span>\n<span class=\"paragraph\">Each physical system has a process. For example, a car traveling at a certain velocity goes so far in a fixed amount of time, and its velocity varies as a function of its acceleration. We describe that behavior with the well known Newtonian equations that we learned in high school.</span>\n<marimo-tex class=\"arithmatex\">||[\n\\begin{aligned}\nv&amp;=at\\\\\nx &amp;= \\frac{1}{2}at^2 + v_0t + x_0\n\\end{aligned}\n||]</marimo-tex><span class=\"paragraph\">Once we learned calculus we saw them in this form:</span>\n<span class=\"paragraph\">$$ \\mathbf v = \\frac{d \\mathbf x}{d t},\n\\quad \\mathbf a = \\frac{d \\mathbf v}{d t} = \\frac{d^2 \\mathbf x}{d t^2}</span>\n<span class=\"paragraph\">$$</span>\n<span class=\"paragraph\">A typical automobile tracking problem would have you compute the distance traveled given a constant velocity or acceleration, as we did in previous chapters. But, of course we know this is not all that is happening. No car travels on a perfect road. There are bumps, wind drag, and hills that raise and lower the speed. The suspension is a mechanical system with friction and imperfect springs.</span>\n<span class=\"paragraph\">Perfectly modeling a system is impossible except for the most trivial problems. We are forced to make a simplification. At any time <marimo-tex class=\"arithmatex\">||(t||)</marimo-tex> we say that the true state (such as the position of our car) is the predicted value from the imperfect model plus some unknown <em>process noise</em>:</span>\n<span class=\"paragraph\">$$</span>\n<span class=\"paragraph\">x(t) = x_{pred}(t) + noise(t)</span>\n<span class=\"paragraph\">$$</span>\n<span class=\"paragraph\">This is not meant to imply that <marimo-tex class=\"arithmatex\">||(noise(t)||)</marimo-tex> is a function that we can derive analytically. It is merely a statement of fact - we can always describe the true value as the predicted value  plus the process noise. \"Noise\" does not imply random events. If we are tracking a thrown ball in the atmosphere, and our model assumes the ball is in a vacuum, then the effect of air drag is process noise in this context.</span>\n<span class=\"paragraph\">In the next section we will learn techniques to convert a set of higher order differential equations into a set of first-order differential equations.  After the conversion the model of the system without noise is:</span>\n<marimo-tex class=\"arithmatex\">||[ \\dot{\\mathbf x} = \\mathbf{Ax}||]</marimo-tex><span class=\"paragraph\"><marimo-tex class=\"arithmatex\">||(\\mathbf A||)</marimo-tex> is known as the <em>systems dynamics matrix</em> as it describes the dynamics of the system. Now we need to model the noise. We will call that <marimo-tex class=\"arithmatex\">||(\\mathbf w||)</marimo-tex>, and add it to the equation.</span>\n<marimo-tex class=\"arithmatex\">||[ \\dot{\\mathbf x} = \\mathbf{Ax} + \\mathbf w||]</marimo-tex><span class=\"paragraph\"><marimo-tex class=\"arithmatex\">||(\\mathbf w||)</marimo-tex> may strike you as a poor choice for the name, but you will soon see that the Kalman filter assumes <em>white</em> noise.</span>\n<span class=\"paragraph\">Finally, we need to consider any inputs into the system. We assume an input <marimo-tex class=\"arithmatex\">||(\\mathbf u||)</marimo-tex>, and that there exists a linear model that defines how that input changes the system. For example, pressing the accelerator in your car makes it accelerate, and gravity causes balls to fall. Both are control inputs. We will need a matrix <marimo-tex class=\"arithmatex\">||(\\mathbf B||)</marimo-tex> to convert <marimo-tex class=\"arithmatex\">||(u||)</marimo-tex> into the effect on the system. We add that into our equation:</span>\n<marimo-tex class=\"arithmatex\">||[ \\dot{\\mathbf x} = \\mathbf{Ax} + \\mathbf{Bu} + \\mathbf{w}||]</marimo-tex><span class=\"paragraph\">And that's it. That is one of the equations that Dr. Kalman set out to solve, and he found an optimal estimator if we assume certain properties of <marimo-tex class=\"arithmatex\">||(\\mathbf w||)</marimo-tex>.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "SFPL",
+      "code_hash": "944fcbe0c9ee57c7a6d9085a9fcfa6d3",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"state-space-representation-of-dynamic-systems\">State-Space Representation of Dynamic Systems</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "BYtC",
+      "code_hash": "ebfe9a43c70ae549b8db35c1dd28b8e4",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">We've derived the equation</span>\n<marimo-tex class=\"arithmatex\">||[ \\dot{\\mathbf x} = \\mathbf{Ax}+ \\mathbf{Bu} + \\mathbf{w}||]</marimo-tex><span class=\"paragraph\">However, we are not interested in the derivative of <marimo-tex class=\"arithmatex\">||(\\mathbf x||)</marimo-tex>, but in <marimo-tex class=\"arithmatex\">||(\\mathbf x||)</marimo-tex> itself. Ignoring the noise for a moment, we want an equation that recursively finds the value of <marimo-tex class=\"arithmatex\">||(\\mathbf x||)</marimo-tex> at time <marimo-tex class=\"arithmatex\">||(t_k||)</marimo-tex> in terms of <marimo-tex class=\"arithmatex\">||(\\mathbf x||)</marimo-tex> at time <marimo-tex class=\"arithmatex\">||(t_{k-1}||)</marimo-tex>:</span>\n<marimo-tex class=\"arithmatex\">||[\\mathbf x(t_k) = \\mathbf F(\\Delta t)\\mathbf x(t_{k-1}) + \\mathbf B(t_k)\\mathbf u (t_k)||]</marimo-tex><span class=\"paragraph\">Convention allows us to write <marimo-tex class=\"arithmatex\">||(\\mathbf x(t_k)||)</marimo-tex> as <marimo-tex class=\"arithmatex\">||(\\mathbf x_k||)</marimo-tex>, which means the\nthe value of <marimo-tex class=\"arithmatex\">||(\\mathbf x||)</marimo-tex> at the <marimo-tex class=\"arithmatex\">||(k^{th}||)</marimo-tex> value of <marimo-tex class=\"arithmatex\">||(t||)</marimo-tex>.</span>\n<marimo-tex class=\"arithmatex\">||[\\mathbf x_k = \\mathbf{Fx}_{k-1} + \\mathbf B_k\\mathbf u_k||]</marimo-tex><span class=\"paragraph\"><marimo-tex class=\"arithmatex\">||(\\mathbf F||)</marimo-tex> is the familiar <em>state transition matrix</em>, named due to its ability to transition the state's value between discrete time steps. It is very similar to the system dynamics matrix <marimo-tex class=\"arithmatex\">||(\\mathbf A||)</marimo-tex>. The difference is that <marimo-tex class=\"arithmatex\">||(\\mathbf A||)</marimo-tex> models a set of linear differential equations, and is continuous. <marimo-tex class=\"arithmatex\">||(\\mathbf F||)</marimo-tex> is discrete, and represents a set of linear equations (not differential equations) which transitions <marimo-tex class=\"arithmatex\">||(\\mathbf x_{k-1}||)</marimo-tex> to <marimo-tex class=\"arithmatex\">||(\\mathbf x_k||)</marimo-tex> over a discrete time step <marimo-tex class=\"arithmatex\">||(\\Delta t||)</marimo-tex>.</span>\n<span class=\"paragraph\">Finding this matrix is often quite difficult. The equation <marimo-tex class=\"arithmatex\">||(\\dot x = v||)</marimo-tex> is the simplest possible differential equation and we trivially integrate it as:</span>\n<marimo-tex class=\"arithmatex\">||[ \\int\\limits_{x_{k-1}}^{x_k}  \\mathrm{d}x = \\int\\limits_{0}^{\\Delta t} v\\, \\mathrm{d}t ||]</marimo-tex><marimo-tex class=\"arithmatex\">||[x_k-x_{k-1} = v \\Delta t||]</marimo-tex><marimo-tex class=\"arithmatex\">||[x_k = v \\Delta t + x_{k-1}||]</marimo-tex><span class=\"paragraph\">This equation is <em>recursive</em>: we compute the value of <marimo-tex class=\"arithmatex\">||(x||)</marimo-tex> at time <marimo-tex class=\"arithmatex\">||(k||)</marimo-tex> based on its value at time <marimo-tex class=\"arithmatex\">||(k-1||)</marimo-tex>. This recursive form enables us to represent the system (process model) in the form required by the Kalman filter:</span>\n<marimo-tex class=\"arithmatex\">||[\\begin{aligned}\n\\mathbf x_k &amp;= \\mathbf{Fx}_{k-1}  \\\\\n&amp;= \\begin{bmatrix} 1 &amp; \\Delta t \\\\ 0 &amp; 1\\end{bmatrix}\n\\begin{bmatrix}x_{k-1} \\\\ \\dot x_{k-1}\\end{bmatrix}\n\\end{aligned}||]</marimo-tex><span class=\"paragraph\">We can do that only because <marimo-tex class=\"arithmatex\">||(\\dot x = v||)</marimo-tex> is simplest differential equation possible. Almost all other in physical systems result in more complicated differential equation which do not yield to this approach.</span>\n<span class=\"paragraph\"><em>State-space</em> methods became popular around the time of the Apollo missions, largely due to the work of Dr. Kalman. The idea is simple. Model a system with a set of  <marimo-tex class=\"arithmatex\">||(n^{th}||)</marimo-tex>-order differential equations. Convert them into an equivalent set of first-order differential equations. Put them into the vector-matrix form used in the previous section: <marimo-tex class=\"arithmatex\">||(\\dot{\\mathbf x} = \\mathbf{Ax} + \\mathbf{Bu}||)</marimo-tex>. Once in this form we use of several techniques to convert these linear differential equations into the recursive equation:</span>\n<marimo-tex class=\"arithmatex\">||[ \\mathbf x_k = \\mathbf{Fx}_{k-1} + \\mathbf B_k\\mathbf u_k||]</marimo-tex><span class=\"paragraph\">Some books call the state transition matrix the <em>fundamental matrix</em>. Many use <marimo-tex class=\"arithmatex\">||(\\mathbf \\Phi||)</marimo-tex> instead of <marimo-tex class=\"arithmatex\">||(\\mathbf F||)</marimo-tex>. Sources based heavily on control theory tend to use these forms.</span>\n<span class=\"paragraph\">These are called <em>state-space</em> methods because we are expressing the solution of the differential equations in terms of the system state.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "RGSE",
+      "code_hash": "1bef04cdc2eea3e22da865f2a7cb409b",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"forming-first-order-equations-from-higher-order-equations\">Forming First Order Equations from Higher Order Equations</h3>\n<span class=\"paragraph\">Many models of physical systems require second or higher order differential equations with control input <marimo-tex class=\"arithmatex\">||(u||)</marimo-tex>:</span>\n<marimo-tex class=\"arithmatex\">||[a_n \\frac{d^ny}{dt^n} + a_{n-1} \\frac{d^{n-1}y}{dt^{n-1}} +  \\dots + a_2 \\frac{d^2y}{dt^2} + a_1 \\frac{dy}{dt} + a_0 = u||]</marimo-tex><span class=\"paragraph\">State-space methods require first-order equations. Any higher order system of equations can be reduced to first-order by defining extra variables for the derivatives and then solving.</span>\n<span class=\"paragraph\">Let's do an example. Given the system <marimo-tex class=\"arithmatex\">||(\\ddot{x} - 6\\dot x + 9x = u||)</marimo-tex> find the equivalent first order equations. I've used the dot notation for the time derivatives for clarity.</span>\n<span class=\"paragraph\">The first step is to isolate the highest order term onto one side of the equation.</span>\n<marimo-tex class=\"arithmatex\">||[\\ddot{x} = 6\\dot x - 9x + u||]</marimo-tex><span class=\"paragraph\">We define two new variables:</span>\n<marimo-tex class=\"arithmatex\">||[\\begin{aligned} x_1(t) &amp;= x \\\\\nx_2(t) &amp;= \\dot x\n\\end{aligned}||]</marimo-tex><span class=\"paragraph\">Now we will substitute these into the original equation and solve. The solution yields a set of first-order equations in terms of these new variables. It is conventional to drop the <marimo-tex class=\"arithmatex\">||((t)||)</marimo-tex> for notational convenience.</span>\n<span class=\"paragraph\">We know that <marimo-tex class=\"arithmatex\">||(\\dot x_1 = x_2||)</marimo-tex> and that <marimo-tex class=\"arithmatex\">||(\\dot x_2 = \\ddot{x}||)</marimo-tex>. Therefore</span>\n<marimo-tex class=\"arithmatex\">||[\\begin{aligned}\n\\dot x_2 &amp;= \\ddot{x} \\\\\n         &amp;= 6\\dot x - 9x + u\\\\\n         &amp;= 6x_2-9x_1 + u\n\\end{aligned}||]</marimo-tex><span class=\"paragraph\">Therefore our first-order system of equations is</span>\n<marimo-tex class=\"arithmatex\">||[\\begin{aligned}\\dot x_1 &amp;= x_2 \\\\\n\\dot x_2 &amp;= 6x_2-9x_1 + u\\end{aligned}||]</marimo-tex><span class=\"paragraph\">If you practice this a bit you will become adept at it. Isolate the highest term, define a new variable and its derivatives, and then substitute.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Kclp",
+      "code_hash": "eff57c7fc400fa17330babbffc3653ae",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"first-order-differential-equations-in-state-space-form\">First Order Differential Equations In State-Space Form</h3>\n<span class=\"paragraph\">Substituting the newly defined variables from the previous section:</span>\n<marimo-tex class=\"arithmatex\">||[\\frac{dx_1}{dt} = x_2,\\,\n\\frac{dx_2}{dt} = x_3, \\, ..., \\,\n\\frac{dx_{n-1}}{dt} = x_n||]</marimo-tex><span class=\"paragraph\">into the first order equations yields:</span>\n<span class=\"paragraph\">$$\\frac{dx_n}{dt} = \\frac{1}{a_n}\\sum\\limits_{i=0}^{n-1}a_ix_{i+1} + \\frac{1}{a_n}u</span>\n<span class=\"paragraph\">$$</span>\n<span class=\"paragraph\">Using vector-matrix notation we have:</span>\n<marimo-tex class=\"arithmatex\">||[\\begin{bmatrix}\\frac{dx_1}{dt} \\\\ \\frac{dx_2}{dt} \\\\ \\vdots \\\\ \\frac{dx_n}{dt}\\end{bmatrix} =\n\\begin{bmatrix}\\dot x_1 \\\\ \\dot x_2 \\\\ \\vdots \\\\ \\dot x_n\\end{bmatrix}=\n\\begin{bmatrix}0 &amp; 1 &amp; 0 &amp;\\cdots &amp; 0 \\\\\n0 &amp; 0 &amp; 1 &amp; \\cdots &amp; 0 \\\\\n\\vdots &amp; \\vdots &amp; \\vdots &amp; \\ddots &amp; \\vdots \\\\\n-\\frac{a_0}{a_n} &amp; -\\frac{a_1}{a_n} &amp; -\\frac{a_2}{a_n} &amp; \\cdots &amp; -\\frac{a_{n-1}}{a_n}\\end{bmatrix}\n\\begin{bmatrix}x_1 \\\\ x_2 \\\\ \\vdots \\\\ x_n\\end{bmatrix} +\n\\begin{bmatrix}0 \\\\ 0 \\\\ \\vdots \\\\ \\frac{1}{a_n}\\end{bmatrix}u||]</marimo-tex><span class=\"paragraph\">which we then write as <marimo-tex class=\"arithmatex\">||(\\dot{\\mathbf x} = \\mathbf{Ax} + \\mathbf{B}u||)</marimo-tex>.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "emfo",
+      "code_hash": "90c7c01a53d9edd3eac028c35ae54257",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"finding-the-fundamental-matrix-for-time-invariant-systems\">Finding the Fundamental Matrix for Time Invariant Systems</h3>\n<span class=\"paragraph\">We express the system equations in state-space form with</span>\n<marimo-tex class=\"arithmatex\">||[ \\dot{\\mathbf x} = \\mathbf{Ax}||]</marimo-tex><span class=\"paragraph\">where <marimo-tex class=\"arithmatex\">||(\\mathbf A||)</marimo-tex> is the system dynamics matrix, and want to find the <em>fundamental matrix</em> <marimo-tex class=\"arithmatex\">||(\\mathbf F||)</marimo-tex> that propagates the state <marimo-tex class=\"arithmatex\">||(\\mathbf x||)</marimo-tex> over the interval <marimo-tex class=\"arithmatex\">||(\\Delta t||)</marimo-tex> with the equation</span>\n<marimo-tex class=\"arithmatex\">||[\\begin{aligned}\n\\mathbf x(t_k) = \\mathbf F(\\Delta t)\\mathbf x(t_{k-1})\\end{aligned}||]</marimo-tex><span class=\"paragraph\">In other words, <marimo-tex class=\"arithmatex\">||(\\mathbf A||)</marimo-tex> is a set of continuous differential equations, and we need <marimo-tex class=\"arithmatex\">||(\\mathbf F||)</marimo-tex> to be a set of discrete linear equations that computes the change in <marimo-tex class=\"arithmatex\">||(\\mathbf A||)</marimo-tex> over a discrete time step.</span>\n<span class=\"paragraph\">It is conventional to drop the <marimo-tex class=\"arithmatex\">||(t_k||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||((\\Delta t)||)</marimo-tex> and use the notation</span>\n<marimo-tex class=\"arithmatex\">||[\\mathbf x_k = \\mathbf {Fx}_{k-1}||]</marimo-tex><span class=\"paragraph\">Broadly speaking there are three common ways to find this matrix for Kalman filters. The technique most often used is the matrix exponential. Linear Time Invariant Theory, also known as LTI System Theory, is a second technique. Finally, there are numerical techniques. You may know of others, but these three are what you will most likely encounter in the Kalman filter literature and praxis.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Hstk",
+      "code_hash": "29534762a0fc30680a8aa95a9ff82b90",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"the-matrix-exponential\">The Matrix Exponential</h3>\n<span class=\"paragraph\">The solution to the equation <marimo-tex class=\"arithmatex\">||(\\frac{dx}{dt} = kx||)</marimo-tex> can be found by:</span>\n<marimo-tex class=\"arithmatex\">||[\\begin{gathered}\\frac{dx}{dt} = kx \\\\\n\\frac{dx}{x} = k\\, dt \\\\\n\\int \\frac{1}{x}\\, dx = \\int k\\, dt \\\\\n\\log x = kt + c \\\\\nx = e^{kt+c} \\\\\nx = e^ce^{kt} \\\\\nx = c_0e^{kt}\\end{gathered}||]</marimo-tex><span class=\"paragraph\">When <marimo-tex class=\"arithmatex\">||(t=0||)</marimo-tex>, <marimo-tex class=\"arithmatex\">||(x=x_0||)</marimo-tex>. Substitute these to equation above.</span>\n<marimo-tex class=\"arithmatex\">||[\\begin{gathered}x_0 = c_0e^{k(0)} \\\\\nx_0 = c_01 \\\\\nx_0 = c_0 \\\\\nx = x_0e^{kt}\\end{gathered}||]</marimo-tex><span class=\"paragraph\">Using similar math, the solution to the first-order equation</span>\n<marimo-tex class=\"arithmatex\">||[\\dot{\\mathbf x} = \\mathbf{Ax} ,\\, \\, \\, \\mathbf x(0) = \\mathbf x_0||]</marimo-tex><span class=\"paragraph\">where <marimo-tex class=\"arithmatex\">||(\\mathbf A||)</marimo-tex> is a constant matrix, is</span>\n<marimo-tex class=\"arithmatex\">||[\\mathbf x = e^{\\mathbf At}\\mathbf x_0||]</marimo-tex><span class=\"paragraph\">Substituting <marimo-tex class=\"arithmatex\">||(F = e^{\\mathbf At}||)</marimo-tex>, we can write</span>\n<marimo-tex class=\"arithmatex\">||[\\mathbf x_k = \\mathbf F\\mathbf x_{k-1}||]</marimo-tex><span class=\"paragraph\">which is the form we are looking for! We have reduced the problem of finding the fundamental matrix to one of finding the value for <marimo-tex class=\"arithmatex\">||(e^{\\mathbf At}||)</marimo-tex>.</span>\n<span class=\"paragraph\"><marimo-tex class=\"arithmatex\">||(e^{\\mathbf At}||)</marimo-tex> is known as the <a href=\"https://en.wikipedia.org/wiki/Matrix_exponential\" rel=\"noopener noreferrer\" target=\"_blank\">matrix exponential</a>. It can be computed with this power series:</span>\n<marimo-tex class=\"arithmatex\">||[e^{\\mathbf At} = \\mathbf{I} + \\mathbf{A}t  + \\frac{(\\mathbf{A}t)^2}{2!} + \\frac{(\\mathbf{A}t)^3}{3!} + ... ||]</marimo-tex><span class=\"paragraph\">That series is found by doing a Taylor series expansion of <marimo-tex class=\"arithmatex\">||(e^{\\mathbf At}||)</marimo-tex>, which I will not cover here.</span>\n<span class=\"paragraph\">Let's use this to find the solution to Newton's equations. Using <marimo-tex class=\"arithmatex\">||(v||)</marimo-tex> as a substitution for <marimo-tex class=\"arithmatex\">||(\\dot x||)</marimo-tex>, and assuming constant velocity we get the linear matrix-vector form</span>\n<marimo-tex class=\"arithmatex\">||[\\begin{bmatrix}\\dot x \\\\ \\dot v\\end{bmatrix} =\\begin{bmatrix}0&amp;1\\\\0&amp;0\\end{bmatrix} \\begin{bmatrix}x \\\\ v\\end{bmatrix}||]</marimo-tex><span class=\"paragraph\">This is a first order differential equation, so we can set <marimo-tex class=\"arithmatex\">||(\\mathbf{A}=\\begin{bmatrix}0&amp;1\\\\0&amp;0\\end{bmatrix}||)</marimo-tex> and solve the following equation. I have substituted the interval <marimo-tex class=\"arithmatex\">||(\\Delta t||)</marimo-tex> for <marimo-tex class=\"arithmatex\">||(t||)</marimo-tex> to emphasize that the fundamental matrix is discrete:</span>\n<marimo-tex class=\"arithmatex\">||[\\mathbf F = e^{\\mathbf A\\Delta t} = \\mathbf{I} + \\mathbf A\\Delta t  + \\frac{(\\mathbf A\\Delta t)^2}{2!} + \\frac{(\\mathbf A\\Delta t)^3}{3!} + ... ||]</marimo-tex><span class=\"paragraph\">If you perform the multiplication you will find that <marimo-tex class=\"arithmatex\">||(\\mathbf{A}^2=\\begin{bmatrix}0&amp;0\\\\0&amp;0\\end{bmatrix}||)</marimo-tex>, which means that all higher powers of <marimo-tex class=\"arithmatex\">||(\\mathbf{A}||)</marimo-tex> are also <marimo-tex class=\"arithmatex\">||(\\mathbf{0}||)</marimo-tex>. Thus we get an exact answer without an infinite number of terms:</span>\n<marimo-tex class=\"arithmatex\">||[\n\\begin{aligned}\n\\mathbf F &amp;=\\mathbf{I} + \\mathbf A \\Delta t + \\mathbf{0} \\\\\n&amp;= \\begin{bmatrix}1&amp;0\\\\0&amp;1\\end{bmatrix} + \\begin{bmatrix}0&amp;1\\\\0&amp;0\\end{bmatrix}\\Delta t\\\\\n&amp;= \\begin{bmatrix}1&amp;\\Delta t\\\\0&amp;1\\end{bmatrix}\n\\end{aligned}||]</marimo-tex><span class=\"paragraph\">We plug this into <marimo-tex class=\"arithmatex\">||(\\mathbf x_k= \\mathbf{Fx}_{k-1}||)</marimo-tex> to get</span>\n<span class=\"paragraph\">$$</span>\n<span class=\"paragraph\">\\begin{aligned}\nx_k &amp;=\\begin{bmatrix}1&amp;\\Delta t\\0&amp;1\\end{bmatrix}x_{k-1}\n\\end{aligned}$$</span>\n<span class=\"paragraph\">You will recognize this as the matrix we derived analytically for the constant velocity Kalman filter in the <strong>Multivariate Kalman Filter</strong> chapter.</span>\n<span class=\"paragraph\">SciPy's linalg module includes a routine <code>expm()</code> to compute the matrix exponential. It does not use the Taylor series method, but the <a href=\"https://en.wikipedia.org/wiki/Pad%C3%A9_approximant\" rel=\"noopener noreferrer\" target=\"_blank\">Pad\u00e9 Approximation</a>. There are many (at least 19) methods to compute the matrix exponential, and all suffer from numerical difficulties[1]. You should be aware of the problems, especially when <marimo-tex class=\"arithmatex\">||(\\mathbf A||)</marimo-tex> is large. If you search for \"pade approximation matrix exponential\" you will find many publications devoted to this problem.</span>\n<span class=\"paragraph\">In practice this may not be of concern to you as for the Kalman filter we normally just take the first two terms of the Taylor series. But don't assume my treatment of the problem is complete and run off and try to use this technique for other problem without doing a numerical analysis of the performance of this technique. Interestingly, one of the favored ways of solving <marimo-tex class=\"arithmatex\">||(e^{\\mathbf At}||)</marimo-tex> is to use a generalized ode solver. In other words, they do the opposite of what we do - turn <marimo-tex class=\"arithmatex\">||(\\mathbf A||)</marimo-tex> into a set of differential equations, and then solve that set using numerical techniques!</span>\n<span class=\"paragraph\">Here is an example of using <code>expm()</code> to solve <marimo-tex class=\"arithmatex\">||(e^{\\mathbf At}||)</marimo-tex>.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "nWHF",
+      "code_hash": "7ed8625952e0865bddab166ba182ee1a",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<pre class='text-xs'>array([[1. , 0.1],\n       [0. , 1. ]])</pre>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "iLit",
+      "code_hash": "0bae6cc51a5bf26855e616b606c7cbe7",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"time-invariance\">Time Invariance</h3>\n<span class=\"paragraph\">If the behavior of the system depends on time we can say that a dynamic system is described by the first-order differential equation</span>\n<marimo-tex class=\"arithmatex\">||[ g(t) = \\dot x||]</marimo-tex><span class=\"paragraph\">However, if the system is <em>time invariant</em> the equation is of the form:</span>\n<marimo-tex class=\"arithmatex\">||[ f(x) = \\dot x||]</marimo-tex><span class=\"paragraph\">What does <em>time invariant</em> mean? Consider a home stereo. If you input a signal <marimo-tex class=\"arithmatex\">||(x||)</marimo-tex> into it at time <marimo-tex class=\"arithmatex\">||(t||)</marimo-tex>, it will output some signal <marimo-tex class=\"arithmatex\">||(f(x)||)</marimo-tex>. If you instead perform the input at time <marimo-tex class=\"arithmatex\">||(t + \\Delta t||)</marimo-tex> the output signal will be the same <marimo-tex class=\"arithmatex\">||(f(x)||)</marimo-tex>, shifted in time.</span>\n<span class=\"paragraph\">A counter-example is <marimo-tex class=\"arithmatex\">||(x(t) = \\sin(t)||)</marimo-tex>, with the system  <marimo-tex class=\"arithmatex\">||(f(x) = t\\,  x(t) = t \\sin(t)||)</marimo-tex>. This is not time invariant; the value will be different at different times due to the multiplication by t.  An aircraft is not time invariant. If you make a control input to the aircraft at a later time its behavior will be different because it will have burned fuel and thus lost weight. Lower weight results in different behavior.</span>\n<span class=\"paragraph\">We can solve these equations by integrating each side. I demonstrated integrating the time invariant system <marimo-tex class=\"arithmatex\">||(v = \\dot x||)</marimo-tex> above. However, integrating the time invariant equation <marimo-tex class=\"arithmatex\">||(\\dot x = f(x)||)</marimo-tex> is not so straightforward. Using the <em>separation of variables</em> techniques we divide by <marimo-tex class=\"arithmatex\">||(f(x)||)</marimo-tex> and move the <marimo-tex class=\"arithmatex\">||(dt||)</marimo-tex> term to the right so we can integrate each side:</span>\n<marimo-tex class=\"arithmatex\">||[\\begin{gathered}\n\\frac{dx}{dt} = f(x) \\\\\n\\int^x_{x_0} \\frac{1}{f(x)} dx = \\int^t_{t_0} dt\n\\end{gathered}||]</marimo-tex><span class=\"paragraph\">If we let <marimo-tex class=\"arithmatex\">||(F(x) = \\int \\frac{1}{f(x)} dx||)</marimo-tex> we get</span>\n<marimo-tex class=\"arithmatex\">||[F(x) - F(x_0) = t-t_0||]</marimo-tex><span class=\"paragraph\">We then solve for x with</span>\n<marimo-tex class=\"arithmatex\">||[\\begin{gathered}\nF(x) = t - t_0 + F(x_0) \\\\\nx = F^{-1}[t-t_0 + F(x_0)]\n\\end{gathered}||]</marimo-tex><span class=\"paragraph\">In other words, we need to find the inverse of <marimo-tex class=\"arithmatex\">||(F||)</marimo-tex>. This is not trivial, and a significant amount of coursework in a STEM education is devoted to finding tricky, analytic solutions to this problem.</span>\n<span class=\"paragraph\">However, they are tricks, and many simple forms of <marimo-tex class=\"arithmatex\">||(f(x)||)</marimo-tex> either have no closed form solution or pose extreme difficulties. Instead, the practicing engineer turns to state-space methods to find approximate solutions.</span>\n<span class=\"paragraph\">The advantage of the matrix exponential is that we can use it for any arbitrary set of differential equations which are <em>time invariant</em>. However, we often use this technique even when the equations are not time invariant. As an aircraft flies it burns fuel and loses weight. However, the weight loss over one second is negligible, and so the system is nearly linear over that time step. Our answers will still be reasonably accurate so long as the time step is short.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ZHCJ",
+      "code_hash": "05bdc52d4c8df018cf60ebbee242d98a",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h4 id=\"example-mass-spring-damper-model\">Example: Mass-Spring-Damper Model</h4>\n<span class=\"paragraph\">Suppose we wanted to track the motion of a weight on a spring and connected to a damper, such as an automobile's suspension. The equation for the motion with <marimo-tex class=\"arithmatex\">||(m||)</marimo-tex> being the mass, <marimo-tex class=\"arithmatex\">||(k||)</marimo-tex> the spring constant, and <marimo-tex class=\"arithmatex\">||(c||)</marimo-tex> the damping force, under some input <marimo-tex class=\"arithmatex\">||(u||)</marimo-tex> is</span>\n<marimo-tex class=\"arithmatex\">||[m\\frac{d^2x}{dt^2} + c\\frac{dx}{dt} +kx = u||]</marimo-tex><span class=\"paragraph\">For notational convenience I will write that as</span>\n<marimo-tex class=\"arithmatex\">||[m\\ddot x + c\\dot x + kx = u||]</marimo-tex><span class=\"paragraph\">I can turn this into a system of first order equations by setting <marimo-tex class=\"arithmatex\">||(x_1(t)=x(t)||)</marimo-tex>, and then substituting as follows:</span>\n<marimo-tex class=\"arithmatex\">||[\\begin{aligned}\nx_1 &amp;= x \\\\\nx_2 &amp;= \\dot x_1 \\\\\n\\dot x_2 &amp;= \\ddot x_1 = \\ddot x\n\\end{aligned}||]</marimo-tex><span class=\"paragraph\">As is common I dropped the <marimo-tex class=\"arithmatex\">||((t)||)</marimo-tex> for notational convenience. This gives the equation</span>\n<marimo-tex class=\"arithmatex\">||[m\\dot x_2 + c x_2 +kx_1 = u||]</marimo-tex><span class=\"paragraph\">Solving for <marimo-tex class=\"arithmatex\">||(\\dot x_2||)</marimo-tex> we get a first order equation:</span>\n<marimo-tex class=\"arithmatex\">||[\\dot x_2 = -\\frac{c}{m}x_2 - \\frac{k}{m}x_1 + \\frac{1}{m}u||]</marimo-tex><span class=\"paragraph\">We put this into matrix form:</span>\n<marimo-tex class=\"arithmatex\">||[\\begin{bmatrix} \\dot x_1 \\\\ \\dot x_2 \\end{bmatrix} =\n\\begin{bmatrix}0 &amp; 1 \\\\ -k/m &amp; -c/m \\end{bmatrix}\n\\begin{bmatrix} x_1 \\\\ x_2 \\end{bmatrix} +\n\\begin{bmatrix} 0 \\\\ 1/m \\end{bmatrix}u||]</marimo-tex><span class=\"paragraph\">Now we use the matrix exponential to find the state transition matrix:</span>\n<marimo-tex class=\"arithmatex\">||[\\Phi(t) = e^{\\mathbf At} = \\mathbf{I} + \\mathbf At  + \\frac{(\\mathbf At)^2}{2!} + \\frac{(\\mathbf At)^3}{3!} + ... ||]</marimo-tex><span class=\"paragraph\">The first two terms give us</span>\n<marimo-tex class=\"arithmatex\">||[\\mathbf F = \\begin{bmatrix}1 &amp; t \\\\ -(k/m) t &amp; 1-(c/m) t \\end{bmatrix}||]</marimo-tex><span class=\"paragraph\">This may or may not give you enough precision. You can easily check this by computing <marimo-tex class=\"arithmatex\">||(\\frac{(\\mathbf At)^2}{2!}||)</marimo-tex> for your constants and seeing how much this matrix contributes to the results.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ROlb",
+      "code_hash": "69487c2ccbb7442ec3f276cac7e4cbd2",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"linear-time-invariant-theory\">Linear Time Invariant Theory</h3>\n<span class=\"paragraph\"><a href=\"https://en.wikipedia.org/wiki/LTI_system_theory\" rel=\"noopener noreferrer\" target=\"_blank\"><em>Linear Time Invariant Theory</em></a>, also known as LTI System Theory, gives us a way to find <marimo-tex class=\"arithmatex\">||(\\Phi||)</marimo-tex> using the inverse Laplace transform. You are either nodding your head now, or completely lost.  I will not be using the Laplace transform in this book. LTI system theory tells us that</span>\n<marimo-tex class=\"arithmatex\">||[ \\Phi(t) = \\mathcal{L}^{-1}[(s\\mathbf{I} - \\mathbf{A})^{-1}]||]</marimo-tex><span class=\"paragraph\">I have no intention of going into this other than to say that the Laplace transform <marimo-tex class=\"arithmatex\">||(\\mathcal{L}||)</marimo-tex> converts a signal into a space <marimo-tex class=\"arithmatex\">||(s||)</marimo-tex> that excludes time, but finding a solution to the equation above is non-trivial. If you are interested, the Wikipedia article on LTI system theory provides an introduction. I mention LTI because you will find some literature using it to design the Kalman filter matrices for difficult problems.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "qnkX",
+      "code_hash": "3334f390da05a1393719cdb2c4f2c5d3",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"numerical-solutions\">Numerical Solutions</h3>\n<span class=\"paragraph\">Finally, there are numerical techniques to find <marimo-tex class=\"arithmatex\">||(\\mathbf F||)</marimo-tex>. As filters get larger finding analytical solutions becomes very tedious (though packages like SymPy make it easier). C. F. van Loan [2] has developed a technique that finds both <marimo-tex class=\"arithmatex\">||(\\Phi||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(\\mathbf Q||)</marimo-tex> numerically. Given the continuous model</span>\n<marimo-tex class=\"arithmatex\">||[ \\dot x = Ax + Gw||]</marimo-tex><span class=\"paragraph\">where <marimo-tex class=\"arithmatex\">||(w||)</marimo-tex> is the unity white noise, van Loan's method computes both <marimo-tex class=\"arithmatex\">||(\\mathbf F_k||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(\\mathbf Q_k||)</marimo-tex>.</span>\n<span class=\"paragraph\">I have implemented van Loan's method in <code>FilterPy</code>. You may use it as follows:</span>\n<div class=\"language-python codehilite\"><pre><span></span><code><span class=\"kn\">from</span><span class=\"w\"> </span><span class=\"nn\">filterpy.common</span><span class=\"w\"> </span><span class=\"kn\">import</span> <span class=\"n\">van_loan_discretization</span>\n\n<span class=\"n\">A</span> <span class=\"o\">=</span> <span class=\"n\">np</span><span class=\"o\">.</span><span class=\"n\">array</span><span class=\"p\">([[</span><span class=\"mf\">0.</span><span class=\"p\">,</span> <span class=\"mf\">1.</span><span class=\"p\">],</span> <span class=\"p\">[</span><span class=\"o\">-</span><span class=\"mf\">1.</span><span class=\"p\">,</span> <span class=\"mf\">0.</span><span class=\"p\">]])</span>\n<span class=\"n\">G</span> <span class=\"o\">=</span> <span class=\"n\">np</span><span class=\"o\">.</span><span class=\"n\">array</span><span class=\"p\">([[</span><span class=\"mf\">0.</span><span class=\"p\">],</span> <span class=\"p\">[</span><span class=\"mf\">2.</span><span class=\"p\">]])</span> <span class=\"c1\"># white noise scaling</span>\n<span class=\"n\">F</span><span class=\"p\">,</span> <span class=\"n\">Q</span> <span class=\"o\">=</span> <span class=\"n\">van_loan_discretization</span><span class=\"p\">(</span><span class=\"n\">A</span><span class=\"p\">,</span> <span class=\"n\">G</span><span class=\"p\">,</span> <span class=\"n\">dt</span><span class=\"o\">=</span><span class=\"mf\">0.1</span><span class=\"p\">)</span>\n</code></pre></div>\n<span class=\"paragraph\">In the section <em>Numeric Integration of Differential Equations</em> I present alternative methods which are very commonly used in Kalman filtering.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "TqIu",
+      "code_hash": "07309d842f742cf0c8a04f1b4ebb88dd",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"design-of-the-process-noise-matrix\">Design of the Process Noise Matrix</h2>\n<span class=\"paragraph\">In general the design of the <marimo-tex class=\"arithmatex\">||(\\mathbf Q||)</marimo-tex> matrix is among the most difficult aspects of Kalman filter design. This is due to several factors. First, the math requires a good foundation in signal theory. Second, we are trying to model the noise in something for which we have little information. Consider trying to model the process noise for a thrown baseball. We can model it as a sphere moving through the air, but that leaves many unknown factors - ball rotation and spin decay, the coefficient of drag of a ball with stitches, the effects of wind and air density, and so on. We develop the equations for an exact mathematical solution for a given process model, but since the process model is incomplete the result for <marimo-tex class=\"arithmatex\">||(\\mathbf Q||)</marimo-tex> will also be incomplete. This has a lot of ramifications for the behavior of the Kalman filter. If <marimo-tex class=\"arithmatex\">||(\\mathbf Q||)</marimo-tex> is too small then the filter will be overconfident in its prediction model and will diverge from the actual solution. If <marimo-tex class=\"arithmatex\">||(\\mathbf Q||)</marimo-tex> is too large than the filter will be unduly influenced by the noise in the measurements and perform sub-optimally. In practice we spend a lot of time running simulations and evaluating collected data to try to select an appropriate value for <marimo-tex class=\"arithmatex\">||(\\mathbf Q||)</marimo-tex>. But let's start by looking at the math.</span>\n<span class=\"paragraph\">Let's assume a kinematic system - some system that can be modeled using Newton's equations of motion. We can make a few different assumptions about this process.</span>\n<span class=\"paragraph\">We have been using a process model of</span>\n<marimo-tex class=\"arithmatex\">||[ \\dot{\\mathbf x} = \\mathbf{Ax} + \\mathbf{Bu} + \\mathbf{w}||]</marimo-tex><span class=\"paragraph\">where <marimo-tex class=\"arithmatex\">||(\\mathbf{w}||)</marimo-tex> is the process noise. Kinematic systems are <em>continuous</em> - their inputs and outputs can vary at any arbitrary point in time. However, our Kalman filters are <em>discrete</em> (there are continuous forms for Kalman filters, but we do not cover them in this book). We sample the system at regular intervals. Therefore we must find the discrete representation for the noise term in the equation above. This depends on what assumptions we make about the behavior of the noise. We will consider two different models for the noise.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Vxnm",
+      "code_hash": "d77e47633a0fc6d40100678e32d247ae",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"continuous-white-noise-model\">Continuous White Noise Model</h3></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "DnEU",
+      "code_hash": "0b31d54551fbe9de691abb95b4830360",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">We model kinematic systems using Newton's equations. We have either used position and velocity, or position, velocity, and acceleration as the models for our systems. There is nothing stopping us from going further - we can model jerk, jounce, snap, and so on. We don't do that normally because adding terms beyond the dynamics of the real system degrades the estimate.</span>\n<span class=\"paragraph\">Let's say that we need to model the position, velocity, and acceleration. We can then assume that acceleration is constant for each discrete time step. Of course, there is process noise in the system and so the acceleration is not actually constant. The tracked object will alter the acceleration over time due to external, unmodeled forces. In this section we will assume that the acceleration changes by a continuous time zero-mean white noise <marimo-tex class=\"arithmatex\">||(w(t)||)</marimo-tex>. In other words, we are assuming that the small changes in velocity average to 0 over time (zero-mean).</span>\n<span class=\"paragraph\">Since the noise is changing continuously we will need to integrate to get the discrete noise for the discretization interval that we have chosen. We will not prove it here, but the equation for the discretization of the noise is</span>\n<marimo-tex class=\"arithmatex\">||[\\mathbf Q = \\int_0^{\\Delta t} \\mathbf F(t)\\mathbf{Q_c}\\mathbf F^\\mathsf{T}(t) dt||]</marimo-tex><span class=\"paragraph\">where <marimo-tex class=\"arithmatex\">||(\\mathbf{Q_c}||)</marimo-tex> is the continuous noise. The general reasoning should be clear. <marimo-tex class=\"arithmatex\">||(\\mathbf F(t)\\mathbf{Q_c}\\mathbf F^\\mathsf{T}(t)||)</marimo-tex> is a projection of the continuous noise based on our process model <marimo-tex class=\"arithmatex\">||(\\mathbf F(t)||)</marimo-tex> at the instant <marimo-tex class=\"arithmatex\">||(t||)</marimo-tex>. We want to know how much noise is added to the system over a discrete intervat <marimo-tex class=\"arithmatex\">||(\\Delta t||)</marimo-tex>, so we integrate this expression over the interval <marimo-tex class=\"arithmatex\">||([0, \\Delta t]||)</marimo-tex>.</span>\n<span class=\"paragraph\">We know the fundamental matrix for Newtonian systems is</span>\n<marimo-tex class=\"arithmatex\">||[F = \\begin{bmatrix}1 &amp; \\Delta t &amp; {\\Delta t}^2/2 \\\\ 0 &amp; 1 &amp; \\Delta t\\\\ 0&amp; 0&amp; 1\\end{bmatrix}||]</marimo-tex><span class=\"paragraph\">We define the continuous noise as</span>\n<marimo-tex class=\"arithmatex\">||[\\mathbf{Q_c} = \\begin{bmatrix}0&amp;0&amp;0\\\\0&amp;0&amp;0\\\\0&amp;0&amp;1\\end{bmatrix} \\Phi_s||]</marimo-tex><span class=\"paragraph\">where <marimo-tex class=\"arithmatex\">||(\\Phi_s||)</marimo-tex> is the spectral density of the white noise. This can be derived, but is beyond the scope of this book. See any standard text on stochastic processes for the details. In practice we often do not know the spectral density of the noise, and so this turns into an \"engineering\" factor - a number we experimentally tune until our filter performs as we expect. You can see that the matrix that <marimo-tex class=\"arithmatex\">||(\\Phi_s||)</marimo-tex> is multiplied by effectively assigns the power spectral density to the acceleration term. This makes sense; we assume that the system has constant acceleration except for the variations caused by noise. The noise alters the acceleration.</span>\n<span class=\"paragraph\">We could carry out these computations ourselves, but I prefer using SymPy to solve the equation.</span>\n<marimo-tex class=\"arithmatex\">||[\\mathbf{Q_c} = \\begin{bmatrix}0&amp;0&amp;0\\\\0&amp;0&amp;0\\\\0&amp;0&amp;1\\end{bmatrix} \\Phi_s||]</marimo-tex></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ulZA",
+      "code_hash": "ad8ab149db757bb31d3448303f369341",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<span class=\"markdown prose dark:prose-invert contents\"><marimo-tex class=\"arithmatex\">||[\n\\left[\\begin{matrix}\\frac{\\Delta{t}^{5}}{20} &amp; \\frac{\\Delta{t}^{4}}{8} &amp; \\frac{\\Delta{t}^{3}}{6}\\\\\\frac{\\Delta{t}^{4}}{8} &amp; \\frac{\\Delta{t}^{3}}{3} &amp; \\frac{\\Delta{t}^{2}}{2}\\\\\\frac{\\Delta{t}^{3}}{6} &amp; \\frac{\\Delta{t}^{2}}{2} &amp; \\Delta{t}\\end{matrix}\\right] \\Phi_{s}\n||]</marimo-tex></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ecfG",
+      "code_hash": "f899b57b49259c1f4352d0d135a531b6",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">For completeness, let us compute the equations for the 0th order and 1st order equations.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Pvdt",
+      "code_hash": "11f71d6b4298d8b648e8da695c3a6126",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<span class=\"markdown prose dark:prose-invert contents\"><marimo-tex class=\"arithmatex\">||[\n\\left[\\begin{matrix}\\Delta{t} \\Phi_{s}\\end{matrix}\\right]\n||]</marimo-tex></span>"
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "0th order discrete process noise\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "ZBYS",
+      "code_hash": "a51d996c4a5e8df3414ad7afc890b55f",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<span class=\"markdown prose dark:prose-invert contents\"><marimo-tex class=\"arithmatex\">||[\n\\left[\\begin{matrix}\\frac{\\Delta{t}^{3}}{3} &amp; \\frac{\\Delta{t}^{2}}{2}\\\\\\frac{\\Delta{t}^{2}}{2} &amp; \\Delta{t}\\end{matrix}\\right] \\Phi_{s}\n||]</marimo-tex></span>"
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "1st order discrete process noise\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "aLJB",
+      "code_hash": "ee656e1337330c128ca8d269573786cf",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"piecewise-white-noise-model\">Piecewise White Noise Model</h3>\n<span class=\"paragraph\">Another model for the noise assumes that the that highest order term (say, acceleration) is constant for the duration of each time period, but differs for each time period, and each of these is uncorrelated between time periods. In other words there is a discontinuous jump in acceleration at each time step. This is subtly different than the model above, where we assumed that the last term had a continuously varying noisy signal applied to it.</span>\n<span class=\"paragraph\">We will model this as</span>\n<marimo-tex class=\"arithmatex\">||[f(x)=Fx+\\Gamma w||]</marimo-tex><span class=\"paragraph\">where <marimo-tex class=\"arithmatex\">||(\\Gamma||)</marimo-tex> is the <em>noise gain</em> of the system, and <marimo-tex class=\"arithmatex\">||(w||)</marimo-tex> is the constant piecewise acceleration (or velocity, or jerk, etc).</span>\n<span class=\"paragraph\">Let's start by looking at a first order system. In this case we have the state transition function</span>\n<marimo-tex class=\"arithmatex\">||[\\mathbf{F} = \\begin{bmatrix}1&amp;\\Delta t \\\\ 0&amp; 1\\end{bmatrix}||]</marimo-tex><span class=\"paragraph\">In one time period, the change in velocity will be <marimo-tex class=\"arithmatex\">||(w(t)\\Delta t||)</marimo-tex>, and the change in position will be <marimo-tex class=\"arithmatex\">||(w(t)\\Delta t^2/2||)</marimo-tex>, giving us</span>\n<marimo-tex class=\"arithmatex\">||[\\Gamma = \\begin{bmatrix}\\frac{1}{2}\\Delta t^2 \\\\ \\Delta t\\end{bmatrix}||]</marimo-tex><span class=\"paragraph\">The covariance of the process noise is then</span>\n<span class=\"paragraph\">$<marimo-tex class=\"arithmatex\">||(Q = \\mathbb E[\\Gamma w(t) w(t) \\Gamma^\\mathsf{T}] = \\Gamma\\sigma^2_v\\Gamma^\\mathsf{T}||)</marimo-tex>$.</span>\n<span class=\"paragraph\">We can compute that with SymPy as follows</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "nHfw",
+      "code_hash": "7af02c0f1489536bdfdb6619c42c0a9b",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<span class=\"markdown prose dark:prose-invert contents\"><marimo-tex class=\"arithmatex\">||[\n\\left[\\begin{matrix}\\frac{\\Delta{t}^{4}}{4} &amp; \\frac{\\Delta{t}^{3}}{2}\\\\\\frac{\\Delta{t}^{3}}{2} &amp; \\Delta{t}^{2}\\end{matrix}\\right] \\sigma^{2}_{v}\n||]</marimo-tex></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "xXTn",
+      "code_hash": "2bee6ce739264b8ff25874e1ac1d6e57",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">The second order system proceeds with the same math.</span>\n<marimo-tex class=\"arithmatex\">||[\\mathbf{F} = \\begin{bmatrix}1 &amp; \\Delta t &amp; {\\Delta t}^2/2 \\\\ 0 &amp; 1 &amp; \\Delta t\\\\ 0&amp; 0&amp; 1\\end{bmatrix}||]</marimo-tex><span class=\"paragraph\">Here we will assume that the white noise is a discrete time Wiener process. This gives us</span>\n<marimo-tex class=\"arithmatex\">||[\\Gamma = \\begin{bmatrix}\\frac{1}{2}\\Delta t^2 \\\\ \\Delta t\\\\ 1\\end{bmatrix}||]</marimo-tex><span class=\"paragraph\">There is no 'truth' to this model, it is just convenient and provides good results. For example, we could assume that the noise is applied to the jerk at the cost of a more complicated equation.</span>\n<span class=\"paragraph\">The covariance of the process noise is then</span>\n<span class=\"paragraph\">$<marimo-tex class=\"arithmatex\">||(Q = \\mathbb E[\\Gamma w(t) w(t) \\Gamma^\\mathsf{T}] = \\Gamma\\sigma^2_v\\Gamma^\\mathsf{T}||)</marimo-tex>$.</span>\n<span class=\"paragraph\">We can compute that with SymPy as follows</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "AjVT",
+      "code_hash": "62353016ee7cea3d677078599468a22c",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<span class=\"markdown prose dark:prose-invert contents\"><marimo-tex class=\"arithmatex\">||[\n\\left[\\begin{matrix}\\frac{\\Delta{t}^{4}}{4} &amp; \\frac{\\Delta{t}^{3}}{2} &amp; \\frac{\\Delta{t}^{2}}{2}\\\\\\frac{\\Delta{t}^{3}}{2} &amp; \\Delta{t}^{2} &amp; \\Delta{t}\\\\\\frac{\\Delta{t}^{2}}{2} &amp; \\Delta{t} &amp; 1\\end{matrix}\\right] \\sigma^{2}_{v}\n||]</marimo-tex></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "pHFh",
+      "code_hash": "a43f635b07a056853137241eb86cc7dc",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">We cannot say that this model is more or less correct than the continuous model - both are approximations to what is happening to the actual object. Only experience and experiments can guide you to the appropriate model. In practice you will usually find that either model provides reasonable results, but typically one will perform better than the other.</span>\n<span class=\"paragraph\">The advantage of the second model is that we can model the noise in terms of <marimo-tex class=\"arithmatex\">||(\\sigma^2||)</marimo-tex> which we can describe in terms of the motion and the amount of error we expect. The first model requires us to specify the spectral density, which is not very intuitive, but it handles varying time samples much more easily since the noise is integrated across the time period. However, these are not fixed rules - use whichever model (or a model of your own devising) based on testing how the filter performs and/or your knowledge of the behavior of the physical model.</span>\n<span class=\"paragraph\">A good rule of thumb is to set <marimo-tex class=\"arithmatex\">||(\\sigma||)</marimo-tex> somewhere from <marimo-tex class=\"arithmatex\">||(\\frac{1}{2}\\Delta a||)</marimo-tex> to <marimo-tex class=\"arithmatex\">||(\\Delta a||)</marimo-tex>, where <marimo-tex class=\"arithmatex\">||(\\Delta a||)</marimo-tex> is the maximum amount that the acceleration will change between sample periods. In practice we pick a number, run simulations on data, and choose a value that works well.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "NCOB",
+      "code_hash": "a66199a7dd200e4992f261fdf7770453",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"using-filterpy-to-compute-q\">Using FilterPy to Compute Q</h3>\n<span class=\"paragraph\">FilterPy offers several routines to compute the <marimo-tex class=\"arithmatex\">||(\\mathbf Q||)</marimo-tex> matrix. The function <code>Q_continuous_white_noise()</code> computes <marimo-tex class=\"arithmatex\">||(\\mathbf Q||)</marimo-tex> for a given value for <marimo-tex class=\"arithmatex\">||(\\Delta t||)</marimo-tex> and the spectral density.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "aqbW",
+      "code_hash": "50a2255d721c5d3e7504017c2ea84b45",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "[[0.333 0.5  ]\n [0.5   1.   ]]\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "TRpd",
+      "code_hash": "fa88a36c1993d8d19e3cfa1d0dc57b17",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "[[0.05  0.125 0.167]\n [0.125 0.333 0.5  ]\n [0.167 0.5   1.   ]]\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "TXez",
+      "code_hash": "8999ad29767353aca73135260d48a899",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">The function <code>Q_discrete_white_noise()</code> computes <marimo-tex class=\"arithmatex\">||(\\mathbf Q||)</marimo-tex> assuming a piecewise model for the noise.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "dNNg",
+      "code_hash": "5cba34dc27e6dd352b00693f8596cdc2",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "[[0.25 0.5 ]\n [0.5  1.  ]]\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "yCnT",
+      "code_hash": "ea49fd138daae99177984ea0d4dc940c",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "[[0.25 0.5  0.5 ]\n [0.5  1.   1.  ]\n [0.5  1.   1.  ]]\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "wlCL",
+      "code_hash": "961035bffa9b2cb632f936a8012de588",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"simplification-of-q\">Simplification of Q</h3>\n<span class=\"paragraph\">Many treatments use a much simpler form for <marimo-tex class=\"arithmatex\">||(\\mathbf Q||)</marimo-tex>, setting it to zero except for a noise term in the lower rightmost element. Is this justified? Well, consider the value of <marimo-tex class=\"arithmatex\">||(\\mathbf Q||)</marimo-tex> for a small <marimo-tex class=\"arithmatex\">||(\\Delta t||)</marimo-tex></span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "kqZH",
+      "code_hash": "418bf38b738855124ac2ec9f861e9469",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "[[0.00000002 0.00000078 0.00002083]\n [0.00000078 0.00004167 0.00125   ]\n [0.00002083 0.00125    0.05      ]]\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "wAgl",
+      "code_hash": "c27ec2ba061d98ce9f5c7d81ceea0c08",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">We can see that most of the terms are very small. Recall that the only equation using this matrix is</span>\n<marimo-tex class=\"arithmatex\">||[ \\mathbf P=\\mathbf{FPF}^\\mathsf{T} + \\mathbf Q||]</marimo-tex><span class=\"paragraph\">If the values for <marimo-tex class=\"arithmatex\">||(\\mathbf Q||)</marimo-tex> are small relative to <marimo-tex class=\"arithmatex\">||(\\mathbf P||)</marimo-tex>\nthen it will be contributing almost nothing to the computation of <marimo-tex class=\"arithmatex\">||(\\mathbf P||)</marimo-tex>. Setting <marimo-tex class=\"arithmatex\">||(\\mathbf Q||)</marimo-tex> to the zero matrix except for the lower right term</span>\n<marimo-tex class=\"arithmatex\">||[\\mathbf Q=\\begin{bmatrix}0&amp;0&amp;0\\\\0&amp;0&amp;0\\\\0&amp;0&amp;\\sigma^2\\end{bmatrix}||]</marimo-tex><span class=\"paragraph\">while not correct, is often a useful approximation. If you do this for an important application you will have to perform quite a few studies to guarantee that your filter works in a variety of situations.</span>\n<span class=\"paragraph\">If you do this, 'lower right term' means the most rapidly changing term for each variable. If the state is <marimo-tex class=\"arithmatex\">||(x=\\begin{bmatrix}x &amp; \\dot x &amp; \\ddot{x} &amp; y &amp; \\dot{y} &amp; \\ddot{y}\\end{bmatrix}^\\mathsf{T}||)</marimo-tex> Then <marimo-tex class=\"arithmatex\">||(\\mathbf Q||)</marimo-tex> will be 6x6; the elements for both <marimo-tex class=\"arithmatex\">||(\\ddot{x}||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(\\ddot{y}||)</marimo-tex> will have to be set to non-zero in <marimo-tex class=\"arithmatex\">||(\\mathbf Q||)</marimo-tex>.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "rEll",
+      "code_hash": "54b82167b841580a6e26c8da9ae6bed0",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"stable-compution-of-the-posterior-covariance\">Stable Compution of the Posterior Covariance</h2>\n<span class=\"paragraph\">I've presented the equation to compute the posterior covariance as</span>\n<marimo-tex class=\"arithmatex\">||[\\mathbf P = (\\mathbf I - \\mathbf{KH})\\mathbf{\\bar P}||]</marimo-tex><span class=\"paragraph\">and while strictly speaking this is correct, this is not how I compute it in <code>FilterPy</code>, where I use the <em>Joseph</em> equation</span>\n<marimo-tex class=\"arithmatex\">||[\\mathbf P = (\\mathbf I-\\mathbf {KH})\\mathbf{\\bar P}(\\mathbf I-\\mathbf{KH})^\\mathsf T + \\mathbf{KRK}^\\mathsf T||]</marimo-tex><span class=\"paragraph\">I frequently get emails and/or GitHub issues raised, claiming the implementation is a bug. It is not a bug, and I use it for several reasons. First, the subtraction <marimo-tex class=\"arithmatex\">||((\\mathbf I - \\mathbf{KH})||)</marimo-tex> can lead to nonsymmetric matrix results due to floating point errors. Covariances must be symmetric, and so becoming nonsymmetric usually leads to the Kalman filter diverging, or even for the code to raise an exception because of the checks built into <code>NumPy</code>.</span>\n<span class=\"paragraph\">A traditional way to preserve symmetry is the following formula:</span>\n<marimo-tex class=\"arithmatex\">||[\\mathbf P = (\\mathbf P + \\mathbf P^\\mathsf T) / 2||]</marimo-tex><span class=\"paragraph\">This is safe because <marimo-tex class=\"arithmatex\">||(\\sigma_{ij} = \\sigma_{ji}||)</marimo-tex> for all covariances in the matrix. Hence this operation averages the error between the differences of the two values if they have diverged due to floating point errors.</span>\n<span class=\"paragraph\">If you look at the Joseph form for the equation above, you'll see there is a similar <marimo-tex class=\"arithmatex\">||(\\mathbf{ABA}^\\mathsf T||)</marimo-tex> pattern in both terms. So they both preserve symmetry. But where did this equation come from, and why do I use it instead of</span>\n<marimo-tex class=\"arithmatex\">||[\\mathbf P = (\\mathbf I - \\mathbf{KH})\\mathbf{\\bar P} \\\\\n\\mathbf P = (\\mathbf P + \\mathbf P^\\mathsf T) / 2||]</marimo-tex><span class=\"paragraph\">Let's just derive the equation from first principles. It's not too bad, and you need to understand the derivation to understand the purpose of the equation, and, more importantly, diagnose issues if your filter diverges due to numerical instability. This derivation comes from Brown[4].</span>\n<span class=\"paragraph\">First, some symbology. <marimo-tex class=\"arithmatex\">||(\\mathbf x||)</marimo-tex> is the true state of our system. <marimo-tex class=\"arithmatex\">||(\\mathbf{\\hat x}||)</marimo-tex> is the estimated state of our system - the posterior. And <marimo-tex class=\"arithmatex\">||(\\mathbf{\\bar x}||)</marimo-tex> is the estimated prior of the system.</span>\n<span class=\"paragraph\">Given that, we can define our model to be</span>\n<marimo-tex class=\"arithmatex\">||[\\mathbf x_{k+1} = \\mathbf F_k \\mathbf x_k + \\mathbf w_k \\\\\n\\mathbf z_k = \\mathbf H_k \\mathbf x_k + \\mathbf v_k||]</marimo-tex><span class=\"paragraph\">In words, the next state <marimo-tex class=\"arithmatex\">||(\\mathbf x_{k+1}||)</marimo-tex> of the system is the current state <marimo-tex class=\"arithmatex\">||(k||)</marimo-tex> moved by some process <marimo-tex class=\"arithmatex\">||(\\mathbf F_k||)</marimo-tex> plus some noise <marimo-tex class=\"arithmatex\">||(\\mathbf w_k||)</marimo-tex>.</span>\n<span class=\"paragraph\">Note that these are definitions. No system perfectly follows a mathematical model, so we model that with the noise term <marimo-tex class=\"arithmatex\">||(\\mathbf w_k||)</marimo-tex>. And no measurement is perfect due to sensor error, so we model that with <marimo-tex class=\"arithmatex\">||(\\mathbf v_k||)</marimo-tex></span>\n<span class=\"paragraph\">I'll dispense with the subscript <marimo-tex class=\"arithmatex\">||(k||)</marimo-tex> since in the remainder of the derivation we will only consider values at step <marimo-tex class=\"arithmatex\">||(k||)</marimo-tex>, never step <marimo-tex class=\"arithmatex\">||(k+1||)</marimo-tex>.</span>\n<span class=\"paragraph\">Now we define the estimation error as the difference between the true state and the estimated state</span>\n<marimo-tex class=\"arithmatex\">||[ \\mathbf e = \\mathbf x - \\mathbf{\\hat x}||]</marimo-tex><span class=\"paragraph\">Again, this is a definition; we don't know how to compute <marimo-tex class=\"arithmatex\">||(\\mathbf e||)</marimo-tex>, it is just the defined difference between the true and estimated state.</span>\n<span class=\"paragraph\">This allows us to define the covariance of our estimate, which is defined as the expected value of <marimo-tex class=\"arithmatex\">||(\\mathbf{ee}^\\mathsf T||)</marimo-tex>:</span>\n<marimo-tex class=\"arithmatex\">||[\\begin{aligned}\nP &amp;= E[\\mathbf{ee}^\\mathsf T] \\\\\n&amp;= E[(\\mathbf x - \\mathbf{\\hat x})(\\mathbf x - \\mathbf{\\hat x})^\\mathsf T]\n\\end{aligned}||]</marimo-tex><span class=\"paragraph\">Next, we define the posterior estimate as</span>\n<marimo-tex class=\"arithmatex\">||[\\mathbf {\\hat x} = \\mathbf{\\bar x} + \\mathbf K(\\mathbf z - \\mathbf{H \\bar x})||]</marimo-tex><span class=\"paragraph\">That looks like the equation from the Kalman filter, and for good reason. But as with the rest of the math so far, this is a <strong>definition</strong>. In particular, we have not defined <marimo-tex class=\"arithmatex\">||(\\mathbf K||)</marimo-tex>, and you shouldn't think of it as the Kalman gain, because we are solving this for <em>any</em> problem, not just for linear Kalman filters. Here, <marimo-tex class=\"arithmatex\">||(\\mathbf K||)</marimo-tex> is just some unspecified blending value between 0 and 1.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "dGlV",
+      "code_hash": "c201fbd342996866fd27af6e4414a354",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Now we have our definitions, let's perform some substitution and algebra.</span>\n<span class=\"paragraph\">The term <marimo-tex class=\"arithmatex\">||((\\mathbf x - \\mathbf{\\hat x})||)</marimo-tex> can be expanded by replacing <marimo-tex class=\"arithmatex\">||(\\mathbf{\\hat x}||)</marimo-tex> with the definition above, yielding</span>\n<marimo-tex class=\"arithmatex\">||[(\\mathbf x - \\mathbf{\\hat x}) = \\mathbf x - (\\mathbf{\\bar x} + \\mathbf K(\\mathbf z - \\mathbf{H \\bar x}))||]</marimo-tex><span class=\"paragraph\">Now we replace <marimo-tex class=\"arithmatex\">||(\\mathbf z||)</marimo-tex> with <marimo-tex class=\"arithmatex\">||(\\mathbf H \\mathbf x + \\mathbf v||)</marimo-tex>:</span>\n<marimo-tex class=\"arithmatex\">||[\\begin{aligned}\n(\\mathbf x - \\mathbf{\\hat x})\n&amp;= \\mathbf x - (\\mathbf{\\bar x} + \\mathbf K(\\mathbf z - \\mathbf{H \\bar x})) \\\\\n&amp;= \\mathbf x - (\\mathbf{\\bar x} + \\mathbf K(\\mathbf H \\mathbf x + \\mathbf v - \\mathbf{H \\bar x})) \\\\\n&amp;= (\\mathbf x - \\mathbf{\\bar x}) - \\mathbf K(\\mathbf H \\mathbf x + \\mathbf v - \\mathbf{H \\bar x}) \\\\\n&amp;= (\\mathbf x - \\mathbf{\\bar x}) - \\mathbf{KH}(\\mathbf x - \\mathbf{ \\bar x}) - \\mathbf{Kv} \\\\\n&amp;=  (\\mathbf I - \\mathbf{KH})(\\mathbf x - \\mathbf{\\bar x}) - \\mathbf{Kv}\n\\end{aligned}||]</marimo-tex><span class=\"paragraph\">Now we can solve for <marimo-tex class=\"arithmatex\">||(\\mathbf P||)</marimo-tex> if we note that the expected value of <marimo-tex class=\"arithmatex\">||((\\mathbf x - \\mathbf{\\bar x})||)</marimo-tex> is the prior covariance <marimo-tex class=\"arithmatex\">||(\\mathbf{\\bar P}||)</marimo-tex>, and that the expected value of <marimo-tex class=\"arithmatex\">||(\\mathbf v||)</marimo-tex> is <marimo-tex class=\"arithmatex\">||(E[\\mathbf{vv}^\\mathbf T] = \\mathbf R||)</marimo-tex>:</span>\n<marimo-tex class=\"arithmatex\">||[\\begin{aligned}\n\\mathbf P &amp;=\n   E\\big[[(\\mathbf I - \\mathbf{KH})(\\mathbf x - \\mathbf{\\bar x}) - \\mathbf{Kv})]\n  [(\\mathbf I - \\mathbf{KH})(\\mathbf x - \\mathbf{\\bar x}) - \\mathbf{Kv}]^\\mathsf T\\big ] \\\\\n  &amp;= (\\mathbf I - \\mathbf{KH})\\mathbf{\\bar P}(\\mathbf I - \\mathbf{KH})^\\mathsf T + \\mathbf{KRK}^\\mathsf T\n\\end{aligned}||]</marimo-tex><span class=\"paragraph\">which is what we came here to prove.</span>\n<span class=\"paragraph\">Note that this equation is valid for <em>any</em> <marimo-tex class=\"arithmatex\">||(\\mathbf K||)</marimo-tex>, not just the optimal <marimo-tex class=\"arithmatex\">||(\\mathbf K||)</marimo-tex> computed by the Kalman filter. And that is why I use this equation. In practice the Kalman gain computed by the filter is <em>not</em> the optimal value both because the real world is never truly linear and Gaussian, and because of floating point errors induced by computation. This equation is far less likely to cause the Kalman filter to diverge in the face of real world conditions.</span>\n<span class=\"paragraph\">Where did <marimo-tex class=\"arithmatex\">||(\\mathbf P = (\\mathbf I - \\mathbf{KH})\\mathbf{\\bar P}||)</marimo-tex> come from, then? Let's finish the derivation, which is simple. Recall that the Kalman filter (optimal) gain is given by</span>\n<marimo-tex class=\"arithmatex\">||[\\mathbf K = \\mathbf{\\bar P H^\\mathsf T}(\\mathbf{H \\bar P H}^\\mathsf T + \\mathbf R)^{-1}||]</marimo-tex><span class=\"paragraph\">Now we substitute this into the equation we just derived:</span>\n<marimo-tex class=\"arithmatex\">||[\\begin{aligned}\n&amp;= (\\mathbf I - \\mathbf{KH})\\mathbf{\\bar P}(\\mathbf I - \\mathbf{KH})^\\mathsf T + \\mathbf{KRK}^\\mathsf T\\\\\n&amp;= \\mathbf{\\bar P} - \\mathbf{KH}\\mathbf{\\bar P} - \\mathbf{\\bar PH}^\\mathsf T\\mathbf{K}^\\mathsf T + \\mathbf K(\\mathbf{H \\bar P H}^\\mathsf T + \\mathbf R)\\mathbf K^\\mathsf T \\\\\n&amp;= \\mathbf{\\bar P} - \\mathbf{KH}\\mathbf{\\bar P} - \\mathbf{\\bar PH}^\\mathsf T\\mathbf{K}^\\mathsf T + \\mathbf{\\bar P H^\\mathsf T}(\\mathbf{H \\bar P H}^\\mathsf T + \\mathbf R)^{-1}(\\mathbf{H \\bar P H}^\\mathsf T + \\mathbf R)\\mathbf K^\\mathsf T\\\\\n&amp;= \\mathbf{\\bar P} - \\mathbf{KH}\\mathbf{\\bar P} - \\mathbf{\\bar PH}^\\mathsf T\\mathbf{K}^\\mathsf T + \\mathbf{\\bar P H^\\mathsf T}\\mathbf K^\\mathsf T\\\\\n&amp;= \\mathbf{\\bar P} - \\mathbf{KH}\\mathbf{\\bar P}\\\\\n&amp;= (\\mathbf I - \\mathbf{KH})\\mathbf{\\bar P}\n\\end{aligned}||]</marimo-tex><span class=\"paragraph\">Therefore <marimo-tex class=\"arithmatex\">||(\\mathbf P = (\\mathbf I - \\mathbf{KH})\\mathbf{\\bar P}||)</marimo-tex> is mathematically correct when the gain is optimal, but so is <marimo-tex class=\"arithmatex\">||((\\mathbf I - \\mathbf{KH})\\mathbf{\\bar P}(\\mathbf I - \\mathbf{KH})^\\mathsf T + \\mathbf{KRK}^\\mathsf T||)</marimo-tex>. As we already discussed the latter is also correct when the gain is suboptimal, and it is also more numerically stable. Therefore I use this computation in FilterPy.</span>\n<span class=\"paragraph\">It is quite possible that your filter still diverges, especially if it runs for hundreds or thousands of epochs. You will need to examine these equations. The literature provides yet other forms of this computation which may be more applicable to your problem. As always, if you are solving real engineering problems where failure could mean loss of equipment or life, you will need to move past this book and into the engineering literature. If you are working with 'toy' problems where failure is not damaging, if you detect divergence you can just reset the value of <marimo-tex class=\"arithmatex\">||(\\mathbf P||)</marimo-tex> to some 'reasonable' value and keep on going. For example, you could zero out the non diagonal elements so the matrix only contains variances, and then maybe multiply by a constant somewhat larger than one to reflect the loss of information you just injected into the filter. Use your imagination, and test.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "SdmI",
+      "code_hash": "e3f3b5b9551e136261bfe550f9bc0940",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"deriving-the-kalman-gain-equation\">Deriving the Kalman Gain Equation</h2>\n<span class=\"paragraph\">If you read the last section, you might as well read this one. With this we will have derived the Kalman filter equations.</span>\n<span class=\"paragraph\">Note that this derivation is <em>not</em> using Bayes equations. I've seen at least four different ways to derive the Kalman filter equations; this derivation is typical to the literature, and follows from the last section. The source is again Brown [4].</span>\n<span class=\"paragraph\">In the last section we used an unspecified scaling factor <marimo-tex class=\"arithmatex\">||(\\mathbf K||)</marimo-tex> to derive the Joseph form of the covariance equation. If we want an optimal filter, we need to use calculus to minimize the errors in the equations. You should be familiar with this idea. If you want to find the minimum value of a function <marimo-tex class=\"arithmatex\">||(f(x)||)</marimo-tex>, you take the derivative and set it equal to zero: <marimo-tex class=\"arithmatex\">||(\\frac{x}{dx}f(x) = 0||)</marimo-tex>.</span>\n<span class=\"paragraph\">In our problem the error is expressed by the covariance matrix <marimo-tex class=\"arithmatex\">||(\\mathbf P||)</marimo-tex>. In particular, the diagonal expresses the error (variance) of each element in the state vector. So, to find the optimal gain we want to take the derivative of the trace (sum) of the diagonal.</span>\n<span class=\"paragraph\">Brown reminds us of two formulas involving the derivative of traces:</span>\n<marimo-tex class=\"arithmatex\">||[\\frac{d\\, trace(\\mathbf{AB})}{d\\mathbf A} = \\mathbf B^\\mathsf T||]</marimo-tex><marimo-tex class=\"arithmatex\">||[\\frac{d\\, trace(\\mathbf{ACA}^\\mathsf T)}{d\\mathbf A} = 2\\mathbf{AC}||]</marimo-tex><span class=\"paragraph\">where <marimo-tex class=\"arithmatex\">||(\\mathbf{AB}||)</marimo-tex> is square and <marimo-tex class=\"arithmatex\">||(\\mathbf C||)</marimo-tex> is symmetric.</span>\n<span class=\"paragraph\">We expand out the Joseph equation to:</span>\n<marimo-tex class=\"arithmatex\">||[\\mathbf P = \\mathbf{\\bar P} - \\mathbf{KH}\\mathbf{\\bar P} - \\mathbf{\\bar P}\\mathbf H^\\mathsf T \\mathbf K^\\mathsf T + \\mathbf K(\\mathbf H \\mathbf{\\bar P}\\mathbf H^\\mathsf T + \\mathbf R)\\mathbf K^\\mathsf T||]</marimo-tex><span class=\"paragraph\">Now we need to the the derivative of the trace of <marimo-tex class=\"arithmatex\">||(\\mathbf P||)</marimo-tex> with respect to <marimo-tex class=\"arithmatex\">||(\\mathbf K||)</marimo-tex>: <marimo-tex class=\"arithmatex\">||(\\frac{d\\, trace(\\mathbf P)}{d\\mathbf K}||)</marimo-tex>.</span>\n<span class=\"paragraph\">The derivative of the trace the first term with respect to <marimo-tex class=\"arithmatex\">||(\\mathbf K||)</marimo-tex> is <marimo-tex class=\"arithmatex\">||(0||)</marimo-tex>, since it does not have <marimo-tex class=\"arithmatex\">||(\\mathbf K||)</marimo-tex> in the expression.</span>\n<span class=\"paragraph\">The derivative of the trace of the second term is <marimo-tex class=\"arithmatex\">||((\\mathbf H\\mathbf{\\bar P})^\\mathsf T||)</marimo-tex>.</span>\n<span class=\"paragraph\">We can find the derivative of the trace of the third term by noticing that <marimo-tex class=\"arithmatex\">||(\\mathbf{\\bar P}\\mathbf H^\\mathsf T \\mathbf K^\\mathsf T||)</marimo-tex> is the transpose of <marimo-tex class=\"arithmatex\">||(\\mathbf{KH}\\mathbf{\\bar P}||)</marimo-tex>. The trace of a matrix is equal to the trace of it's transpose, so it's derivative will be same as the second term.</span>\n<span class=\"paragraph\">Finally, the derivative of the trace of the fourth term is <marimo-tex class=\"arithmatex\">||(2\\mathbf K(\\mathbf H \\mathbf{\\bar P}\\mathbf H^\\mathsf T + \\mathbf R)||)</marimo-tex>.</span>\n<span class=\"paragraph\">This gives us the final value of</span>\n<marimo-tex class=\"arithmatex\">||[\\frac{d\\, trace(\\mathbf P)}{d\\mathbf K} = -2(\\mathbf H\\mathbf{\\bar P})^\\mathsf T + 2\\mathbf K(\\mathbf H \\mathbf{\\bar P}\\mathbf H^\\mathsf T + \\mathbf R)||]</marimo-tex><span class=\"paragraph\">We set this to zero and solve to find the equation for <marimo-tex class=\"arithmatex\">||(\\mathbf K||)</marimo-tex> which minimizes the error:</span>\n<span class=\"paragraph\">$$-2(\\mathbf H\\mathbf{\\bar P})^\\mathsf T + 2\\mathbf K(\\mathbf H \\mathbf{\\bar P}\\mathbf H^\\mathsf T + \\mathbf R) = 0 \\\n\\mathbf K(\\mathbf H \\mathbf{\\bar P}\\mathbf H^\\mathsf T + \\mathbf R) = (\\mathbf H\\mathbf{\\bar P})^\\mathsf T \\\n\\mathbf K(\\mathbf H \\mathbf{\\bar P}\\mathbf H^\\mathsf T + \\mathbf R) = \\mathbf{\\bar P}\\mathbf H^\\mathsf T \\\n\\mathbf K= \\mathbf{\\bar P}\\mathbf H^\\mathsf T (\\mathbf H \\mathbf{\\bar P}\\mathbf H^\\mathsf T + \\mathbf R)^{-1}</span>\n<span class=\"paragraph\">$$</span>\n<span class=\"paragraph\">This derivation is not quite iron clad as I left out an argument about why minimizing the trace minimizes the total error, but I think it suffices for this book. Any of the standard texts will go into greater detail if you need it.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "lgWD",
+      "code_hash": "957243d747fe3e317f5e7b784a449977",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"numeric-integration-of-differential-equations\">Numeric Integration of Differential Equations</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "yOPj",
+      "code_hash": "991f93cc223ef53c7eeb9543da105d5b",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">We've been exposed to several numerical techniques to solve linear differential equations. These include state-space methods, the Laplace transform, and van Loan's method.</span>\n<span class=\"paragraph\">These work well for linear ordinary differential equations (ODEs), but do not work well for nonlinear equations. For example, consider trying to predict the position of a rapidly turning car. Cars maneuver by turning the front wheels. This makes them pivot around their rear axle as it moves forward. Therefore the path will be continuously varying and a linear prediction will necessarily produce an incorrect value. If the change in the system is small enough relative to <marimo-tex class=\"arithmatex\">||(\\Delta t||)</marimo-tex> this can often produce adequate results, but that will rarely be the case with the nonlinear Kalman filters we will be studying in subsequent chapters.</span>\n<span class=\"paragraph\">For these reasons we need to know how to numerically integrate ODEs. This can be a vast topic that requires several books. However, I will cover a few simple techniques which will work for a majority of the problems you encounter.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "fwwy",
+      "code_hash": "40379e5a54b854d7c7a4cdb1d7ae8e58",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"eulers-method\">Euler's Method</h3>\n<span class=\"paragraph\">Let's say we have the initial condition problem of</span>\n<marimo-tex class=\"arithmatex\">||[\\begin{gathered}\ny' = y, \\\\ y(0) = 1\n\\end{gathered}||]</marimo-tex><span class=\"paragraph\">We happen to know the exact answer is <marimo-tex class=\"arithmatex\">||(y=e^t||)</marimo-tex> because we solved it earlier, but for an arbitrary ODE we will not know the exact solution. In general all we know is the derivative of the equation, which is equal to the slope. We also know the initial value: at <marimo-tex class=\"arithmatex\">||(t=0||)</marimo-tex>, <marimo-tex class=\"arithmatex\">||(y=1||)</marimo-tex>. If we know these two pieces of information we can predict the value at <marimo-tex class=\"arithmatex\">||(y(t=1)||)</marimo-tex> using the slope at <marimo-tex class=\"arithmatex\">||(t=0||)</marimo-tex> and the value of <marimo-tex class=\"arithmatex\">||(y(0)||)</marimo-tex>. I've plotted this below.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "LJZf",
+      "code_hash": "8f443c9c65b3e3e27bbacd32571cea5d",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "application/vnd.marimo+mimebundle": "{\"image/png\": \"data:image/png;base64,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iIio5jG0ExERERGZOYZ2IiIiIiIzx9BORERERGTmGNqJiIiIiMwcQzsRERERkbWVfDQFnU6n/k9PT6/x+y4oKEB2dra675pe2tYasP3YdjzuLAtfs2w/HnuWh69by20/fbbVZ12LD+0ZGRmGeu9ERERERNZEsq6Xl1e5l7HRVSTam5hWq8XVq1fh4eEBGxubGv8EJB8WYmJi4OnpWaP3bQ3Yfmw7HneWha9Zth+PPcvD163ltp/EcAnsdevWha2treX3tMuTCAkJMeljkF8iQzvbj8eeZeHrlm3HY8/y8HXLtqttx57XHXrY9TgRlYiIiIjIzDG0ExERERGZOYb2O3BycsLf//539T8Zj+1XeWw7tp0p8Lhj+5kKjz22HY89WP5EVCIiIiKi2ow97UREREREZo6hnYiIiIjIzDG0ExERERGZOYuo015TTp48iTNnzqB///4ICgq64+VlOsDBgwdx7do1tGrVCs2aNavUZaxBREQETp8+rdqtW7du5S4QsG/fPkRHR9+238XFBWPHjlU/y2Jau3btuu0yo0ePhpubG6xJcnKyahOZhNW7d2+4urqWu9DYr7/+ett+afOwsLBK366lysvLw+7du5GVlYXu3bsjMDDwjteJjY1Vr3Vvb2907NhRHXfFbd26FUlJSSX2NWzYED169IAlkvegI0eOqEVDWrRogZYtW1bJdSpzu5YoKipKHS8BAQHqGLOzs7vjcujHjx/H9evX0bx5czRp0qTE+bJ/27Ztt11v+PDhFa7VbClSU1OxZ88e2Nvbq/cgd3f3ci8v723yHldcp06dbvu7aeztWqL8/Hzs3bsXaWlp6Nq1q1p4pyy5ublYuXJlqee1b9/e8NrcsWMH4uPjS5wva+Dcc889sDYXLlzA0aNH1Wu2UaNGFbrOsWPHcPnyZfWabdu2baUvU61kImptt2PHDl2vXr10TZs2lUm5ug0bNtzxOunp6bo+ffrogoODdYMHD9a5ubnpXnrpJaMvYw3+8pe/qOcmz1Geq7RlWlpamZf/6KOPdFOmTClx8vT01HXt2tVwmTVr1uhsbW1vu9z169d11uS3337Tubu763r37q1r06aNar9jx46VefmcnBx1jN57770l2mXbtm13dbuW6Pz587oGDRroWrRooevbt6/O1dVV9/3335d5+cTERN24ceN09evX140YMUK1S926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\", \"__metadata__\": {\"image/png\": {\"width\": 749, \"height\": 351}}}"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "urSm",
+      "code_hash": "5edb25ceca6cb0368c29c0f54a2eeec3",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">You can see that the slope is very close to the curve at <marimo-tex class=\"arithmatex\">||(t=0.1||)</marimo-tex>, but far from it\nat <marimo-tex class=\"arithmatex\">||(t=1||)</marimo-tex>. But let's continue with a step size of 1 for a moment. We can see that at <marimo-tex class=\"arithmatex\">||(t=1||)</marimo-tex> the estimated value of <marimo-tex class=\"arithmatex\">||(y||)</marimo-tex> is 2. Now we can compute the value at <marimo-tex class=\"arithmatex\">||(t=2||)</marimo-tex> by taking the slope of the curve at <marimo-tex class=\"arithmatex\">||(t=1||)</marimo-tex> and adding it to our initial estimate. The slope is computed with <marimo-tex class=\"arithmatex\">||(y'=y||)</marimo-tex>, so the slope is 2.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "jxvo",
+      "code_hash": "f1887c3b78288e1b66c0c257adb27ebf",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "mWxS",
+      "code_hash": "c02f509e66cc4065870c38d2c798be79",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Here we see the next estimate for y is 4. The errors are getting large quickly, and you might be unimpressed. But 1 is a very large step size. Let's put this algorithm in code, and verify that it works by using a small step size.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "CcZR",
+      "code_hash": "158c12ba39dab21be0337126c1efe198",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "YWSi",
+      "code_hash": "38e746360b297b4df6c68a7a919e8c4e",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "name '_cell_CcZR_t' is not defined",
+          "traceback": null
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stderr",
+          "text": "<span class=\"codehilite\"><div class=\"highlight\"><pre><span></span><span class=\"gt\">Traceback (most recent call last):</span>\n  File <span class=\"nb\">&quot;C:\\Users\\goper\\AppData\\Local\\Temp\\marimo_864\\__marimo__cell_YWSi_.py&quot;</span>, line <span class=\"m\">3</span>, in <span class=\"n\">&lt;module&gt;</span>\n<span class=\"w\">    </span><span class=\"nb\">print</span><span class=\"p\">(</span><span class=\"n\">euler</span><span class=\"p\">(</span><span class=\"mi\">0</span><span class=\"p\">,</span> <span class=\"mi\">1</span><span class=\"p\">,</span> <span class=\"mi\">1</span><span class=\"p\">,</span> <span class=\"n\">dx</span><span class=\"p\">,</span> <span class=\"n\">step</span><span class=\"o\">=</span><span class=\"mf\">1.</span><span class=\"p\">)[</span><span class=\"o\">-</span><span class=\"mi\">1</span><span class=\"p\">])</span>\n<span class=\"w\">          </span><span class=\"pm\">^^^^^^^^^^^^^^^^^^^^^^^^^^^</span>\n  File <span class=\"nb\">&quot;C:\\Users\\goper\\AppData\\Local\\Temp\\marimo_864\\__marimo__cell_CcZR_.py&quot;</span>, line <span class=\"m\">3</span>, in <span class=\"n\">euler</span>\n<span class=\"w\">    </span><span class=\"k\">while</span> <span class=\"n\">_t</span> <span class=\"o\">&lt;</span> <span class=\"n\">tmax</span><span class=\"p\">:</span>\n<span class=\"w\">          </span><span class=\"pm\">^^</span>\n<span class=\"gr\">NameError</span>: <span class=\"n\">name &#39;_cell_CcZR_t&#39; is not defined</span>\n</pre></div>\n</span>",
+          "mimetype": "application/vnd.marimo+traceback"
+        }
+      ]
+    },
+    {
+      "id": "zlud",
+      "code_hash": "6308b7188484c835eeee404dd6e70ad3",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">This looks correct. So now let's plot the result of a much smaller step size.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "tZnO",
+      "code_hash": "e6c308da15362fe6a19052673255a4e2",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (NameError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "xvXZ",
+      "code_hash": "2829e7671177081a4b99b2908d642e91",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (NameError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "CLip",
+      "code_hash": "ad7023940822ff98732dd1b14b451a04",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Here we see that the error is reasonably small, but it took a very large number of iterations to get three digits of precision. In practice Euler's method is too slow for most problems, and we use more sophisticated methods.</span>\n<span class=\"paragraph\">Before we go on, let's formally derive Euler's method, as it is the basis for the more advanced Runge Kutta methods used in the next section. In fact, Euler's method is the simplest form of Runge Kutta.</span>\n<span class=\"paragraph\">Here are the first 3 terms of the Taylor expansion of <marimo-tex class=\"arithmatex\">||(y||)</marimo-tex>. An infinite expansion would give an exact answer, so <marimo-tex class=\"arithmatex\">||(O(h^4)||)</marimo-tex> denotes the error due to the finite expansion.</span>\n<marimo-tex class=\"arithmatex\">||[y(t_0 + h) = y(t_0) + h y'(t_0) + \\frac{1}{2!}h^2 y''(t_0) + \\frac{1}{3!}h^3 y'''(t_0) +  O(h^4)||]</marimo-tex><span class=\"paragraph\">Here we can see that Euler's method is using the first two terms of the Taylor expansion. Each subsequent term is smaller than the previous terms, so we are assured that the estimate will not be too far off from the correct value.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "YECM",
+      "code_hash": "5fcd5ce1c28f2f822956b158f31b9a2b",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"runge-kutta-methods\">Runge Kutta Methods</h3></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "cEAS",
+      "code_hash": "c48df9a8c9e961dd7014b0c98672c3e3",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Runge Kutta is the workhorse of numerical integration. There are a vast number of methods in the literature. In practice, using the Runge Kutta algorithm that I present here will solve most any problem you will face. It offers a very good balance of speed, precision, and stability, and it is the 'go to' numerical integration method unless you have a very good reason to choose something different.</span>\n<span class=\"paragraph\">Let's dive in. We start with some differential equation</span>\n<span class=\"paragraph\">$<marimo-tex class=\"arithmatex\">||(\\ddot{y} = \\frac{d}{dt}\\dot{y}||)</marimo-tex>$.</span>\n<span class=\"paragraph\">We can substitute the derivative of y with a function f, like so</span>\n<span class=\"paragraph\">$<marimo-tex class=\"arithmatex\">||(\\ddot{y} = \\frac{d}{dt}f(y,t)||)</marimo-tex>$.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "iXej",
+      "code_hash": "7d49ffb6e10ff84dfa9d9241cdcb62b4",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Deriving these equations is outside the scope of this book, but the Runge Kutta RK4 method is defined with these equations.</span>\n<marimo-tex class=\"arithmatex\">||[y(t+\\Delta t) = y(t) + \\frac{1}{6}(k_1 + 2k_2 + 2k_3 + k_4) + O(\\Delta t^4)||]</marimo-tex><span class=\"paragraph\">$$\\begin{aligned}\nk_1 &amp;= f(y,t)\\Delta t \\\nk_2 &amp;= f(y+\\frac{1}{2}k_1, t+\\frac{1}{2}\\Delta t)\\Delta t \\\nk_3 &amp;= f(y+\\frac{1}{2}k_2, t+\\frac{1}{2}\\Delta t)\\Delta t \\\nk_4 &amp;= f(y+k_3, t+\\Delta t)\\Delta t\n\\end{aligned}</span>\n<span class=\"paragraph\">$$</span>\n<span class=\"paragraph\">Here is the corresponding code:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "EJmg",
+      "code_hash": "284d2a1daffc1f89321d89b498e4e01e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "UmEG",
+      "code_hash": "ca22b3be237e0238c4b6b29109953cf8",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Let's use this for a simple example. Let</span>\n<marimo-tex class=\"arithmatex\">||[\\dot{y} = t\\sqrt{y(t)}||]</marimo-tex><span class=\"paragraph\">with the initial values</span>\n<marimo-tex class=\"arithmatex\">||[\\begin{aligned}t_0 &amp;= 0\\\\y_0 &amp;= y(t_0) = 1\\end{aligned}||]</marimo-tex></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vEBW",
+      "code_hash": "f17f2b07dacf2fb1c7b57902d701fe41",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "max error 13.32005\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "kLmu",
+      "code_hash": "5ebc21f8d0af34159d676c55f5848a8d",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"bayesian-filtering\">Bayesian Filtering</h2>\n<span class=\"paragraph\">Starting in the Discrete Bayes chapter I used a Bayesian formulation for filtering. Suppose we are tracking an object. We define its <em>state</em> at a specific time as its position, velocity, and so on. For example, we might write the state at time <marimo-tex class=\"arithmatex\">||(t||)</marimo-tex> as <marimo-tex class=\"arithmatex\">||(\\mathbf x_t = \\begin{bmatrix}x_t &amp;\\dot x_t \\end{bmatrix}^\\mathsf T||)</marimo-tex>.</span>\n<span class=\"paragraph\">When we take a measurement of the object we are measuring the state or part of it. Sensors are noisy, so the measurement is corrupted with noise. Clearly though, the measurement is determined by the state. That is, a change in state may change the measurement, but a change in measurement will not change the state.</span>\n<span class=\"paragraph\">In filtering our goal is to compute an optimal estimate for a set of states <marimo-tex class=\"arithmatex\">||(\\mathbf x_{0:t}||)</marimo-tex> from time 0 to time <marimo-tex class=\"arithmatex\">||(t||)</marimo-tex>. If we knew <marimo-tex class=\"arithmatex\">||(\\mathbf x_{0:t}||)</marimo-tex> then it would be trivial to compute a set of measurements <marimo-tex class=\"arithmatex\">||(\\mathbf z_{0:t}||)</marimo-tex> corresponding to those states. However, we receive a set of measurements <marimo-tex class=\"arithmatex\">||(\\mathbf z_{0:t}||)</marimo-tex>, and want to compute the corresponding states <marimo-tex class=\"arithmatex\">||(\\mathbf x_{0:t}||)</marimo-tex>. This is called <em>statistical inversion</em> because we are trying to compute the input from the output.</span>\n<span class=\"paragraph\">Inversion is a difficult problem because there is typically no unique solution. For a given set of states <marimo-tex class=\"arithmatex\">||(\\mathbf x_{0:t}||)</marimo-tex> there is only one possible set of measurements (plus noise), but for a given set of measurements there are many different sets of states that could have led to those measurements.</span>\n<span class=\"paragraph\">Recall Bayes Theorem:</span>\n<marimo-tex class=\"arithmatex\">||[P(x \\mid z) = \\frac{P(z \\mid x)P(x)}{P(z)}||]</marimo-tex><span class=\"paragraph\">where <marimo-tex class=\"arithmatex\">||(P(z \\mid x)||)</marimo-tex> is the <em>likelihood</em> of the measurement <marimo-tex class=\"arithmatex\">||(z||)</marimo-tex>, <marimo-tex class=\"arithmatex\">||(P(x)||)</marimo-tex> is the <em>prior</em> based on our process model, and <marimo-tex class=\"arithmatex\">||(P(z)||)</marimo-tex> is a normalization constant. <marimo-tex class=\"arithmatex\">||(P(x \\mid z)||)</marimo-tex> is the <em>posterior</em>, or the distribution after incorporating the measurement <marimo-tex class=\"arithmatex\">||(z||)</marimo-tex>, also called the <em>evidence</em>.</span>\n<span class=\"paragraph\">This is a <em>statistical inversion</em> as it goes from <marimo-tex class=\"arithmatex\">||(P(z \\mid x)||)</marimo-tex> to <marimo-tex class=\"arithmatex\">||(P(x \\mid z)||)</marimo-tex>. The solution to our filtering problem can be expressed as:</span>\n<marimo-tex class=\"arithmatex\">||[P(\\mathbf x_{0:t} \\mid \\mathbf z_{0:t}) = \\frac{P(\\mathbf z_{0:t} \\mid \\mathbf x_{0:t})P(\\mathbf x_{0:t})}{P(\\mathbf z_{0:t})}||]</marimo-tex><span class=\"paragraph\">That is all well and good until the next measurement <marimo-tex class=\"arithmatex\">||(\\mathbf z_{t+1}||)</marimo-tex> comes in, at which point we need to recompute the entire expression for the range <marimo-tex class=\"arithmatex\">||(0:t+1||)</marimo-tex>.</span>\n<span class=\"paragraph\">In practice this is intractable because we are trying to compute the posterior distribution <marimo-tex class=\"arithmatex\">||(P(\\mathbf x_{0:t} \\mid \\mathbf z_{0:t})||)</marimo-tex> for the state over the full range of time steps. But do we really care about the probability distribution at the third step (say) when we just received the tenth measurement? Not usually. So we relax our requirements and only compute the distributions for the current time step.</span>\n<span class=\"paragraph\">The first simplification is we describe our process (e.g., the motion model for a moving object) as a <em>Markov chain</em>. That is, we say that the current state is solely dependent on the previous state and a transition probability <marimo-tex class=\"arithmatex\">||(P(\\mathbf x_k \\mid \\mathbf x_{k-1})||)</marimo-tex>, which is just the probability of going from the last state to the current one. We write:</span>\n<marimo-tex class=\"arithmatex\">||[\\mathbf x_k \\sim P(\\mathbf x_k \\mid \\mathbf x_{k-1})||]</marimo-tex><span class=\"paragraph\">In practice this is extremely reasonable, as many things have the <em>Markov property</em>. If you are driving in a parking lot, does your position in the next second depend on whether you pulled off the interstate or were creeping along on a dirt road one minute ago? No. Your position in the next second depends solely on your current position, speed, and control inputs, not on what happened a minute ago. Thus, cars have the Markov property, and we can make this simplification with no loss of precision or generality.</span>\n<span class=\"paragraph\">The next simplification we make is do define the <em>measurement model</em> as depending on the current state <marimo-tex class=\"arithmatex\">||(\\mathbf x_k||)</marimo-tex> with the conditional probability of the measurement given the current state: <marimo-tex class=\"arithmatex\">||(P(\\mathbf z_k \\mid \\mathbf x_k)||)</marimo-tex>. We write:</span>\n<marimo-tex class=\"arithmatex\">||[\\mathbf z_k \\sim P(\\mathbf z_k \\mid \\mathbf x_k)||]</marimo-tex><span class=\"paragraph\">We have a recurrence now, so we need an initial condition to terminate it. Therefore we say that the initial distribution is the probablity of the state <marimo-tex class=\"arithmatex\">||(\\mathbf x_0||)</marimo-tex>:</span>\n<marimo-tex class=\"arithmatex\">||[\\mathbf x_0 \\sim P(\\mathbf x_0)||]</marimo-tex><span class=\"paragraph\">These terms are plugged into Bayes equation. If we have the state <marimo-tex class=\"arithmatex\">||(\\mathbf x_0||)</marimo-tex> and the first measurement we can estimate <marimo-tex class=\"arithmatex\">||(P(\\mathbf x_1 | \\mathbf z_1)||)</marimo-tex>. The motion model creates the prior <marimo-tex class=\"arithmatex\">||(P(\\mathbf x_2 \\mid \\mathbf x_1)||)</marimo-tex>. We feed this back into Bayes theorem to compute <marimo-tex class=\"arithmatex\">||(P(\\mathbf x_2 | \\mathbf z_2)||)</marimo-tex>. We continue this predictor-corrector algorithm, recursively computing the state and distribution at time <marimo-tex class=\"arithmatex\">||(t||)</marimo-tex> based solely on the state and distribution at time <marimo-tex class=\"arithmatex\">||(t-1||)</marimo-tex> and the measurement at time <marimo-tex class=\"arithmatex\">||(t||)</marimo-tex>.</span>\n<span class=\"paragraph\">The details of the mathematics for this computation varies based on the problem. The <strong>Discrete Bayes</strong> and <strong>Univariate Kalman Filter</strong> chapters gave two different formulations which you should have been able to reason through. The univariate Kalman filter assumes that for a scalar state both the noise and process are linear model are affected by zero-mean, uncorrelated Gaussian noise.</span>\n<span class=\"paragraph\">The Multivariate Kalman filter makes the same assumption but for states and measurements that are vectors, not scalars. Dr. Kalman was able to prove that if these assumptions hold true then the Kalman filter is <em>optimal</em> in a least squares sense. Colloquially this means there is no way to derive more information from the noisy measurements. In the remainder of the book I will present filters that relax the constraints on linearity and Gaussian noise.</span>\n<span class=\"paragraph\">Before I go on, a few more words about statistical inversion. As Calvetti and Somersalo write in <em>Introduction to Bayesian Scientific Computing</em>, \"we adopt the Bayesian point of view: <em>randomness simply means lack of information</em>\"[3]. Our state parameterizes physical phenomena that we could in principle measure or compute: velocity, air drag, and so on. We lack enough information to compute or measure their value, so we opt to consider them as random variables. Strictly speaking they are not random, thus this is a subjective position.</span>\n<span class=\"paragraph\">They devote a full chapter to this topic. I can spare a paragraph. Bayesian filters are possible because we ascribe statistical properties to unknown parameters. In the case of the Kalman filter we have closed-form solutions to find an optimal estimate. Other filters, such as the discrete Bayes filter or the particle filter which we cover in a later chapter, model the probability in a more ad-hoc, non-optimal manner. The power of our technique comes from treating lack of information as a random variable, describing that random variable as a probability distribution, and then using Bayes Theorem to solve the statistical inference problem.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "IpqN",
+      "code_hash": "32ce88a7bb5a544c22b0bfefe18c2d28",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"converting-kalman-filter-to-a-g-h-filter\">Converting Kalman Filter to a g-h Filter</h2>\n<span class=\"paragraph\">I've stated that the Kalman filter is a form of the g-h filter. It just takes some algebra to prove it. It's more straightforward to do with the one dimensional case, so I will do that. Recall</span>\n<marimo-tex class=\"arithmatex\">||[\n\\mu_{x}=\\frac{\\sigma_1^2 \\mu_2 + \\sigma_2^2 \\mu_1} {\\sigma_1^2 + \\sigma_2^2}\n||]</marimo-tex><span class=\"paragraph\">which I will make more friendly for our eyes as:</span>\n<marimo-tex class=\"arithmatex\">||[\n\\mu_{x}=\\frac{ya + xb} {a+b}\n||]</marimo-tex><span class=\"paragraph\">We can easily put this into the g-h form with the following algebra</span>\n<marimo-tex class=\"arithmatex\">||[\n\\begin{aligned}\n\\mu_{x}&amp;=(x-x) + \\frac{ya + xb} {a+b} \\\\\n\\mu_{x}&amp;=x-\\frac{a+b}{a+b}x  + \\frac{ya + xb} {a+b} \\\\\n\\mu_{x}&amp;=x +\\frac{-x(a+b) + xb+ya}{a+b} \\\\\n\\mu_{x}&amp;=x+ \\frac{-xa+ya}{a+b}  \\\\\n\\mu_{x}&amp;=x+ \\frac{a}{a+b}(y-x)\\\\\n\\end{aligned}\n||]</marimo-tex><span class=\"paragraph\">We are almost done, but recall that the variance of estimate is given by</span>\n<marimo-tex class=\"arithmatex\">||[\\begin{aligned}\n\\sigma_{x}^2 &amp;= \\frac{1}{\\frac{1}{\\sigma_1^2} +  \\frac{1}{\\sigma_2^2}} \\\\\n&amp;= \\frac{1}{\\frac{1}{a} +  \\frac{1}{b}}\n\\end{aligned}||]</marimo-tex><span class=\"paragraph\">We can incorporate that term into our equation above by observing that</span>\n<marimo-tex class=\"arithmatex\">||[\n\\begin{aligned}\n\\frac{a}{a+b} &amp;= \\frac{a/a}{(a+b)/a} = \\frac{1}{(a+b)/a}  \\\\\n &amp;= \\frac{1}{1 + \\frac{b}{a}} = \\frac{1}{\\frac{b}{b} + \\frac{b}{a}}  \\\\\n &amp;= \\frac{1}{b}\\frac{1}{\\frac{1}{b} + \\frac{1}{a}} \\\\\n &amp;= \\frac{\\sigma^2_{x}}{b}\n \\end{aligned}\n||]</marimo-tex><span class=\"paragraph\">We can tie all of this together with</span>\n<marimo-tex class=\"arithmatex\">||[\n\\begin{aligned}\n\\mu_{x}&amp;=x+ \\frac{a}{a+b}(y-x) \\\\\n&amp;= x + \\frac{\\sigma^2_{x}}{b}(y-x) \\\\\n&amp;= x + g_n(y-x)\n\\end{aligned}\n||]</marimo-tex><span class=\"paragraph\">where</span>\n<marimo-tex class=\"arithmatex\">||[g_n = \\frac{\\sigma^2_{x}}{\\sigma^2_{y}}||]</marimo-tex><span class=\"paragraph\">The end result is multiplying the residual of the two measurements by a constant and adding to our previous value, which is the <marimo-tex class=\"arithmatex\">||(g||)</marimo-tex> equation for the g-h filter. <marimo-tex class=\"arithmatex\">||(g||)</marimo-tex> is the variance of the new estimate divided by the variance of the measurement. Of course in this case <marimo-tex class=\"arithmatex\">||(g||)</marimo-tex> is not a constant as it varies with each time step as the variance changes. We can also derive the formula for <marimo-tex class=\"arithmatex\">||(h||)</marimo-tex> in the same way. It is not a particularly illuminating derivation and I will skip it. The end result is</span>\n<marimo-tex class=\"arithmatex\">||[h_n = \\frac{COV (x,\\dot x)}{\\sigma^2_{y}}||]</marimo-tex><span class=\"paragraph\">The takeaway point is that <marimo-tex class=\"arithmatex\">||(g||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(h||)</marimo-tex> are specified fully by the variance and covariances of the measurement and predictions at time <marimo-tex class=\"arithmatex\">||(n||)</marimo-tex>. In other words, we are picking a point between the measurement and prediction by a scale factor determined by the quality of each of those two inputs.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "dxZZ",
+      "code_hash": "7f292a84e59f0f976328ffd6f1332812",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"references\">References</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "dlnW",
+      "code_hash": "17eb069b43ccb062f52a32dd50b06eaf",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><ul>\n<li>[1] C.B. Molwer and C.F. Van Loan \"Nineteen Dubious Ways to Compute the Exponential of a Matrix, Twenty-Five Years Later,\", <em>SIAM Review 45, 3-49</em>. 2003.<ul>\n<li>[2] C.F. van Loan, \"Computing Integrals Involving the Matrix Exponential,\" IEEE <em>Transactions Automatic Control</em>, June 1978.</li>\n<li>[3] Calvetti, D and Somersalo E, \"Introduction to Bayesian Scientific Computing: Ten Lectures on Subjective Computing,\", <em>Springer</em>, 2007.</li>\n<li>[4] Brown, R. G. and Hwang, P. Y.C., \"Introduction to Random Signals and Applied Kalman Filtering\", <em>Wiley and Sons</em>, Fourth Edition, p.143-147, 2012.</li>\n</ul>\n</li>\n</ul></span>"
+          }
+        }
+      ],
+      "console": []
+    }
+  ]
+}

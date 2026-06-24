@@ -1,0 +1,61 @@
+{
+  "version": "1",
+  "metadata": {
+    "marimo_version": "0.23.10",
+    "script_metadata_hash": "f94825164d0bde9ca61ad3af39b852f5"
+  },
+  "cells": [
+    {
+      "id": "Hbol",
+      "code_hash": "370080ed85c82e703e2654f24e1f62ae",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "MJUe",
+      "code_hash": "0595194dc76e224c689b849de1c15a98",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vblA",
+      "code_hash": "f955eb9d8a169fc6f2a71c62e666308a",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "bkHC",
+      "code_hash": "df3c5f17d8bb372aa6a909672a5ad348",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<div style='display: flex;flex: 1;flex-direction: column;justify-content: flex-start;align-items: normal;flex-wrap: nowrap;gap: 0.5rem'><marimo-ui-element object-id='vblA-1' random-id='6c43000e-4708-8cf5-ee56-9139aba2935d'><marimo-button data-initial-value='0' data-label='&quot;&#92;u003cspan class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&#92;u003e&#92;u003cspan class=&#92;&quot;paragraph&#92;&quot;&#92;u003e&amp;gt;&#92;u003c/span&#92;u003e&#92;u003c/span&#92;u003e&quot;' data-kind='&quot;neutral&quot;' data-disabled='false' data-full-width='false'></marimo-button></marimo-ui-element><marimo-ui-element object-id='vblA-0' random-id='8db2aaba-39a6-40f0-069b-76282d902786'><marimo-code-editor data-initial-value='&quot;print(&#x27;hi&#x27;)&quot;' data-label='null' data-language='&quot;python&quot;' data-placeholder='&quot;&quot;' data-disabled='false' data-show-copy-button='true' data-debounce='false'></marimo-code-editor></marimo-ui-element><span>hiss\nhshshshshshshshshshs\n</span></div>"
+          }
+        }
+      ],
+      "console": []
+    }
+  ]
+}

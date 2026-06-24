@@ -1,0 +1,607 @@
+{
+  "version": "1",
+  "metadata": {
+    "marimo_version": "0.23.10",
+    "script_metadata_hash": null
+  },
+  "cells": [
+    {
+      "id": "Hbol",
+      "code_hash": "1d0db38904205bec4d6f6f6a1f6cec3e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "DTGN",
+      "code_hash": "b35bdc40f2177738c7fd7e18de8fbee8",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "MJUe",
+      "code_hash": "aae9eb2d3ea3a449680bedd58a67c8f0",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\"><a href=\"./table_of_contents.ipynb\">Table of Contents</a></span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vblA",
+      "code_hash": "581ddb1d64fa8a8c2dd1e765d3e3c2f5",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h1 id=\"designing-nonlinear-kalman-filters\">Designing Nonlinear Kalman Filters</h1></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "bkHC",
+      "code_hash": "e8538e1461e4aa6f23e893d65c7f11e3",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "lEQa",
+      "code_hash": "eafb355248acc454199a7ab51eddc522",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "\n        <style>\n        .output_wrapper, .output {\n            height:auto !important;\n            max-height:100000px;\n        }\n        .output_scroll {\n            box-shadow:none !important;\n            webkit-box-shadow:none !important;\n        }\n        </style>\n    "
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "PKri",
+      "code_hash": "e74c57cbcaaf2389c3c4b86fe4837e57",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"introduction\">Introduction</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Xref",
+      "code_hash": "b1fcb290037f02de77b98ca7cb8df939",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">** Author's note: I was initially planning to have a design nonlinear chapter that compares various approaches. This may or may not happen, but for now this chapter has no useful content and I suggest not reading it. **</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "SFPL",
+      "code_hash": "2f07dd6040ef3b7d0e66898f5451a9f9",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">We see that the Kalman filter reasonably tracks the ball. However, as already explained, this is a silly example; we can predict trajectories in a vacuum with arbitrary precision; using a Kalman filter in this example is a needless complication.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "BYtC",
+      "code_hash": "160d31ffe03f7d9cc8a6062f6f4341c1",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"kalman-filter-with-air-drag\">Kalman Filter with Air Drag</h3></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "RGSE",
+      "code_hash": "1d21f047ffa6f8306f2330fedd0ae83f",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">I will dispense with the step 1, step 2, type approach and proceed in a more natural style that you would use in a non-toy engineering problem. We have already developed a Kalman filter that does excellently at tracking a ball in a vacuum, but that does not incorporate the effects of air drag into the model. We know that the process model is implemented with <marimo-tex class=\"arithmatex\">||(\\textbf{F}||)</marimo-tex>, so we will turn our attention to that immediately.</span>\n<span class=\"paragraph\">Notionally, the computation that <marimo-tex class=\"arithmatex\">||(\\textbf{F}||)</marimo-tex> computes is</span>\n<marimo-tex class=\"arithmatex\">||[x' = Fx||]</marimo-tex><span class=\"paragraph\">With no air drag, we had</span>\n<marimo-tex class=\"arithmatex\">||[\n\\mathbf{F} = \\begin{bmatrix}\n1 &amp; \\Delta t &amp; 0 &amp; 0 &amp; 0 \\\\\n0 &amp; 1 &amp; 0 &amp; 0 &amp; 0 \\\\\n0 &amp; 0 &amp; 1 &amp; \\Delta t &amp; \\frac{1}{2}{\\Delta t}^2 \\\\\n0 &amp; 0 &amp; 0 &amp; 1 &amp; \\Delta t \\\\\n0 &amp; 0 &amp; 0 &amp; 0 &amp; 1\n\\end{bmatrix}\n||]</marimo-tex></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Kclp",
+      "code_hash": "fbdf5679bd5d1904b548f0e5279141da",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">which corresponds to the equations</span>\n<marimo-tex class=\"arithmatex\">||[\n\\begin{aligned}\nx &amp;= x + v_x \\Delta t \\\\\nv_x &amp;= v_x \\\\\n\\\\\ny &amp;= y + v_y \\Delta t + \\frac{a_y}{2} {\\Delta t}^2 \\\\\nv_y &amp;= v_y + a_y \\Delta t \\\\\na_y &amp;= a_y\n\\end{aligned}\n||]</marimo-tex></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "emfo",
+      "code_hash": "cf5ce92e4b0b5957429d572e9015c37c",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">From the section above we know that our new Euler equations must be</span>\n<marimo-tex class=\"arithmatex\">||[\n\\begin{aligned}\nx &amp;= x + v_x \\Delta t \\\\\nv_x &amp;= v_x \\\\\n\\\\\ny &amp;= y + v_y \\Delta t + \\frac{a_y}{2} {\\Delta t}^2 \\\\\nv_y &amp;= v_y + a_y \\Delta t \\\\\na_y &amp;= a_y\n\\end{aligned}\n||]</marimo-tex></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Hstk",
+      "code_hash": "2cefbad7bb501a7bebdabb39ea3953bb",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"realistic-2d-position-sensors\">Realistic 2D Position Sensors</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "nWHF",
+      "code_hash": "6ae4b888ccfa22131ef9c48fc086dcbe",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">The position sensor in the last example are not very realistic. In general there is no 'raw' sensor that provides (x,y) coordinates. We have GPS, but GPS already uses a Kalman filter to create a filtered output; we should not be able to improve the signal by passing it through another Kalman filter unless we incorporate additional sensors to provide additional information. We will tackle that problem later.</span>\n<span class=\"paragraph\">Consider the following set up. In an open field we put two transmitters at a known location, each transmitting a signal that we can detect. We process the signal and determine  how far we are from that signal, with some noise. First, let's look at a visual depiction of that.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "iLit",
+      "code_hash": "77f194062fa31f8c56238a84351105c4",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stderr",
+          "text": "Ignoring fixed y limits to fulfill fixed data aspect with adjustable data limits.\n",
+          "mimetype": "text/plain"
+        },
+        {
+          "type": "streamMedia",
+          "name": "media",
+          "mimetype": "application/vnd.marimo+mimebundle",
+          "data": "{\"image/png\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAvsAAAFfCAYAAADQ5AMrAAAAOnRFWHRTb2Z0d2FyZQBNYXRwbG90bGliIHZlcnNpb24zLjExLjAsIGh0dHBzOi8vbWF0cGxvdGxpYi5vcmcvlcelbwAAAAlwSFlzAAAPYQAAD2EBqD+naQAAgwZJREFUeJzt3Qd4VFX6P/Dv9MlMGmmEQAKhJPTeexdBBEWl2tbe1rXs/tbVv8JaV911V11de0MUxUZHeu+9EyCUhIQ0UqeX/3MuBgPkTiZh5tb38zx5NHPv5F5Obs5959z3vEfj9/v9IIQQQgghhCiOVuwTIIQQQgghhIQHBfuEEEIIIYQoFAX7hBBCCCGEKBQF+4QQQgghhCgUBfuEEEIIIYQoFAX7hBBCCCGEKBQF+4QQQgghhCiUHhLn8/lw7tw5REVFQaPRiH06hBBCCCGEXDO21FVFRQVSUlKg1WrVG+yzQD81NVXs0yCEEEIIISTkzp49i2bNmkG1wT4b0Weys7MRFxcn9ukoitvtxq+//orRo0fDYDDUuX9xmQ1v/7gVh88UQQ30Oi06NE9Ez8wUdG/TBImNrGFrW8Ivv6QCO4/mYeexczh0uggerxdFhUVISEwI60iI2Lq2aoxHJvZGTKRZsGMq4br1XihB5coFcGcdrtf7NHo9TN37IaL3QOiiYsJybkpoX6mSQ9t6yy7Avm0dnLu3we/11uu9xnadYR02FrqYWAhNDm0rVyUlJUhPT78U66o22K9O3WENER0dLfbpKAr7A7ZYLFy71vUHvP1ILt76fgsq7C4YTBYoWaf0JAzt2gIDOqbCGmEMe9uSwFgbZrRoiqnXAeVVTqzZcxKf/bQGLr1F0cH+wZwKPPv5Rjw9uT86t2osyDHlfN363W7YNq6Ea+NKmD0emM2m4N6o0cDcvR8sQ0aHLchXQvtKnSzaNjoajVJvh3fEONjWLIVj7/bg35t9FN6cbJiGjEZE3yHQ6IQL32TRtjLldru5/4Y7TV3ywT4Rl8frwxdL9+DnjUcV/ato3jiGC/CHdGmOxNjgR/CJsKKtJlzfuzX8RcfQve9gbDqYi9V7TiG3qEKRv4oLlQ489+kqTB7aAVOGd4ROp9wPN9fCefQAqpb+BG9pSb3eZ+rQ9eJoaXxi2M6NkCvpYuMQNXEaIvoPR9WqhXAdPRhUI/ndLlStWAjHnm2IHHMzjK0yqXFJUCjYJ7zySyrx+jcbkZVbvxuoXMRYTRjeLR3Du6ejRbLwj0bJtUmOi8Tk4R1x27AOOJ5bgjV7TmH17lPc0ycl8fuBb1cfxIFTBXj6tv6Ij1H2k7X68FVVonLR93Ae3lev9xlbZsIyYhwMKTQfjIhHn5SMmCn3wn0mG1UrF8J95mRQ7/MWFaBs9v9g7twD1utugtZCA1QkMAr2Sa027j+Dt3/cBpvz4iMmJWnfPAHj+magX4dmMOh1Yp8OuUbs8WebZvHc153XdcX6faexeGsWjuUo60PqgexC/PGdpXji1r7cPBK1V7BwHdyDysXz4LPbgn6fPrkprKMnwJjeJqznR0h9GNLSEXPXo3AfP4zKX+fDW3Q+qPc59u2EKzsLkeNuhSmzIzU64UXBPrmMz+fHV7/uxbx19ZvcJnVmox7DurbA2L5taBRfwYwGHUb0aMl9ZeUUY8nW41i79zRcnvpNhpOqcpsTf/9yLWaM7Ixbh7ZXZTnihozma80RsAwfC3OP/tAoeJ4HkS/2t2xs0x6NWmbAvm0Dl9PvdznrfJ+vohzl335ycZR/zM3QRtCTP3I1CvbJJTaHG2/O3YTtR88pplWaxEXixgGZXLqOxUwTi9SkerT/7uu7YuWubCzYdBQFpcGPAks5reer5ftwKr8Uj0/qA5NRPd24s3o031YV9HvM3frAOuIGaK2RYT03QkKBTby19BsKU8duqFq+AM79O+s3yn/DbTBldKBfBrmMeu4SJKC84gq8+OU6nC0sV0RLtWwSi1uHdkD/DqnQatU3+kl+F2UxYeLAtrihXwaX4vP9mkOKuM7X7z+Dc8UVeO72wUhQeB7/xdH8eXAe3hv0e/QpqYgcOwmGps3Dem6EhAOrDBV98wy4uvdF1ZIf4CnID26U/5uPaZSfXIWCfYI9J87jX99vRaUCJjZ2TE/ELYPbo3tGE1WmOJDA6yYM65bOVV3adjgX3689hKNni2XdZCfOXcAT/12Gv00fiHbNlVlRho1WVvz4FXyVwVVcYmkMluHjYO7el1J2iOwZW7SG4f6n4Ni+EVUstcfpCGqU3336BKIm3QlDagtBzpNIm2DB/oIFC/DMM89wizL861//EuqwpI5JbttOlmHf1nXs4aGs26pXZgqXw6zUgIeEDvsQ2Kd9M/Ru1xT7Txbg+7UHsed4cBPipKi00oG/fbwKD0/oiVE9W0Ep2KJDtnW/cl/BMrXtxE1W1EaGd4EaQoRO7WG19Y3tuqBy4Vy4jh+p8z3eslKUfvY2rMPHImLACBr8UjlBgv2cnBw8/PDDiIyMxJkzZ4Q4JAmifv5/f96BX/cXIykpSbapLl1bN8Ydo7twudmE1DfoZ4tVsa/Dpwvx+dI93Aq9cv17ZtWzWB7/PWO7y/bvuWagwkbzgy1FyEbzrWMnwdShGwU1RLHY6rnR0+6Hc89WVC77pe5Rfr8fVSsXwX3qBKJumk7zVlQs7MG+1+vF9OnT8be//Q2LFi0K9+FIEBwuD16ZvR47j8l3Im6bpnG487ou6NI6WexTIQrAngi9dv9I7Dh6Dl/+uhen8ssgR/M3HUNRmQ1P3dafq0wkR85jB1H585ygS2rSaD5R2yCFuVtfGFq2ReWCuXCdqHuUn+1z4X+vI+rm26nsrEqFPdj/+9//zi2x/NBDD1GwLwFllQ7M+mKtbBfKapoQhdtHdUb/jqk0gkdCfhPt1bYpemSkYO3eU5i9fJ8sq/dsOpiD8s9X47kZg2GNMEIu/F4PNwpp37wmqP1pNJ9A7aP804Mf5WdzXsq+fA+WwaNhGXIdzWdRmbAG+2vXrsXHH3+M3bt3B/0ep9PJfVUrL79YNcPtdnNfpOEKLlRh5hdrca648lLOfvV/fT6fpJs2NtKMqcM7YGT3dOh0Wng8HkhZ9bVK16w823Zgx2bo07YJlm0/iblrDqLCJq/J6/tOnMdfPvgVz98+GHHREZK/blkgUjXvC3hyTgW1v6FNe1h+y82Xel9QE/UL1LahpuvYA1FprVC1YC482Vl17s8m+TpPn4D15hnQRgS38i5dt+EjVF+r8VdHfCFWXFyMrl274oMPPsDYsWO512644QaYzWbMmzeP930zZ87ErFmzrnp9zpw5sFiUXV4unM6XOfHtlnxUOOS1uBBLPe7VMgaDMmNhlmlaApE3u8uL1YdLsPt0BVfjXk5iLHpM65eM+EjpjvAby0vQZNcG6B11P0Xxa7UozuiCsuYZ7FGMIOdHiCz4/Yg9eQhxWfuDKrfhtkQir/sguCNjBDg5wsdms2HatGkoKyvjsmBkF+z//PPPuO2225CRkXHpNTY5lz0qT01Nxa+//oqUlJSgRvbZ/nl5eYiPp0mYDXEguwCvzNnILZpVE/vVFxYWIjExUZIpMR1aJOK+cd1kueIt+7S+fPlyjBo1CgYDLealhLZlqW8fLdyFYznySoGLtpjw/+4YxM1zkVrbug7u4UYk4al7dEvbKAHWm6Zz9fPlivoFattw85zNRtVPX8NXXlrnvhqjifubYk/KAqHrNnzYwHiTJk3CHuyHLY1nxIgR2LVr12WvPfLIIzCZTFzpTRZg1oZtZ19XYjceCprqb9OBs3jzu01we3zQXrFMfHXqDgv0r9wmprioCPzh+q4Y3KW5JD+E1Addt8pp2/YtGuNfj4zBip0n8fnSvSi31b2UvRRUOtx44fN1eGbaQG79CSm0LRtosK1eDNv6FRdHIevof0wduiLyhsnQms1QAuoXqG3Ddm21zIDpob+g4uc5cGUdCryzx42q7z+HdcS4oMpz0nUbekLdw8IW7EdFRaFjx45XvcbSeK58nYTH6t3ZeGveFtmkHrB+ZkL/TEwd0QkWM42GE+lhN0NWy75v+2bcBN7FW49DLhW4XvxqHf46dQC3xoCYfE4HKn6aDdfRg3Xuq9HrYR1z88UFsmT+wZ8QoWgtVkRPvReOLWtRtXIht2ZFIGxivOf8OUTdOBUaehKtSNIZziUhtXLnSVkF+qmJ0XjzwdG4Z1x3CvSJ5EVZTHhoQi+8et8IJMcFN8lNCrX4X52zgXvaJxZvaQnKPvlPUIG+Li4Bsfc+gYge/SjQJ6Se2IfjiH5DEXP3H7nKPXVxHtjNLcLlrZBn2WEioWD/vffew1tvvSXkIVVp+Y4T+M+PW2UR6LPBulsGt8O/Hx2DjFSak0HkpWN6Et7541iM7/f73CQp8/r8+Mc3G7Fhv/CLG3ryc1H6yb/hKcyvc19jq7aIve9J6BtfPa+LEBI8Q9M0xN73FAxpLev+G83L4T6Me4oKqIkVRtBgPy0tjZtsS8Ln1+0nuJU05RDoV4/m3zmmq2wXACLEbNTj/vE9ZDPK7/P78fq3G7F+32nBjuk6dRyln7/LldisCxuNjJ52H7Tm4EuGEkL4aa2RiLnjIZh79KuzmbxlF1D22dtw5wrXP5DwozQeBWETB9/9eRukjkbziRLJaZSfDQa8OXezICk9zkN7UT77gzoX/dHodIiaOA2RoyfQgj+EhJhGp0fkuFsROXZSnWVrfbYqlH3xHlzH616dl8gDBfsKwSbjvi2D1J2EGAv+cf9IGs0nih7lf+kPw7iF4OQwwr/lUE7YjmHfsRHl33/OrY4bCFscK+auR2Hu0its50KI2nF5/L0GIub2h7gVqAPxu10o/+YjOPbuEOz8SPhQsK8A6/aelsVk3D7tmuLtx8agXfPay64SohRdWifjnT9ej66tG0MOOfzbj+SGvLQmW6mzchH/AorVWN18lp9vaNYipOdACKmdMb0NN/ldn5QcsIn8Ph8qfv6aq+pD5I2CfZnbnZWHf32/WdKBvl6nxf03dMezMwZxVUwIUQM2sv/3u4fhjtGdoZVw2UhWpee1ORtx+HRh6AL9xT/AtnZZnfsa27RH7F2PQhctv4XzCJEzVu2KVeoxNG9V5772FQsQd3Qv97dN5ImCfRnLyinGK19v4EbnpKpJXCTeeHAUxvfPpPJ5RJWPzW8d2gGv3T+CS2GTKpfHi1lfrMWZgmsru8dGAisXzOXSd+rCUnaiJ98NjcF4TcckhDQMmwQfM/0BmNp1rnPfRtmHYV8+nwJ+maJgX6ZyC8sx8/O13GI5UjWoUxpXUrN10zixT4UQUbHUNZbC1rutdEtJVjnc+PuX61Fu9zQ80P/lGzh2b61zX8uAEYicMJWbNEgIEQ9bRCvqljsR0XNAnfs6t61H1ZIfKOCXIQr2Zaik3I7nP1uNcpsTUsQyFu4e0xV/ntKfFsgi5Dcshe252wdjyrAOkm2TojIb5mzOQ0U9+5aLub1z4NhX92Q+Vm3HOvIGetJHiERotFpYx06CdeiYOve1b9/IzcWhlB55oWBfZqrsLrzw+WoUlNogRRaTAc/fMQQ3D25HN3NCaknrmT6qM/5v6gAY9dJcW6Kowo2XZm8I+qnhxRH9OXDu31l3ac2bZ3B19Akh0uubLEOu48pz1sWxcxM3L4cCfvmgYF9GXG4vXpq9DqfypbmcdUp8JP758Gj0zJRuqgIhUjCwUxo3l0WqefxHzxbj9W82cpN3A2E3+8r538Kxr45AX69H9NR7Ye7UI8RnSggJpYie/RF9613ch/NA2LycqmU/U8AvExTsywS7qbKqOweyQ1MxI9S6tU7GPx++Ds0So8U+FUJkoWVKI/z7kevQLi0BUrT96Dn89ye2GrefP9BfMBeOvdsD/hw2ATd6+gMwtmobpjMlhISSqX0XRN12d90B/9Z1qKJJu7JAwb5MzFmxHxsFWO2yISYMyMQLdw5BZARV1SCkPmIizXjlvhEY3bOlJBtuxa5s/LLxaK3bqlYsqHMyLgv0Y6bfD2OL1mE6Q0JIOJgyOiB6yr11TqK3b14D+4YV9EuQOAr2ZWDj/jP4dvVBSNG9Y7vh3nHdodPRpURIQ9ehePSm3pg+spMkG/DTJbux61jeZa/Z2A1+0+q6A/0ZDwZVx5sQIj3G1m259DvoDQH3q1q1GI7dWwQ7L1J/FKFJ3MlzF7jVcaUYoPx5cn9MGEiP5gkJxeS4KcM74pGJvbhqVlLCsnhe/3YjV+6XYRV3qn79JbhAPy1doLMkhISDsVUmIm+7C35t4HCxYv5cOI8coF+CRFGwL2FllQ689NU6ON1eSInZqOfSdgZ3aS72qRCiKGN6t8bfpg+CQa+VXA3+F79ah7KD+7la+nXV7Y6edh8F+oQohKFlJvK7DQTqyOGv+OELuM9kC3ZeJHjSuqOQS1gVjFe+Xo/CMmmV2IyxmvDKvcPRtXWy2KdCiCL1bd8Mf797GKzmwI/OhebOPY29b78Fv5d/8IHl90ZPvY9y9AlRGFtiCqyT7ri4kA4Pv8eDsm8+hKcgX9BzI3WjYF+CWJWL/83fgUOniyAlSbEWvP7AKLRpFi/2qRCiaB3Tk/Da/SMRFxUBKYhxV2Bs/mZUllfi7G/pPLVhdfSN6W0EPTdCiDCMGR0QNWFqwH38DgfKZv8P3rIL9GuREAr2JWjJ1uNYtv0EpKRZYhTeeHA0UhKixD4VQlShRXIsXn9gJPchW0xmrxPj8zchwufivs8vqURxLU8c2WI8rGQfIUS5zF16cStgB+KrKEPZ7A/gc9gFOy8SGAX7EpOVU4yPFu2ClKQmRuOVe0cgLloao4yEqEXjuEi8et9IJMdZRTm+1u/DdQXbEOW5PLg/lV8Kh9N96Xu28iZbjIcQonwR/Ycjou+QgPt4i86j4sfZ3ArbRHwU7EuIzeHGG99uqnPVSiE1bxyDV+8bgUYSSScgRG2SGlm5gL9JXKSwB/b7MbB4L1IcV6cT+vx+HM8tgc/nh7lHfy7YJ4Sop3qYdfQEmDp2D7ifK+sQbKsWC3ZehB8F+xLK03/3p23IK6mEVKQlRePle4ZzC/8QQsSTEGPhFt8ScoS/Q0U2OlSc4t1ud3mwB3GIHDuJu/kTQtSD/c1HTZwKY8vMgPvZNq7kyvUScVGwLxG/bj+B9fvPQEo5+i/fO4ICfUKkFPDfO0KQHP6m9kIMLN4XcJ9z5gS872yJjQdzwn4+hBDp4apvTb4b+pTUgPtVzp8Ld6504hs1omBfAk7nl+LDhdLJ00+Jj8TL94xALI3oEyIpibEXU3pY4B8usV47rivcDi38vPuU6a1YmtQHXq0O7/y4DXnFFWE7H0KIdGmMJkRPuQfaqGjeffxeD8rnfgJvRZmg50Z+R8G+yBwuD/7xzUa4PNJYOIuV+nvxD8NpMi4hEs7hf/EPwxAVYQz5zzb4PLil6gDMv1XeqY1Lo8eSxn3h1F08vs0pvblGhBDh6KJiED35Hmj0et59fBXlKJ/7Kfzu3yf2E4UE+yUlJXj22WfRsWNHJCcnY/Dgwfj555/DeUjZ+XDBzoB1q4XEFvGZdfdQLpgghEhXs8RobhVroz7wipb14vdjWPFuJHqr+HcBsCKpJy4YLx/Fy8otwedL94TuXAghsmJomobIG6cE3MeTewaVS38U7JyIQMH+66+/jqSkJPzwww/YvXs3brrpJkyaNAmrVq0K52FlY+P+M1i+8ySkwKDX4rnbB3O1vQkh0peZloBnpg+ENkSTY9tXnELrqtyA+2xt1B6nLU1q3fbLxqPYnZUXknMhhMiPuVMPWAaMCLiPY9cWOA/sFuyciADB/muvvYbHH38cmZmZaNKkCZ544gk0bdoU69evh9qVVTrw/vwdkplV/+fJ/blVOwkh8tEzMwWPT+pzzT8nzlWGASX7A+6TZW2G3TEZAfd5+8dtXAlhQog6WYaPhbFN+4D7VCyYC2/J1SV9iQJy9r1eLzfCX1hYiOuuo5rM/1uwA2VVTkjBg+O7o1+HwLPpCSHSNLx7Ou4e07XB79f7PBhdsB16vxdenx+FDj/cV6TfFxhjsSahGxsZCPizisps+HQJjdoRolYarRZRN98OXUJj3n38LifK530Bv8cj6LmpGf9sihA5fPgwevXqBYfDAYPBgE8++QR9+/bl3d/pdHJf1crLL+azu91u7ksJNh08i3V7T0uitv+gzEYY3jVNMW0rFdXtSe1KbSuEG/q2QmFpJeZvOlbv9w4s2oNYVznyvAagohxjdfnIqoyGOzIGHq0eDq0RixN7w8XGhoJYDXPJ1iz0btsE3VonN/Bfo1zUL1DbquK61elgueUOVHz8by6wr/Vn5p5B+a+/wDLqRqiZW6DYS+NnEV8Y+Xw+2Gw2lJaW4rvvvsMzzzyD+fPn847uz5w5E7Nmzbrq9Tlz5sBiCX996XCrcnrx4eoc7r9ia9/Uipt6JNGCOIQoAFvVdu6WfJwosAf9no6ufIyvOoKtrhi8a2uOEbrz+IdxLyI1XrihxUl9I3wc3QsnDPH1OpfoCD0eGNYMJgMVfCNErSLzTqPx3s0B98nrPgi2pKZQK5vNhmnTpqGsrAzR0fzlSyUf7F9p/Pjx3IjywoULgx7ZT01NRV5eHuLj63fDkaI35m7GxgNnxT4NtGwSi7/fNQjr1qzGqFGjuKcuJLSf1pcvX05tGwbUtvyq7C785cOVyC2qu+59rLsSE3PXYHZFAubbErjXMg02PGs+gj7+QkT8Vn5zSWJvLGjcDz5N/QL30T1b4uEJPev1HqWja5faVm3XbdWi7+HavZV3uybCguh7n4A2phHUqLi4mJvTGu5gP+xpPLVNBvUEyNMymUzc15XYBSb3gHTD/jPYfCgXWq24o10xVhOev3MoIi1GxbStVFHbUtsKKdZgwAt3DsVT7/+KqgATZTV+H7rm78VzJWk45r74xPRmSxHuiMyH1wUcNzZBrMeGVEchri/chta2XHzafBzKDFFBn8uKXacwuEsLdGtTe/UeNaN+gdpWLddtzLhbUHruLDyF+bXv4HTAvuh7xNzxsCqzDAwCxV5hjTrvuusu7Nmzh/tUyB5VfPTRR1i8eDGmT58ONVbf+Z8Equ/odVo8O2MQtxInIUR5miZG4y9TBgScSxtxNguz8hK4QD9S48HzsadxT/R56H97j0NnwrstJ+GTtHGwa41oU5WLvx39Cu3KT9XrXKg6DyHqpjEYEXXrnQEX3HKfOg7H9o2CnpfahDXYnzJlCh555BHExsYiMTERH3zwAWbPno0ZM2ZAbdiCM1KovsMeq7drnij2aRBCwqh7RhPcc323q173+fw4cSIH3+VqUOXXoa3BhncSTqKPufKy/VbHd0OFwYqdjdritYwZOGtORJTXjseyf8CNeRug9Qe3Wi6rzjNnZeCSnoQQZdMnJiNy7KSA+1StWEDlOOUa7I8ZMwYbN27k8u6rqqqwY8cO7gOA2hw5U4QVu7LFPg2M75eBUT1biX0ahBAB3DggEyO6p1/6ntW/33TgDA4X2C6l7fwjLhtJusvTfXaZUnDSmnLp+0JTI7zRZhrWxXfhvh9TsBWPn/gOMe665wUwCzYdw+n80hD9qwghcmTq2gemTj14t/vdLq7+vsDTSFVDkORxnS6ES7rLDBtJk0L6TkazOPxh7NUjfYQQZWL5rw/d2BNpSdHIK67Aun2nUVrlrDVtp1qpIRIrI64eEGAlOL9tNrJBaT2sShBbV4Ru4oSouz+KHHsLdDGxgdN5dlA6TzhQXbQwW7rtOE6cuwAxWc0GLoeX5esTQtR1g3W4PNh5LA8er4+rtlNb2g7DxtNWJnSHR8M/ONPQtJ4D2YVYv+9MSP5NhBB50prNiBwfOLujavkCeC8UC3ZOakHRX5gn5X61fB/E9seb+6BxXKTYp0EIEVB23gUM/OOn+HTJHu77MVEVeL2WtJ1qe2La4Lwprs6f29C0nk8W74bdSYv3EaJmxlaZMPfoFzidZ/639CQwxCjYD6Mvlu1Fpf1irWqxjO3TGv07pop6DoQQYf20/jC63fcBth85h0ZRZnw3vR1eaFJ4VdpOzfSd7bHtgv75DUnrKamw45uVBxryzyGEKIh15I11p/PsDLwYF6kfCvbD5OiZIizfeRJiSk+OxT1ju4t6DoQQ4bjcXvzp3aW4+fnvuOpffds3w85/TcWwgh1okRwLk0HPk77TA15t/edW1TetZ/6mozhbUNagfxshRD3pPLaVC+GzXZ1uSBqGgv0wYBPRPliwE2IyG/X4v6kDYDSod3I0IWpM2/nPDxdXq3x6cj+s+89diN+9Cn63GzqtFq2bxkEDzVXpOwXmutN3QpHW4/2tYAFN1iVE3epK5/E57KhauUjQc1IyCvbDYN3e08jKLYGY7hvXnVtchxCivrSd+S9PwRsPjob/9HE4D+29tJ/FbECzxKgGp++EIq1n38kCbsIwIUTd6krncezaAnfuaUHPSako2A8xVvFi9gpxJ+V2a52MUT1binoOhBBx0nb2fPQgxvfPhN/rQeXSH696T3JcJKxmI/f/a+K7NSh951rTer5YtodG9wlROZbOYx17S8B9Khf/AL8vuEX8CD8K9kNs2bbjyC+pglgijHo8dnNvruQeIUR9aTtpjWO47+1b1sFbVHD1GzUatGwSi+PRaciLSAj5eQWT1nMqvwxr99KIHSFqZ8roAGNGB97tnnNnuRF+cm0o2A8hVs/629UHIaZ7x3VHYqxV1HMghIiTtmPQXxyl95aVwrZ2Ge/7I6Ii0WLS5LCdXzBpPbOX7+OehBJC1C3yuonQ6K4uHlDNtmoRfDbxBlGVgIL9EPplwxGUVjogFkrfIUS9aTs1Va2Yz9Wr5mMdOgY3jOyJzNT4sJ5voLSe8xeqsGRrVliPTwiRPl1cAiIGjuDd7rPbULWKJuteCwr2Q6S8yokf1h2GWCh9hxB1p+1Uc+ecgvPAbt6fo09Mhrn3QGi1Gvzplr4w6MN7GwiU1jN39UFaaIsQAsuAEdDF8lcFY3X3PYX51FINRMF+iHy/5iDsLg/Ecs/YbpS+Q4hK03aqsZKWdZWrs46ddOmRebPEaMwY2RnhxpfWk5J3FL9sPBr24xNCpE1jMMA65qaA+9ioFGeDUbAfAkVlNiwS8XE0exQ/ulcr0Y5PCBE3baea+8RRbvVJPqaO3WFs0fqy124ckIm0JGHK9NaW1mOb8wFKy2jxHELUzpTZEcY27Xm3O48egPss/yrdhB8F+yEwb+0huD3iTDRjRXceurEnVd8hRKVpO5eP6i/k/XkavR7WUeOvel2v0+KhCb0glCvTekblbcbZp++Dp7bKQYQQ9U3W1fKHpqyPo0X56o+C/WvEJuQu33ESYrm+d2u0atrw1S8JIfJN26nJeXA3PPm5vNsj+gyBLrr2BWw6pidhcOc0COXKtJ7Yc1nIf2wa7Ds3C3YOhBDp0cUnwtydf2Vd9+kTcB8/Iug5KQEF+9do/sajcHm8EENUhBEzRoU/35YQIs20nWpsAS3bqiW82zVmMyIGDA/4M+4Z2x1mI3/5u3Cn9fjLS1H0/GMo/eK/3L+HEKJOEYNHcTn8fGh0v/4o2L8GVXYXFm0RL1f/rjFdEWUxiXZ8Qoh4aTs1sUVnvBeKeLdbBo6ENsIS8GfERUdgyjD+xW3CndazJbk7933Fd5+h8JmHKK2HEJXSRcUgou8Q3u2e8+fg3L9T0HOSOwr2r8GSbcdhc7ohhoxmcRjVs6UoxyaEiJ+2U83vdgdcQEsbFY2I3oOCOo8b+rVBQhT/iFo403q+bDwMZ27+IzQRVi4l6Tyl9RCiWhH9h0NrjuDdblu9hJ4A1gMF+9fwuP3nDeLljT0wniblEqLWtJ2aHLu3wlfFX83GMmQMNAZjUD+LTdYd3TG8C20F8llJLBLf+gKGlhnwUVoPIarFAv2IQaN4t3tLS+A8sEfQc5IzCvYbaMXOk9zNWQwDOqYiI8wrXxJCpJu2U43ltts3rQo82a1r73qdV8skC7q0agwxsFV1NxcDjf/5Gaxjb+Feo7QeQtQpotdAaHmKCjD2jSupMk+QKNhvAK/Xhx/WHYIYtBoNbqdJuYSoNm2nJjay5S27wLvdOmwsNLr6/Uzm9lGdIGYpYxiMiHvkr4j/v1corYcQNS+0NeQ63u1sRV3X0YOCnpNcUbDfAJsP5aCg1AYxsDz9ponCLIBDCJFe2k41VmvatmEF73ZdQhKM7S/Wsq+v1k3jMLBTKsRw+nwZdmflc/9vGTwajf/zFaX1EKJSpi49A4/ub1hBo/tSCfY9Hg/cbnEmsobDoi3HRDmuUa/D1OEdRTk2IUT8tJ2a2IiWt+g873bLgBHXtNje7aO6QKdt+PuvxeIaK5IbmqZRWg8hKqXR6WHpN5R3uzv3NFd7n4gY7K9YsQIjRoxAbGwsoqOj0bNnT6xduxZyduZ8GQ5kF4py7Bv7ZyA+JnD5PEKIctN2ao7qsxEtPmwkzNTpYinLhkpJiMLonq0ghm1HclFYWnXpe43RRGk9hKiUuXvfgKWD7ev5+0IiQLD/5Zdf4rnnnkNxcTHKysowfPhwjBs3DtnZ2ZCrmiNOQrKaDZg0pL0oxyaEiJ+2U5P71HFuRIuPpf8wbkTsWk0Z3pF7oig0vx9Yuu34Va9TWg8h6sM+7Ef0Gcy73XXyKNznzgp6TnIT9mB/2LBhMJlMMBqNeOWVV+ByubB69WrIkd3pxqpd4nxQuWlgW0RGBFc+jxCivLSdmgJV4NFarNxIWCiwhbZY7X0xLNt+Ah6v76rXKa2HEPUx9x4UsIRwoD6RCDxBNzc3l8vdT0xMlGXbr9lzCnaX8Mu4Rxj1uKFfhuDHJYRII22nJm9JEVzH+df4YCNgwdbVD8aEAW1h0Atfy4E9Cdl0oPbROkrrIURdWBqPuWd/3u2uw/vgqygX9Jzk5Nqf8wbJ5/PhoYceQmZmJq67jr+UktPp5L6qlZdf/OWxDwliTvJlObILNx/l/h1Cu65XSxj1mpD/+6t/npImT0sFta0625al7Tzz8Sq889N27vs+7Zri62cnIi0pJmTna9u6Dn6+fshohK5rnwYfq7a2jYrQY2iXNCzbfhJCW7D5KPq1T+Hdbug3DPHNW6P0jWfhyc5C0fOPwXrLnYicem9I0pjUdO3KHbWt8tvW0HMAbFvWsvrnV21jfWLljo2IGDgScuIWqE01fhbFCuDBBx/EvHnzsG7dOrRvz597PnPmTMyaNeuq1+fMmQOLRbzJqWeLHfhiwznBj6vXavDoqFREmqV34yKE/O58mRNvLj6NrPMXy/JO7JGIGf1ToNeFrqKNxutF8zW/QOd21bq9tHkGittd28Tc2pRUufH+yrNcLr3Q7hvaFI1jTAH30Xg8aLblVyQe2sl9X5GchlMjboLbSmWKCVGSxP1bEZ1bezq1x2zB6cE3AFr5VJW32WyYNm0aN6+VFbKRdbD/2GOP4ZtvvsHKlSvRpUvgus+1jeynpqYiLy8P8fHirRr7r++3YN2+M4Ifd0yvVnjwxh5h+0S5fPlyjBo1CgaDISzHUCtqW3W17c8bjuK+fy7kUk9Y2s4nT48PS667c+922BbM5d0e/dBfoItPCkvb/vO7LVi/X/g+8PrerfDA+OD6QFahqPy/r8Jvt0ETHYvYJ16AqVto5i8o9dpVCmpbdbSt59xZVHz6H97t1lvvgjFTPiXKi4uL0aRJk7AH+2EfLv7jH//IjcoHE+gzbDIv+7oSu8DEushsDje2HcmDVuBPi6xE9q3DOob93y1m2yodta2y25al7fzlg+WXJuGyajtzn78lJJNwa1O5Zys0PP2QsWUGzMlNw9a2U0Z0wsaDORDaxoO5eHBCb+h1dfe/hmHXIyKjA4pf+yvcJ4/hwqwnEHXb3YiZ8YCk0nqkcO0qFbWtstvW0LwlHM2ac0F/bTy7t8DasRvkwiBQe4Y1en3qqafw2WefYe7cuWjWrBmKioq4L/bYQk42HzwLl+fqHLFwG9y5OZLjIgU/LiFE3Go7tXHnnoEnl39k3dxzAMKpRXIsemXy58+HS6XdhZ1Hg0+hpGo9hChbRK+BvNtcJ4/BU1Qg6PnIQViDfRbks1H6KVOmoG3btpe+3n33XcjJmr2nRDnuzYPaiXJcQoh41Xb4OHZu4t2mjYqBMaMDwu3mweL0Sav31K8Ppmo9hCiXqUM3aM0RDeor1SqszzVzcoR/5BtqJeV27D3BvyR9uLRLS0DLlEaCH5cQIp20nWo+hx3O/Rcnn9Ymokc/aHThX/yqQ4tENG8cg9PnyyD0irpVdhes9VxrhC3CZWjV9lJaD6vWI8W0HkJI8DQGA0zd+sC+eU2t2x17tsI6fBy3H7lIPlOWRbJu32lRKlCM6yvOQjaEEGmk7VxZQ9rvqX2ND5bDbwrRIlp10Wg0GNtH+L7J7fFh08GGrZBJaT2EKE9EgLRFv8MBV9YhQc9H6ijYr8Pq3cKvmBtjNaF/x1TBj0sIkU7aTk2OfTt4txnbdoIuKvwfOKoN69YCZqNelEUNG4rSeghRFl1cAoyt2vJuD/QkVI0o2A/gbEEZTuaVQmije7YSLIgghARO2/nTu0tx8/PfcWU1WdrOno8exPj+mYI1m7e8FO5Tx3m3m7v2gZAiTAYM79YCQtufXYCismsr7sDSehr/5ysYWmbAV17KpfWUfvFf+L3Cr4xOCLk25q69ebexkX2fXV7FYMKJgv0wjSRdS7nNMb1bC35cQoh00nZqch7YzbtNa4nkAlehiZHKw9Ip1+09fc0/h9J6CFEGY2YH7qldbfxeL5yH9gp+TlJFwT4PttYYy9cXGittl9TIKvhxCSHSSdupyRkghcfUsZsgE3Ov1Dw5Fh3TEwU/7toQVUajtB5C5E9jMMLUrjPvdkrl+R0F+zzOFpQjv6QKQrtehBEzQoh00nZq8hTkwXOev8a8qXNPiOX63sL3VSyt8lpTeWqitB5C5M3UiX91bffpE/CWXRD0fKSKgn0eWw8LXzY0NtKMbq2TBT8uIUQ6aTs1OffxTzLTxSdCnyLeRH72QShChIm62w7nhvTnUVoPIfJlSG8DbVQ073Ya3b+Ign0eW0N8QwnGkC7NoQtiSXhCiHLTdmqmEjoP8Af75k49uFKYYjEadBggQtUwVnM/1CithxB54koPd+jGu52C/YsosqxFaaUDx3KKIbShXYWvcEGImkktbacmb34uvGWlDXp8LZRh3dIFPyZb5NDudIflZ1NaDyHyYw6QzugpyIe3pAhqR8F+LbYfyRV8Ia1miVFoRSvmEqLqtJ2anEcP8G4zNG3O1ZkWW8f0JMRH8y9bHw4erw+7s/LD9vMprYcQedElN4UuoTHvdleAvlQtKNiXSArP0C4tRH0kT4iaSDFt50quYwd5txnbdYIUaLUaDO7cXHFzqiithxD5YLGTKUCf6AzQl6oFBfu1PNYP56gRnyGUwkOIqtN2amLpO548/oDWmNkRUsFW1BUa+5Dm84X/8Sul9RAiD8aMDgGr8vhUvsAWBftX2HsiHy6PV9BfQru0BCTHRQp6TELURuppOzW5svhHolj6ji4+CVLRIjkWzQVuwwq7C0fOCJOHS2k9hEifvmlzaK08cZTfD9eJI1AzCvavsOtYnuC/BDEqWhCiJnJI2wk2x5SN6ksp5Y+dixh92M5j/OsPhBql9RAibawfCjS671J53j4F+1fYd/K84L+E3u2aCn5MQtRALmk7NfldTrizs3i3B7qhiaVPu2aCH3P/yQLBj0lpPYRIlzGDP73Rdfww/F4P1IqC/RrKKh04U1Au6C8gLSkaTeKjBD0mIWogp7SdmlzHj8DvrT2VUGuOgCFV+HKXdUlvEouEGIugx2TlkR0u4W/elNZDiDQZW2VAo699oT+/wwH36ZNQKwr2aziQXaCKETFClE5uaTs1uU4e491mzGgPjU4nyUfovdumCHpMr88vWN7+lSithxDp0RiMMLTkf2rrDtC3Kh0F+yKn8PShFB5CVJ22cyX36eMNekwtNjEGLvadEL7PronSegiRUVWeU/x9q9JRsC9iDmiM1YSM1HhBj0mIUsk1bacmX0U5vEX8/ZAhvTWkqlPLJJiNtT9CD5f92eIG+wyl9RAiHcaWGbzb3OfOwOd0QI0o2K+Rr3+2UNh8/d5tm0qqqgYhciXntJ2aXAFG9fVJTaC1SLdEL2vr7m2SBT1mVk6JKHn7V6K0HkKkQRsbB11MbO0b/X54zmRDjSjY/81+EfL1ewmc40qI0ighbSfYx8yGFtId1a85gCF03v6hU4WQCkrrIURcbADV0Jy/r3SrNJWHgv3f7Bc4X58N6Hdq2VjQYxKiJNl5pbJP21FasN+5VWPF9911obQeQkT+G0xv06Cnp0pGwf5vDp8WtqpDenIsIiOMgh6TEKXYcrwUvR/+RPZpOzV5K8rgLeYfpTY0bwWpS4y1IjnOKugxj5wVpyJPQ9J6nLu3iH1qhCheoIERz7mz8DnUl7cvSLBfXl6OHTt2oKSkBFJNBThTUCboMWlUn5CG/a0+9f5yvLbwlCLSdmpynz7Bu03fOAVai7BBdEN1Shd2dP9E7gX4/X5I0ZVpPRdmPYGUbatUvbgPIeGm4/L2G/Hn7Z9VX95+WIP9EydO4IEHHkBmZiZ69eqFxYsXQ4pO5ZdyuZ9C6pSeJOjxCFFKtZ13ftrOff/kLX1kn7ZTkyfAgi9ySOGpWZVHSHaXB+eKKiBVV6b1JO/ZiJL/9xg8AaouEUKu8e8uQJ/pDjCwolRhDfZ3796Nbt26ISuLf+l3KTieWyJ4vn5HCvYJaXC1nb/dmI7X7h8h67Sd2srCyTmFR8ynlkL34Q1N64l5+kV4DUa4D+3h0nrsOzeLfWqEqC+VJ+8s1Caswf4tt9yCBx98EJGR0i0XJ8aNomWTRrBSvj4hDaq2s/39e9C7pTJG86uxtA7v+Tze7fpmzSEXCTEWNIkTts/PkniwXy1i4Egcufle6NPbcGk9Rc8/htIv/ktpPYSEWKA+05OXI9nUv3ChCboiBPudqQoPIQ1fJCtJWYE+4y3I5w34tFHR0EXJ698sdCrPiXPyCPYZZ0w84v/x0aW0norvPkPhMw9RWg8hIaSLT4LGUHsRFJ/dBl+pfPqMUBB2ucMgOJ1O7qvm5F7G7XZzX+EYOWQ5+z6fD0JpnRIbln9LfVWfgxTORWmoba/NzxuO4r5/LuRG81nazidPj8cN/doAfp8i29aZcxp+nj5Im9REsH9rqNq2TdNGWLpNuD41K6cYLpdL8osUVrerR6NF1P1PQd++C8r/+ypXrSf/sWmIfeIFmLr1Ffs0ZUmJ/YJUyLVttY1T4DlT+1wox9lsGCOjITah2lTjF+hZBuuEv/rqK8yYMSPgfjNnzsSsWbOuen3OnDmwWCwhP6/cCw58tu4chPToqFTEWgyCHpMQOXB7ffhi/Tks3HOxnGJmsgVPj22BxGhll6lNOLgDMWdrr/9c0rojLrTuCDk5X+bER2tyBT3mQyOaIT5SfteJqawY6St+gKX44noB+V0H4FzPoYCWHrwTci3ij+xG7KmjtW670LIdSjK6iN7ANpsN06ZNQ1lZGaKjo9Uzsv/MM8/gySefvGxkPzU1FcOGDUN8fHzIj7dk23EkHRGuDFqUxYipk26UxAgU+0S5fPlyjBo1CgYDffigthV/kazpr/yEHUeLLlXbefEPQ6+ahKvE67Y8PwteZ+2pLy2vvwGGNu0FOY9Qta3X68OSrJ+4J6dCad62GwZ3lvbcBr729U+6DeWfvg370h+5aj2prirEPjWLS0Ug19a2JHzXrdQ5U5Nh++VCrdtSEuMQNXYsxFZcXCzIcSQX7JtMJu7rSuwCC8dFlltUCa2AIygZzRJgNEpr9ClcbUuobetTbefuf/xyKW3ni79OrLN2vlKuW5ar7y88Dw1PP2RKbQGdwP/Oa21b9tZWKXE4elaYGxmTU1gpm+vhqvY1GJDw2N9g69ITJW+/zFXrKX7iTsQ9/SIievQT81RlRyn9ghTJrW01aS1g5+lX/efPQa/Xiz7wKlR7hjXKraio4BbTYl9MdnY29/+nT5+GVOQKXJ+5TbM4QY9HiNyq7ShlkSy1Ts6t1rqpsH3duWLp1tpv6CJcVK2HkDBN0nXYVTVJN6zB/uHDh7nSm+yrR48e+OWXX7j/Z7n7ag322WgXISRAtR2FLJIVLE/RxVzt2uiTm0GuhA72he7LhVqEi6r1ENIwbNRe34S/D/UU5qumacOaxtO7d+9Lo/pS5HB5UFRmU/QNkBClpO0olbe4kHebPqkJ5EqMkX1Wb0Lsx/KhXITL3Kk7l9bDqvWwRbgorYeQ+mF9qJunIo8vQN+rNKqe7p8n8GPfqAgjEmNDX1GIELmgtJ2reYsLeNtLlyDfCZqpidEwCrjCsdvjQ2GpsIM34UZpPYRcG118Iu82DwX76iD0Y1+WnqCEUSdCGoLSduo/si/naiw6nRYpCcKupKuEvP0rUVoPIQ0XqA/1BhhoURpVj+yfEzjYT4mPEvR4hEgpbafbfR9g+5FzXNrO/Jen4I0HR19VVlNtWNqJt6igQaNSctA0QdhFa3IKLy7CqDTVaT3x//cKNBHWS2k99p2bxT41QiQtUB/qpZF9dRD6xtAsUfzV2ggREqXtBOarLIff7ap1mzbCAq3FCjlrmhCl6AEcoVFaDyH1o42Ng0ZX+6CSr6IMfpdTFU2q7pF9gR/5Cn3jI0RMlLaj3hQesUb2c4uUObJfE6X1EBI8tn6JtlEC1D66r+pgP7+kUtDjpVCwT1SC0nZCEezLO4VHjAGOvGJh+3SxUFoPIcHTxQcI9ksurtiudKoN9j1eH1f2TyhsXm5ynLCT1QgRGqXt1I8vwI1GCcG+0AMcFyodUBNK6yHkGifpltDIvqKVCnxTaNzIqvrJiETZKG2n/rwVZbzbdAEePctFlMXElRwWcu0Uu9MNNaG0HkIC0wXoS33l/H2wkqh2ZL+k3C7o8agSD1EySttpGDZBjI82ShkT+psmRim6b5cCSushhJ82OqZBfbCSqDfYrxD2hhAfTYtpEeWhtJ1rr8bDRxvFf4OSE6H7PqH7dimhtB5CrqaN5B848VUqu4JXNfUG+wKP/sRHRwh6PELCjdJ2rp2volzxI/txUcL2fRcq1JW3fyVK6yEk+L7USyP7ynZB4NGfRgLf8AgJJ0rbuXasvrPfWXtgqjGboTEIl+seTnECD3QUl9ugdpTWQ8jvtFb+VEJ/VQW3uKHSqXZkv5hG9gmpN0rbCZ1Aj48DPXaWm0aRZkGPp/aR/ZoorYeQ32rt84zu+71e+G1Vim8m1Qb7FyppZJ+Q+qC0HQEn5yoo2I+PETZnn0b2L0dpPYSgjrx95S/Gp9pgX+jSm0I/yiYklChtR+CRfYVMzhVjZF/ovl0OKK2HqJ02ULAfYO6UUqg22Lc53IIuqBUr8A2PkFCgtJ3w8VUFSuMRtlylkgY67E6PoMeTE0rrIWqlDTBJ11el/JW3VRvsC3lDiIowQa9TbVMTmaK0nfDyO/lX8NaalfMkMDLCKGj/Z1PZolr1RWk9RI00Jv4BV79L+U8DVRuB2l3CBfsWs16wYxESCpS2E35+tzNg2oVSaDQaRBj1gq6iSwKjtB6iNtqAwT5/X6wUqgz2WZklIW8IEUaDYMci5FpQ2o40RvY1JuUE+0yESbhgn9J4gkdpPUQtNAEGUAL1xUqhymBf6JEfIW90hDQUpe0Ii6/GPqMxKmuOT4RJuAEPu8utirrZoUJpPUQVjAGCfbcLSqfKYF/okR8hb3SENASl7Qgv0KNjJaXxCD3gweJ8p9sr2PGUgNJ6iNJpAjwtDTTwohQqDfaFncBFI/tEqihtRzxqSuMxC5izz1DefsNQWg9RZxqPA0qnzmBf4DQes4HSeIj0UNqOhCfoGoxQEovATzeFHtBREkrrIaoL9t2UxhMS+/btw4IFC3DkyBGoM2ef0niItFDajtRH9iln/1rQJN1rQ2k9RFXVeJw0QfeauFwuTJw4EcOGDcO///1v9O7dG/fcc4/ok6e8Xp+iH2ETwofSdqTD7w0w6KBXVp9hMugEPZ7XJ2wfr1SU1kMUQ69vWF+sEGFN42EB/saNG7F3716sXLkSmzdvxpw5czB79myISeiPGjqtRuAjEnI1StuRGB9/T6TRKCvDUqcV9t9DxXhCh9J6iCIE6lNV0GGEtQf+6quvMHnyZDRr1oz7vkOHDrj++uu519U0ss8WlSFETJS2I0UBbjACB8fhphV4wMOngpu3kCith8idJlAcpoL+ImzPij0eDw4fPozHHnvsstc7d+6M//3vf7zvczqd3Fe18vJy7r9ut5v7CgW3xwOfgI95fT5vyM49lKrPSYrnJndSaVuWtvPMx6vwzk/bue/7tGuKr5+diLSkGNHPTe5te618Hg/8PP2Q2+uBVoR/X7ja1uf1CtrnukJ4vwgluV+7hn7DEN+8NUrfeBae7CwUPf8YrLfcicip90KjEzf1TO5tK2VKaFuv18vb37K+WKx/m1DHDdtfZ2VlJde4jRo1uuz1+Ph4lJaW8r7v1VdfxaxZs656ffXq1bBYLCE5t6x8GwoKCiCUPXvciLKfhlQtX75c7FNQLLHb9si5Krz7Uxb3/xN7JGJG/wQc2LERByB/YrfttUrLyYHBXlXrtq3LfoVPxFr7oW7b/QeLUVBQBqGsXbsW2fERkCq5X7uaYbegWcSvSDy0ExU/foUdfhPs8Y0hBXJvWymTc9vqbZVozhP3Oe0u5CxeDDHYbDZ5B/um3+pEX/kPYR8CzGb+WdHPPPMMnnzyyctG9lNTU7lJvuyDQijsOpaH1dnrIZQuXTtg7LAOkBr2iZL98Y4aNQoGA1UMUmLbDqmqwvmK+dxI/l0Th8BqtULupNK216rs5B74Sktq3dZm9GhoLVbFtG2+Zg9Olh+DUIYMGYJ2aQmQGjlfu2yQLicn5/cXWj6I3N1bYHA60G38TYiNjRXz9GTdtlKnhLb1lhSh/Mi2Wrfpkpui89ixEENxcbG8g/2IiAgkJyfjzJkzl73Ovm/ZsmXADwnVHxRqYhdYqC4y9nO0AubEajVaSf+BhLJtibTa9u2338ZbL7zA/b897xXuw7RSiN2210qr08PP0w8Z9HpoRfy3hbptWX8rZJ9rkvi1Icdrd9GiRbj77rtr3/jwk9ycvKeffhp33XUXxCTHtpULObetVq+HhqcP0up0ov27hDpuWHtfNhn3xx9/vJSr6XA4uHr77HU1TRZT/tQPIkWsxO3nn39+6fvPPvtM1PMhVwjUDSmsdKTQ89+oKEL4sCfzLLCv/mJP3nU6HQ4ePMh9GJg5c2YYj05Iw/gDdUIqKKIS1mD/+eef5x77TZo0CR999BHGjRsHvV5/WZqOGDQKr/5DSPU8l+zsbPTr1w9du3ZFVlYW1q8XLn2N1CHADYZvIplceQSvgCbo4VSFBfgHDhy49MWe1p8/fx5Tp07ltr/88suCzokjJCh+n6o7jLAG+y1atMCuXbvQtm1brFmzBoMGDcL27dtDlnvfUHqdsGXt7AKv2EsI8+mnn3L/ZY/Vqx+tV79GxKcxGFWzfLvQq5Yb9MIu4qV27J7O+haj0chV4tuxY4fYp0TIZfwuV4P6YqUIe60s9oiPVdiRkgiTQdE3OkLKysq4FDr2yP22227jbsB//vOf8f333+Odd95BZGQkNZIEapfz8buUtXy7zSlsWbsIWrVccKyvSUhIwLlz5yiNikiOP0CfqoZgX1krtwQpwiRsPWC7wDc6Qr755hvY7XZMmDCBq5LBbsIsja6qqgpz586lBpIAjdGommBf6AEPMwX7gmNpgtWBfvv27YU/AUIC8NdYv+lKmlqKwiiNSoN9g6JHtQipmcJTjVJ5pEVNI/tCD3gI3cerCSu0UTNnf/PmzdycvDFjxnDb//CHP6B58+ZinyYhl/G7HLwtojHxl4NXCnGXvBOJ0I94KY2HCIlVxWBzY5o0acLVRa42duxYJCYmYtOmTTh69CgyMzPpFyOiQDcY5QX7wo3s67QaGPSqHMcSrH/p1KnTVa+z1EBW6veRRx4R5bwICcRPaTzqYzToBJ18LeSNjpBPPvmEa4QZM2ZwJfFq1vOdNm0a9/80UVfiwX6AR85yJGSRAjaqT6U3hSu92aZNGy7QZwtmPvvss3jvvffCeHRCwjBB10Qj+4rEbgQRRoNg6TWUs0+EXOlw9uzZ3P/37NmTe8xeU+/evbn/fvnll1yJPFYKl0iwGo/iRvaFS+OhfP3wYgH+ldV2WA3zZcuWcYMJjz32GGJiYnD77beH+UwICZ7f6WhQSqVSqPZZp5CTdKsclLNPhMEWrSssLOT+f/Lkydzj9ppf06dP57bl5+djyZIl9GsRUcBJYQoK9n0+v6DzlqgSjzgDaCxnn43sM//85z9FOAtCGpjGY1R+sK/aYT2hg32X28ulDxESTtXpOc2aNeNG1/jKcrLF7ti+48ePp1+ISAI9OvbZqqAUZVUOQVfQtZhpcq5Y0tLSuP8eO3ZMtHMgpDZ+u423YTRmSuNRLKtZ2LqqJRV2JMdRbXMSPnl5eVi6dCn3/6tWreJyaWtz8uRJtGrVCosWLeJWukxKSqJfiwi01ijebb7KcijFhQr+x+fhYKFKPKJZvnw591+xF84k5Eq+ivIG9cVKodqR/UZRwn6Su0DBPgmzL774Al6vF/369eMN9JmWLVuif//+XFWer776Ck899RT9bkSgjYpu0I1JborL+UfUwiEuOkLQ46m19GY1l8vF1defN28e1wcxU6ZMEfEMCanfAIo2QF+sFKoN9uOihL0hFJfbBT0eUZ/PPvuM++8dd9xR575s8hwL9lkqDwX74tBG1Z5mxdDIfsM1ilT+I3kplt6sdv3112PWrFmCnhMhdfFVlPFu00ZSsK9YjQQO9tnIPiHhcujQIa60ZufOnbmJuXVh+7z//vvckwCWX5uRkUG/HIFpIwOk8VSUcRVOlFBCkqUwColG9sOjUaNGXCWeK7HyvtHR0dyquRMnTuSCfUKkxO/xwMeTs68xGKj0ppLFC/yot4RG9kkYsRvtlWU267px7927l34nItLo9NBarLVOxmU3J1YqTmOWf0qK0H2f0E9t1WLChAncFyGKSuGJjFHEoEpdVFt6U+iRfaFHtwgh0hfo8XGgx85yQiP7hBDJTs6NVP7kXFUH+0KP/hSUKqeUHiFEiLz9CkU0c6HAfR+N7BNCgs7Xj1J+vr66g32B03jOFVUKejxCiMzz9stLIXds3sG54kpFP7UlhMg52I+BGqg22I+xmqAVME+LPcp2uDyCHY8QIn3amEa827wlRVBCjX0h+73ICCMtXkgICbov1UbHqqK1VBvsswkZwo/uK+OxPCEkNHRxibzbvEXnZd/MuUXCrhcQJ/D6KYQQ6fMWFzaoD1YS1Qb7TBOBV7TNKVTOQjmEkGunS0hU9Mh+rsADHCkJ6phsRwgJnre4gHebLkEdK8irOthvKvCN4VwxjewTQoIc2S8u4HLe5SxX4AGOpgnqmGxHCAmO3+2Gt7Sk9o0aDXSN4lTRlKoO9oUeBRL6kTYhRNq0ERZoLZG8Nym5l98UemRf6AEcQoi0eS8U827TxcZz652ogaqDfaFHgXILaWSfEHI5XXxCg3JN5UDop5kp8RTsE0KCTeFJVE1TqTzYF/bGcKagDD6fvB/LE0JCSxef1KAbldQ5XR7Bg/2miZTGQwgJMtiPV0e+PtQe7DeOixS0/KbT7aVJuoSQy+jiExU5sn8y7wKEnHJgMRm4ksqEEBJcJZ4E1TSUIMH+qlWr8Oabb+Lw4cOQEr1Oi+Q4q6DHPJ7LM1GEEKJKgUaXPPm5kCuh+zr2pJaVVCaEkGqe8+d4G0NNI/thnZmwevVqPPzww2jcuDHWrl2L5ORktGvXDlLL2xdyhUd2AxzePV2w4xFCpE2f1IR3myc/h6vII8cg9sS5C4Iej8puEkJq8ns88Bbk8TaKvnGKahosrCP7VqsVP/30E9asWQOpEjpvn0b2CSE1aeMSoDHXvhiU3+GAT6b19sUY2SeEkJqj+n6vl3flXK1V2LWWFBvs9+7dG23btoWUpTfhX64+XHmsNEmXEFKNjdrrk5vxNog776wsJ+eyggRCailwX04IkTZPXg7vNkMT/j5XiSRXYNTpdHJf1crLL9amd7vd3FeoNW8cBZ/PB6HYnT6cyitBapL4VSOq2zMc7ap21LbUtvWhSWoC/8ljtW5znj0FXWYnyOm6PXa2CF6vcP0qk5YUJfm+jPoFals5kut168w5BT9ffNc4RRL/HqHOQeOvxxKNGzduxObNmwPuM3nyZKSmpl59II0GX331FWbMmBHw/TNnzsSsWbOuen3OnDmwWCwINZ/fjzcWnYLbK1zZiBu7J6JzKj1yJoRcFJl3Go331t632uOScK73cFk11faTZVi2n38xm1CzmnT403VpspzbQAgJj2ablsFUXvvcoXM9hsCeyD9fSig2mw3Tpk1DWVkZoqOjpTGyX1FRgfz8/ID7uFyuazqhZ555Bk8++eRlI/vsw8OwYcMQHx+PcNhwbhWOnBEuLzaqcTrGju0FKXyiXL58OUaNGgWDwSD26SgKtS21bX14SwpRnnei1m0acwS6XH+9IIFsqK7bg3M3IylJB6H0yGiCceMGQeqoX6C2lSM5Xrdscm7p3rWAufaKO21umSyJnP3iYmEGReoV7I8ZM4b7CieTycR9XYldYOG6yDJTE3AsR7jJZIdOF0vqDyacbat21LbUtsFW5NFGWOB3Oq7e6HJCV1kuaE3oa7lu2cPiQ6eLoNUKt4wL68Pl1IdRv0BtK0dyum7dhfksdQWopR/SRsfCFCuNOT5CtaeqF9Wq1rppnKDHyyupRFGZTdBjEkIkPkk3wIQx99lsyEVOYTnKqn6fd6XEPpwQIm2eAH2mQWWTc8M+QffMmTP47rvvLn2/ePFiLg2oc+fOGD16NKRCjBvF/pPnMawb1dsnhFykT0mF+9TxWpuDvW7uIn7qXzD2nTgv+DFbUbBPCKnBfbr2tEhG3zQNahPWkX1WVYcF9+zrqaeeQkpKCvf/bCKClDRLjIbJIFx+KbP/ZIGgxyOESJuheSvebe7sLMjF/mxh+7YYqwnx0RGCHpMQIl0slZBv4IQxNG8NtQnryH6bNm3w5ptvQuq0Wg1Xo/mwgJN092cLP/pFCJEuQ1pL3m3esgvwlpZAFxsn+Zus0AMZ7MksVeEhhFRjq+b67LWnSmv0euibXl0xUukoZ/83HVokCtrw+SVVKCytEvSYhBDp0pojuFQePoFGqqTizPkylNuciu67CSHSFuhJqCGtJTQ6yS0xFXYU7P+mY3rt5ZnCaa8Iua2EEOkytGgt62B/z/HApZnDoVPLxoIfkxAiXQFTeFqoL4WHoWD/Nx3Sk6AVeEGWbYdzBT0eIUTajDIP9rcdEbZPMxv1VImHEHJ5vn6AybkGFebrMxTs17hptGkmbD7srqw8uNxeQY9JCJEufWpLVoeTP2//gnCr0tZXld2Fg6cKBT1m++YJ0OvoNkYIucibnwufw15rc2gMBlXm6zPUS9bQWeDHwU63lyvBSQghXIdsNgfM23edOCrZhtp5LA9en1/QY1IKDyGkJtdJ/j7SkJquynx9hoL9Gjq1FD5vfyul8hBCajC2aMPbHq5jByXbVlsP5wh+zE4izLUihEiX6yh/H2lQab4+Q8F+De2aJ0Kn1Qge7LMcM0IIYQyt2/I2hPvkMfhdwla7CYbH6+NG9oVOvaTFtAgh1XxVlQFXGze2bqfaxqJg/4qbR0azeEF/ASUVdpw4d0HQYxJCpMuQ2gIas7nWbX6vB66TxyA1h04VosrhFrzkJuXrE0KqubIO8TaGNjoWuuSmqm0sCvalkMpzSPjH34QQaWI5pcbW7Xm3u44egNRsEaEPoxQeQkiwaY6mjA6qXnyPgv0r9MxMEfyXsH7/GUrlIYRcYsrsyNsarmOH4Pf5JNNaPp8fGw+cFfy4vdqqd5SOEHI5v9sN1/EjvM1izOig6iajYP8KmakJiLGaBP0l5BZV4HhuiaDHJIRIO29fo629e/bZKuHJPQOpYBXFWDqikJLjrEhNihb0mIQQ6WLrkPjdrlq3aQxGGNL5Cx+oAQX7VzaIViPK6P6aPacEPyYhRJq05oiAlSOklMqzWoS+q0+7Zqp+JE8ICT6Fx8gGT/TqLLlZjYL9WvRpJ/zj4bV7T8Prlc6jeUKIuAI9dnYe2iuJ1D+2KOAmEVJ4elMKDyHkNyyt0XlkH297GAOkRaoFBfu16NamCQx6YZumrMqJvSdogS1CSN03KO+FInjOiZ/Ks+1ILuwuj6DHtJoNaN8iUdBjEkKky52dBV9lBe92Yxv1ltysRsE+TwnOLq2EXU2XoVQeQkg1XWwc9AFKxTn37RS9sVbv5q9pHS49MppQyU1CyCXOfTt4W4OlQ2otkapvLQr2JfSYePOhHDgEHiUjhEiXqVMP3m3OA7u5uvtiKa9yCr6QVnW+PiGEMGxSrvMwfwqPOUAfqiYU7EuorBsL9DfuF//RPCFEGkyduvNuY1V52Iq6Ylm79xS8PmHnDbAVztnIPiGEMM6jB/ir8Oh0MLbvQg1FwT6/hBgL2jSNE/wiWbw1S/BjEkKkSRcVA2PLDN7tDpFSedjk4EVbskRZ9NAaYRT8uIQQaQqUzsiKHLDKZoRG9gMa0qW54NfIsZwSZOUUC35cQoj8UnlcR/bB53RAaPtPFnDrgwhtSJcWgh+TECJNvqpKuI4fblDfqTaUxhPAoM7NIUYp5yVbjwt/UEKIJBnbduatEe33eOA6InzN/UVbhE8fMup16Nee8vUJIRc5D+5mjxlrbQ6N2Qxjm/bUVL+hYD+AuOgIdG2VDDFq7lfaa89BI4Soi5bdtAKU4XTs3iLo+RSX2bDlUC6E1rtdCqXwEEIupRI6dm/lbQ1Th26qX0irJgr26zC0q/CPjV0eL1buPCn4cQkh0hTocbT79Al4CvIFO5dl20/AJ8KCXkMphYcQ8htPzml48vkHHUwd+YsbqBEF+3Xo16EZ9/hYjIm6UlghkxAiPrbce6Ba0Y7tGwQ5D4/XxwX7QouKMKJHZorgxyWESJM9QJ+ni2kEQ/NWgp4P1B7sr1+/Hi+99BJeeOEFLFy4EHITYTKgb3vhy3CeK67ELhFqWBNCpEej08PcvQ/vdsfe7YJM1N188CxKKuwQ2qDOabSQFiHk94m5h/bwtoa5Z39oxJhwqdZg/7rrrsNzzz0Hh+PiTej+++/H+PHj4fP5ICdipPIw89YdEuW4hBDpMffoH3hhmQCrSIYCe9I4b+0hVfXBhBDpYfOU/F4vb219c7e+gp+T1NVe4iFE3njjDXTu3PnS91OnTkW7du2wZMkSjBs3DnLRrU0TRFtMKLc5BT3ugexCHDlThLZpCYIelxAiPbrYOK5utOvYwVq3O3ZshLnngLCNaLEnjSfzSiG0pFgL9YGEEI7f54Njxybe1jB16AqtlT/lUa3COrJfM9Bn2rRpA6PRiPx84SaThYJep8WwbuKMLH2/pvYbOyFEfSJ6DeTdxibpes6cVNyTxpE9WtIjeUIIh9XV95Zd4G0Nc4A+Us3COrJ/pdmzZ8Pj8WDgQP5fhtPp5L6qlZeXc/91u93cl1hGdm+Bn9bzL94QLlsO5eB4ThGaN44J+c+ubk8x21WpqG2pbcMirSU0MXHwXSiqdXPllrWITEkL+XV7+EwR9p04D6FptRoM79pcMX0U9QvUtnIkpeu2ass6bnS/NrrkpvAnpUjiPIMl1Llq/PUo+cIm2C5dujTgPo8//jg3gn+lPXv2YNCgQdx2NmGXz8yZMzFr1qyrXp8zZw4sFgvE9PWmPGQXCj85rWOzSEzskST4cQkh0hOTfQQJR2ufnMY68zODb4AnQOWehpi7JR9Z520QWrsUKyb1aiz4cQkh0mOsKEXqRv4YtKBjL1Q0k1cVHpvNhmnTpqGsrAzR0dHSGNlPTExE27ZtA+5TW0B+8OBBjB49msvZf/HFFwO+/5lnnsGTTz552ch+amoqhg0bhvj4eIgpPj0Xr87ZKPhxizwa9Og3GI0bRYb8E+Xy5csxatQoGAyGkP5staO2pbYNF599CMr+8xLgqX1EKM2ig2Xs2JBdt6fyS1G2+VckJQmfB/v47UPRuaVyBjqoX6C2lSOpXLdVP82GK6n2/kBjjkDGXfdDYzRBToqLiwU5Tr2C/T59+nBf9XHo0CEMHz4cEyZMwAcffFBn7qXJZOK+rsQuMLED0n4d0pDUaC+KyoQf4fplYxYeual3WH62FNpWqahtqW1Df1HFIqJLT97VI937d0I3fCy0UdEhuW5/3ngMWq3wS7I0S4xC94wURebrU79AbStHYl633pIiuA/vg4anL4ro3hdGGU7MNQjUnmHtwY8cOcIF+jfeeCM+/PBD2XfaOp0WY3qJ84ho+c6TyCuuEOXYhBBpieg/jHeb3+uBfcvakBwnO+8C1u8/AzGM7dNG9vcMQkho2Dat4t3Gym1G9B1KTS1mnf2qqiquAs9jjz2GRx99lPtavHgx5Gp0r1bQaYW/AXl9fsxevk/w4xJCpEef0BimdpdXO6vJvmMjfI5rn1/0xbK9EGMhb5NBh+Hd0oU/MCFEcrwVZXDu2ca73dSpB3QxsYKek9yEtRoPy79n1XeulJAg37rxjaIi0L9DqiijXev2ncGkwe3RMqWR4McmhEhLxIARcB6ufQDA73LCsX0DLINGNfjnH8guwE6RVvEe1rUFrBFGUY5NCJEW9qSSbxGt6r6QiBjsP/jgg1CicX3biPZo+4tlezDrbv5H+IQQdTA0TYOxZQZcJ4/x3iAj+g6BxlD/oJkVaft8Kf9y9OE2tu/VFd0IIerjs9vg2M5fGIU94dQnKGcSf7gIP+tKAdq3SERmqjiVgXZl5YtS75oQIj0RA0fybvPZqmAPcJMMZNuRczh6VpgqEVfq1joZ6U3o6SUh5LdRfberQX0g+R0F+w3AJo3dOqQ9xMJG9+uxPAIhRKEMLVpD35R/ES37hhX1zt2/OD9oP8Ry61Dx+lZCiHT4Kitg37yGdzt7smlISRX0nOSKgv0G6t2uKVITw7cAQiDHckqw8cBZUY5NCJHWwIMl0Oi+3Qb7ptX1+pn7zlbgbOHFlcuFxp6YdkynR/KEEMC2fjmN6ocIBfvXMrov4gjUJ4t3w+G6evIzIURdjJkdoU9qwrvdvmUNfBXBBe8VNidWH7oAsbAnplRukxDC6uo7dm7ibQhDagvuySYJDgX712BQ5+ZIir16xWAhsIW9vlt9UJRjE0IkNro/Yhzvdr/bDdu6X4P6WXNWHoDNxV/1IpzSkqK5J6aEEFK1ZmnACjzWkeNpYKAeKNi/BnqdFjcPagex/LThCHJFetxOCJEOY5v2MKTy16V37NrMjZQFciK3BEu3n4RYbqFRfUIIAE9+Lpz7dwbu79JaUlvVAwX712hUz1aIsZogBo/Xhw8X7qTJuoSoHBvdZyNdfPw+H6pW8y9myCb8vz9/h2h9CXtCOrhzc1GOTQiRlqpViwJutwZ4kklqR8H+NTIadJgwIBNiYaU4txzKEe34hBBpMKSlw5jZgXe788BuuM/VPrF/5a5s0UptMmyxQJ2ObkeEqJ3r1HG4sg7zbjd37gF94xRBz0kJqHcNgRv6ZSDaIs7oPvPRwl1w0mRdQlTPOjzwiFfVkh+vGr2vtLtEXUArMcaCkT3okTwhauf3elC15Afe7RqdDpah1wt6TkpBwX4IRJgMmDyMf0Qt3ArLbPh6hXh1sQkh0sCq8pi79OLd7s45BeeebZe9xgL9sionxDJ9ZCfuCSkhRN0c2zbAU5DPu93coz90jcRZ0FTuKNgPkev7tBatMg/z88YjOHom8AQ8QojyWYaO4UbA+FStWMjV32d2Z+Vh2fYTEAurwDOsG//EYkKIOrDywFVrl/Fu1xiMsAweLeg5KQkF+yFi0OswfWRniIU9mX9r3ha43OKUzSOESIMuNg4R/YbybvfZKmFbswQ2hxtv/3j5KL/Q7hjdBVqtRtRzIISIr2rFfPidDt7tliGjobVGCnpOSkLBfggN7doCzRvHQCy5RRX4esU+0Y5PCJEGy6BR0EbH8m63b9uAb+cu59brEEu7tASqq08Igfv0CTj28Zfa1CUkIaLvEGqpa0DBfgixEao7r+sCMbHa+5TOQ4i6aYwmRF43kXd7eZUDWD3/4iNBkbC+klbLJUTd2MJZlYv5J+UykWNuhkanF+yclIiC/RDrmZnCjViJhdJ5CCGMsV1nGFtmXNUYXq8P2XmlSHaWILPyjCiN1SszBR3Sk0Q5NiFEOhw7NsJTkMe73dSuC4ytxCtvrhQU7IcYG6m6a0xXiIml88xeTuk8hEDtC21dP+mqybpnC8rg8lyc29O/ZD8sHrvA5wXcIfITUEKI+LwXilG1kn8BLY3BAGuAJ5QkeBTsh0H7Fono36EZxE7n2XWM/9MyIUT59Fyu6++TdUvK7Vyp3mpmnxuDi/cKms4zsntLtEjmn09ACFE+tt5Hxfxv4Xe7ePdh1Xd0MdRXhAIF+2Fy77juMIlcO/pf32/mbu6EEPWyDL44WZctvHcq/8JV29NteWhTJcwq3FazQfR5TYQQaaTvuE8d592ui08MWFWM1A8F+2GSGGsVdaEthi2U88/vNsHnE28SHiFE/Mm6EaMm4MS5Enh5+oKBxXsFSedhpTZjIs1hPw4hROLpO8sXBNwnkktBpEm5oULBfhhNHNgWKfHi1oXdd7IA3685KOo5EELE9e0ZP/bq+CfECpHO0yqlEcb0bh22n08IUUb6jrl7X5qUG2IU7Id5oa0HxveE2L5euR8HsgvEPg1CiAi2H8nl5vCsj+8Cu9bEux9L58kIYzrPgzf2pAW0CFG5utJ3WMqhddQEQc9JDSjYD7PuGU3Qr724k3XZYN2bczehvMop6nkQQoTFFs166/st3P87dCasSwicLz+oZD8ifaHvJ0Z2T0dbEUsSE0LE5y0pqjN9J+rGydCaKdUv1CjYF2iyrlEv7mTd4nI73pi7kauxTQhRPrfHi9fmbECF/ffH5SetTXHc2pT3PSafCzfaDkMTwnQeNilX7HLEhBBx+b0elP/wZRDpO20FPS+1CHuwv3z5cjz66KOYMmUKnn/+eZw5I84iLmJKaiT+ZF1mz/Hz+HTJbrFPgxAiQF7sf3/ejqNni6/aVlc6T3N3KXqUHQvZucwY1Zkm5RKicqyevufcWd7tlL4j42D/r3/9K9577z106tQJEyZMwP79+9G5c2ccPXoUanPToLZo3jhG7NPA/E3HsHzHCbFPgxASRvM3HsXKXdm1bgsmnadX6RE0sRdd83lkpsZjbJ821/xzCCHy5Tx2EPbNawLuQ+k7Mg72//KXv+Cnn37CAw88gKlTp+LHH39EREQE5s2bBzVO1v3TLX2hZctHiuy9X3bg8OlCsU+DEBIGbDG9T+p4gldXOo8Gfowq3A6zt+H5+wa99mKfpxW/zyOEiMNbVorKn+cE3IfSd2Qe7MfFxV32fU5ODsrKytCmjTpHelo3jcMtQ9qJfRrweH14efZ6FJZWiX0qhJAQyi0sx+vfbgyqguba+G6o0Ft4t1u9Dgwv3Nngcpy3j+qMZonRDXovIUT+/F4vKn78Cj7776t2X0mX0BiR100U9LzUKOwrFrAc/YcffhhVVVVcGs8//vEP3Hbbbbz7O51O7qtaeXk591+32819yd2kQZnYfPAsTp8vE/U8LlTY8dLs9RiW5lNEu0pNdZtS21LbCqXK7sKsL9agwhbcaLxDo8OyhB64KX8DtH5frXn/abZ8dC7Nwp6Y1vVP3+ndiq7/K1C/ED7UttJrW/vaZXAFKLMJvQGWidPg0WjZD4cauQX6d2v8rEcP0uzZs/Htt98G3OfVV1/lcvSrVVRUYO3atSgtLcX333+P3bt3Y8WKFcjIyKj1/TNnzsSsWbOuen3OnDmwWPhHoeQkr9SJz9blQgoL22YkWzCpV2Po6FE7IbLl8foxd2s+sgvrvwpuH8dZDLfzz+PxaTSYHdkVufrg5hzptRrcO7QpEqKM9T4XQogyRBTlocmOtQiUxFfQoRcqUltBzWw2G6ZNm8ZlvURHR0sj2GcTa7OysgLu069fP8THx9e6jR2qT58+XKDPPjgEO7KfmpqKvLw83p8rR7NX7Me8tYdFPQf2+ygsLMTU63rh0Zt6QyOB+QRK+rTOKlGNGjUKBoNB7NNRFGrbq/+O//n9FmzYz1/pIiC/HzcUbEGa/Tz3rdPpgsl0eaBu05nwfZOhqNJH1Pnj7rquCyYOzGzYuSgcXbvUtmq4br0lhaj49G34HfyDD4b2XWG9abrq447i4mI0adIk7MF+vdJ4MjMzua+GYsFkq1atkJuby7uPyWTivq7ELjAlBU0zRnXBzmP5oqbz+HwXH92v3H0ajeOiMX1UZ9HORamUdt1KCbXtxUD/o4W7sOlgLrTahk/BWpXUE7flroLF8/vNueaHf6vPhXGF2/Bzk0HwaPUB03cmDelAk3Lp2hUN9Qvitq3PYUfFvC8AlxManj5J1ygBMROmQmukp38GgeKDsE7Q/fjjj+HxeC59f/jwYSxbtgzDhw+H2lVX55FK+sy3qw9i8ZbAT20IIdLyw7rDWLD52mvis3KcyxN7wR/goXuiqxRDi3bzTthlCwdS9R1C1Mvv86Hix9nwFhXw7qPR6RA16XZaJVdgYQ32T506hfT0dAwZMgS9e/dGjx49uMm5rCQnuVid587rAte7FtL/FuzAxv3qW/SMEDlasfMkvli2N2Q/Ly8iAdtjA69e2aYqB914Fty6/4buVH2HEBWzrVoMV9ahgPtYR46HoWmaYOdEBKjG89JLL3GB/b59+7hHFazk5pXlONVu4sC22HfyPHYczRP7VLgBuze/24xoqwmdWjYW+3QIITy2Hc7FOz9uC3n77IjJQERJLjrhYhW02vS5cAgXDNE4ZW1y6bXBndMwupe6J9oRomaOfTtg27gy4D7mzj1h7jNYsHMiAo3sM2zCwcCBA7mJuRToX43lxT5xSz/ERdU98U2oGvwvfrkOR89c++qZhJDQ23s8H//4ZiN8Dax/H5BGg/nWdig28lfeYYk+Iwt3oJHr4geCJnGReGQiTfAnRK3cuWdQOX9uwH0MTZsj8obbVD8hV7HBPqkbG0n/85T+7D4rCXaXB89/tgZZOcVinwohpIYD2QX4+5fr4PJ4w9Yubo0OixN7w6Hlnzxn8HswLn8Tov1O/GXqAFjMNAmdEDXylhSh/JuP4Pf+Pj/zStqoaERNvhsaKlYhGgr2JaJjehKmjfh9fQKx2Zxu/L9PV+NEbonYp0IIAXDoVCFmfbE2rIF+tQqDFcuSesMXYMJulNeOpwxH0TLOTL8fQlTIV1mBstkfwFdVybuPRq9H9OR7oIsKbp0OEh4U7EvIbUM7oHPLJEhFlcONZz9ZRSP8hEhgRP+Fz9fA4eIfPQu1cxGJ2BDPX443NtKMVK0d5d98DL9KV78kRK18TgfK5nwI74XAKb+RN06hCbkSQMG+hGi1Gjx1W3/EWK9eZ0DMgJ+N8FMOPyHi2HfiPGYKHOhXOxjdEgejWtRaZjO9SSMux999NhsVP3wJvzf8TxwIIeLzezyomPspPHk5AfezDBgBc6cegp0X4UfBvsTERUfgL1MGQCuVBP4aAf/h04VinwohqrLneD6XuuN0ixdIb4jvglxz4mVFBVjZYL3u99uH8+gBVC6exy3yRQhRLvY3XvHz13BlB16Xx5jZAZbhYwU7LxIYBfsS1LlVY65mtZSwSbvPfbKaK/lHCAm/dXtPC5ajH4hPo8XSpD4o+q1CT3pyLKwRV0/edezaAtuapSKcISFEqEC/aulPcB7cE3A/Q2oLRE+6g3cFXSI8+k1I1Ni+bTBGYnWrWdDx8uz13GI+hJDwWbDpKN6Yu4krhSsFLp0BCxv3R1yzFMTHWHj3s637FfbNawQ9N0KIMBzrl8O+bX3AffSJyYieci80Bv5qXkR4FOxLFHtU/sCNPdGhxe+Pz6WA1fb+zw9b8f2ag/TInpAwjJx9sXQPPly4S3Jt2759Onr837PQWiID7lf56y91BgSEEHmJPXEQjnW/BtxHGx2L6OkPQGuxCnZeJDgU7EsYy4l9ZtpAJMXyj6SJ5ctf9+Gjhbso4CckRLxeH97+YSvmrTssuTZtmhCFP0/uD0NCIqKn31/nqF3lkh9h375BsPMjhISPY9MqxGftD7iPNsKCmBkPQBcTS78KCaJgX+JiIs147vbBMBl0kJoFm4/hzbmb4BY5p5gQuXO6PBdT5HZlQ2qsZgP+3+2DL+XpG1JSET35D9DoAvdJlYt/gH3HJoHOkhASDraNq2BftTjgPlwt/an3cSk8RJoo2JcBVuLuyVv7QYrW7TvDVeopq3SIfSqEyFJRmQ1//WgFth89B6lhRcFYdbCmidGXvW5slYnIidPqfH/lou9h30Yj/ITIkW39ClStWBB4J40GUbfexU3KJdJFwb5M9O+YittH8S9wI6aDpwrx5HvLkJ13QexTIURW2PoVT/53GY7nSvNv5/4beqB7RpNat5k7dkfkuFvr/BmVS36AfcvaMJwdISRcbGuXoWrVojr3i7p5BkwZHegXIXEU7MvIrUPb44a+bSBFBaU2/Pl/y7Fx/xmxT4UQWVi58yT++tFKXJDoU7HbWH/TLyPgPhE9+yNy7KQ6f1blsp9hW7+c5vgQIofymisWoiqIMrpRN03nPvQT6aNgX2YVeu67oQcGdkqFFLGFf177ZiO+Xr6PbuqEBJiI+8miXfj3D1slU1rzSiO7p2NGkE8SI3oNROSYm+rcr2rVYq5GNy28RYg0+b0eVP7yDWwbV9a5b9SEqTB37inIeZFrpw/BzyAC0mo1XP5+eZUT+04WSLLtv119EKfPl+HJ2/rBbKRLjJBqlXYXXv9mI3Yfz5dso2QkW/DQjT24wYVgRfQZzP23culPAfdjJTl9VRWImjidm9RHCJEGv9uF8u+/gCvrUJ37Rt04BeauvQU5LxIaNLIvQwa9Ds/OGIyWTaRb4mrzoRwuF/lUfqnYp0KIJGTlFOOJ/y6VdKDfNi0BN/VIgk5X/1sDC/gjr687pYetvln+zUfwOaWZvkSI2vhsVSj78v26A302GXfidJi79RHq1EiIULAvUxazATPvGorkOOkuXnG2sBxPvfcrlm07To/uiWqxtJVfNhzBXz5YgfySKkhVWlI0np0+AAZ9w28LEb0HBjVp13XyGMq++C98lRUNPhYh5Np5y0pR+tk7cOecCrifn5XhZak7XSh1R44o2JexRlER+PvdwxBjNUGqXB4v3v15O974dhNsDrfYp0OIoCpsTrz01Tp8vHi3ZPPzmYQYC2bdPQxRlmvvS9ikXZbPy9XtDMCTl4PST9+Gt6Tomo9JCKk/T0E+Sj/9D7xF5wPvqNPhfNcBMNJkXNmiYF/mmsRHcQF/5G8L3kjV+v1n8Pi7S7hUBkLU4NCpQvzxnaXYdkR69fNrio0046U/DOMC/lBh+bzRU+6pMy/fe6EIpR+/Bdep4yE7NiGkbixlhwX6vvLAqbYakxmRU+9DVbI0C4OQ4FCwrwAtUxrhxT8M41a6lDKWwsBSGVhKA1XkIErl8/nx3eqDeOajldyCWVLGngq+cu/wqxbNCgVWezvmjkegjQj8IcJnt6H8q/dh306LbxESbuzey1bFLZvzEfx1zJvRRkYh9s5HYGjRmn4xMkfBvkK0bhrHjfBbTNIO+FkqA0tp+NvHK5FfUin26RASUmcLyvCXD5bjq+X74POzLFfpiraY8PI9w5GaFBO2Y7BVNWPufgza6MDFBPw+HyoX/4CKhd9z5f8IIaHnd7tR+fPXda+KyzJ3GiUg9g+PQ9+kGf0qFICCfQXJSI3H3+8eiggZlLs8kF2IR/+zGAs3H6NRfqKI0fwf1h7C4+8uxdGz0k9Vi4ow4qV7hqF5cvgreukTky8GDYnJde7r2LkJZV/9D74qGgggJJS85aUo/fwdOPbtrHNffUoqYu95HLpG8fRLUAgK9hUmMy1BFik91YtwfbBgJ43yE0WM5n++bC/cHulOwr0sdee+EUhv0kiwY+piYrkRfjbSXxf36RMo/ehf8JyX9lwHQuSCVdphc2M8587Wua+xZQZi7ngYWmukIOdGFBbsL1iwAB07dsSTTz4p1CFVS04BP0Oj/ESO5DaaXz0Z99X7RqCFACP6V2K5+zG3PwxTx2517ustu4DST/4Dx94dgpwbIUrNz7fv2ISyz/8LX0V5nfuz+vnR0+6D1mQW5PyIwoL9nJwcPPzww/B6vThz5owQh1S9Ns3iuXxc9rheDqpH+f/vgxU4ee6C2KdDSEBHzxThqfeXyWY0n4mLiuAC/XDm6NdFYzAg6ubbYR0+LqgVPSt+/hoVv3wDv8spyPkRohQ+hx0V875A5aIg5sFoNIgccxMix0+GRif9NGAiwWCfBfjTp0/H3/72N7Rq1SrchyM1tGoah388MDKkJfXC7fCZIvzpv0vxv/k7UGl3iX06hFymrNKBt3/Yiqf/txzHc+XzoTQlPhKvPzASzcJQdae+NBoNLINGXizNaah7MMKxZxsufPQWpfUQEiR37hmUfvhPOA/trXNfrTkCMTMe5FbAZn+bRJnCHuz//e9/R3R0NB566KFwH4rUgo3ivfHgKG51TLlgRUwWbcnCg/9aiOU7TtAEXiKJlJ1Fm4/hAXZN7jwJOWnTNA6vPzAKjeOklYNryuyI2Huf4Kp+1IUt+sNyjllKApXtJSRA2s7mNSj77G14L9SdWqhLaIzY+57k8vSJsoX1ec3atWvx8ccfY/fu3UG/x+l0cl/Vyssv5pm53W7ui9RfjMWAl/4wFC/N3oAjZ35frbL6psn+6/NJLxXhQoUd/563BUu2ZuH+G7qjVYpwEwqvVfW1Stes/NuWPW36aOEunMwLvPiMFHVp1Rh/ndofESZdUO0l+HXbKB7Wux5B1Y+z4cnOCrir3+VCxYK5cJw4Cuu4W7jFfuSG+gVq23Dx2atgm/8t3FmHg9rf0KY9rBOnwWcyw1fH3ztdt+EjVF+r8ddjmOSdd97BBx98EHCfzz77DL169UJxcTG6du3K7T927Fhu2w033ACz2Yx58+bxvn/mzJmYNWvWVa/PmTMHFot80lGkyO314acdBTiWL+2FfmrDni52ahaJwW0bIdYij4nHRN5KqtxYc7gEh3KrIEcdm0VifLdE6LQyeDTv8yH+6B7Enj4W1O7uCCsKOvWBIy4p7KdGiNRFFOYh6eA26B32oPa/0LI9Stp0unhjJaKy2WyYNm0aysrKuCwYSQT7BQUF3Fcg6enpsFqt+Pnnn3HbbbchI+P3x0Nsci7LCUtNTcWvv/6KlJSUoEb22f55eXmIj6ear9fK6/Xh/fk7sWJXNjeiX1hYiMTERNnk6ul1Wozt0xq3DG6HaKsJUv60vnz5cowaNQoGA304kVPblpTb8d2aQ1i+MxteCT7xCsaN/TNw95gu9f67Fvu6dR3ZBxtbWCvIoMXUayAihl0PjVG6fYGU2lfJ1Ni2bBKufcUCuPZsC2p/jcUK641TYWjdtl7HUWPbCoUNjDdp0iTswX690niSkpK4r2CMGDECu3btuuy1Rx55BCaTCf/617+4ALM2bDv7uhK7wOgiu3bs7/RPt/ZDQqwV3646wL3GAgKtVh5LLvj8wMItx7Fy1yncPLgdJg5sC7OEFxGj61Y+bVtld+HH9Yfxy8ajXHUoRi5/FzXddV0X7m/jWj7Ai3XdGjr1gLlZC5T/8CU8uXVXbnPt3ATvyaOIvHEKjC1aQy6oX6C2vVau40dQuWAufOWl0ATRTxmat0LUpNuhi2p4NS66bkNPqH42bFFSVFQUV1f/ytdYGs+VrxNhsSDg9tFdkBAdgVkfL5Zl89tdHny9Yj+3Au+U4R1xXa9WMOh1Yp8WkSGny4PFW7Pw/ZpDqJBxBSijXofHJ/XB4C7NIWds1c7Yux9D1cpF3GTDurCJiGVf/BcRvQfBOmKcbEb5CWnoaH7Vr7/AsXtr0O+xDLkOlsGjg/pQQJRJukOiJOxG9kjHicNNsClHhwq7PCc/l1U5ufr8LFCbODATY3q3RoSJHjOS4EbyWdWn+ZuOcteRnLHyus/NGMSV21UCVus7cvQEGNPboOKnr+Gz1z3PyL5tPVxZhxF542RZjfITUp/R/IrfRvODoY2KRtRNM7i/I6Juggb77733nmxyw9UiNc6MN28Ygn98u1mW1UaqlVTY8emSPVyu9Q1922B8/0xJ5/QTcas8sVSdxVuyuCdEctcuLQF/mzGIWx1XaYxt2iP2wT+j4sfZcJ8+Uef+3gtF3Ci/uXNPWEfdCG1klCDnSUg4ectKUfXrz0HVza9mbN0WUROnQ2uVVsldooJgPy0tTcjDkSAlxlq5Otz//mELNuw/K+t2Ywtxfbv6IH7acIRL7blpUDtZLSpGwie/pBI/rjuMFbtOymbV27qM6tESD03oqegUNl10LGLueBj2retgW7UIfk/dH9Ac+3bAefQArMOuh7nnAGh0ym0folxs5VuWymZbt5xbUToYbKE66+gbYe7RnwZXySWUxkM4JqMef5kyAOnJh/DV8n2ybxU2wXL+pmNYvPU4+ndohhv6ZaBtWgJ1firDKk7tP1nA5eRvPpgDX/DFxySNPSC9b1x37rpWw9NSlmts6TeUG+mvnP8N3GdP1fkev9OByqU/wbFrCyLHTuImKBIiF64TR1C55Ed4iwuDfo+hRWtETZgKXawy0vlI6FCwTy5hQcNtwzogrXEM/vndZjgUkOLg8fqwbt8Z7qtFcgzG9c3A0K4tJF3Bh4QmH3/V7mwuyM8prFBUk1rNBvx12kB0bZ0MtdEnJCHmrsfqNcrvKchD6efvwty5Bywjx19TNRJCws1bdgFVy36G83Dwg240mk/qQhEPuUrf9s3w70euw2vfbMCp/DLFtBD7t/z35+34dPFujOiejrF92yA1iW78SnLy3AVuxeXVe05dKp+pJJmp8dwTuKRGVqhVQ0b5Gce+nXAeOQDLgOGI6DuEqvYQ6dXM37SKS9sJ5kNsNRrNJ8GgYJ/UqmliNP750HX4ZPEuLhVGSdikzIVbsrgvNrlxWLcWGNgpDVEWmtArR2WVDqzbdxqrd59CVm4JlGrS4HaYMaozt7Acadgov9/lRNXqJVzlHlaO0Ny9L1f5hxCx+N1u2LdvgH3DiqCqTlVjJWato8ZTbj4JCvVyhJfRoMNDE3qhS6tkvP3jVlQ55FmeM5DDZ4q4rw8X7kKPjCZcik/vtk25fzuRLpeHpWedxvr9Odidla+YXPzaRFtMePLWvuiRefWK42pXPcpvat+lXqkPvqpKVC7+gRtFtQwfC1OHbqqY+0Ckw+/1wrlvO6rWLAu6lGY1Skkj9UXBPqlT/46paJXSCK9/uxHHcpQ5cspy+7cezuW+LCYDN6l3SNcW6JieRCOpEvod7T2ej1W7TuLn1acRG2eT5Qq39dEpPQlPT+6PuOgIsU9F0nQxjRB92931ntTIFuSq+OEr2DeugnX4OBhat6Wgn4S9aIDryH5UrVoMb9H5er1Xn9SEJpsTZQb77A+DqaioEGX5diVzu92w2WwoLy+vs20j9MCzU/vgm5X7sWDzMShZmRNYsrkMSzYfhNVk4CZC9sxM4f5rjTCGvG0JvwqbE7uz8rDzWB72HM/nUrB8Ph/sNjusVuUG+2yQ+ZbB7TFpcHto4UZ5uTBP1WR/3SamQDftQbi2r+cCeJYiEZRTJ3Hh03egb9YcEWw+QKvwBP2yb18Jk3rbckH+0QOwbV4Db35uvd6rMZlhGTQS2u79YNfpYC8vh5Ck3rZyVlFRcVmsGy4af7iPcI1OnjyJVq2oZBohhBBCCFGeEydOoGXLluod2Y+Lu1gv9syZM4iJocopocQ+paempuLs2bOIjo4O6c9WO2pbals5ouuW2leu6NqltpWjsrIybsHZ6lhXtcF+9WN6FuhTQBoerF2pbalt5YauW2pbuaJrl9pWjui6DZ9wp6QqM+GVEEIIIYQQQsE+IYQQQgghSiX5kX2TyYQXXniB+y+htpULum6pbeWIrltqX7mia5faVo5MAsW4kq/GQwghhBBCCFHoyD4hhBBCCCGkYSjYJ4QQQgghRKEo2CeEEEIIIUShJFNnv6CgAGvWrEHr1q3RvXt33hXG9u/fj6SkJPTt2zeouqQNeY+S/fjjj3C5XFe9np6ejj59+tT6nl27duHYsWNX1dsdO3Zs2M5Tjthqz9u2bbvq9dtuu63O6+7AgQPIyspC8+bNea9/tfN4PNi7dy/y8vLQpk0bZGZmBtz/woULWLZs2VWvjxo1CvHx8VCrkpISbNq0CUajEQMHDoTFYgnLe9SILf7I7jdsgRz2d1zXpLulS5eitLT0stfYPbBnz55hPlN52bJlC06dOnXZawkJCRg5cmTA93m9Xu69hYWF6NKlC3efI5djfSTrK6/EYqbhw4fX2lxHjx7F7t27L3tNp9Ph1ltvVX3z+v1+rF+/HufOncPNN9/M9ZlXcjqd2LhxIyorK9G7d28kJyfX2W4NeY+kgn12437qqaewdu1a2Gw2TJ8+vdZg57nnnsNbb72F/v374/Dhw0hJSeEu0kaNGvH+7Ia8R+kWLVqEqqqqS9+zNl+wYAH+3//7f7zB/qeffoqff/6Zu8lXa9q0KQX7V1i1ahUef/xxjB8//rLXJ02axBvs+3w+3H333fjll1+49mcfrNh/f/jhB6pAVQNrnz//+c+IiopCkyZNuE5v8ODBmDt3LsxmM+8H/alTp3IdrsFguPQ6C6TUGuyzdrz99tvRqVMn7qZx/vx5rk/o0aNHSN+jNuw+du+99+LQoUPo0KED98Gf9bPs+mSDTHyefvppLhjIyMi47MMoBfuXe/fdd7m/+Zr3KPaBP1CwX1RUxLUl+6DK9t28eTP++te/cvc68rvVq1df9kGKBavz5s3jYjG+YJ/FDC+//DKuu+66S6+x61jtwf4XX3yBV199lfuQefz4ce5DJvtQWhN7nV2XbCCgcePG2LFjB9555x384Q9/4P25DXnPVfwiO3r0qH/27Nl+h8Ph79Onj/+RRx65ap/Vq1ezikH+devWcd+XlZX5MzIy/A8++CDvz23Ie9Tos88+82s0Gv/Jkyd592G/kwkTJgh6XnL00Ucf+Zs3b17v9rdarf4jR45w3589e9YfHx/vf+2118J0lvL0008/+U+dOnXp+9zcXH9CQoJ/1qxZvO/Zvn071wdcuHBBoLOUNtYOMTEx/hdffPHSa1OmTPG3a9fO7/P5QvYeNWL3sUWLFl36nrXNjBkz/Onp6QHf16FDB/9bb70lwBnK2/Tp0/133nlnvd7D9u/cubO/srKS+37p0qVcf7B58+YwnaUyVMdOa9as4d3njTfe8Hfp0kXQ85KDTz/9lLuXL1myhGvDwsLCq/YZMmSIf/To0X6Px8N9//777/uNRqP/9OnTvD+3Ie+5kug5LWxEg32CDPS4c/bs2ejVqxcGDRp0KYWEjaLMmTOHGxkN1XvU6JNPPuFGR+p6vMkeNc+fP597AnPlY2fyO7fbzT2a//XXX7nRvrqw65SlQ1WnpDRr1gyTJ0/mXie/mzhxIpfiVI09pevXrx/27NlTZzOtW7cOCxcu5EZH1Iy1AXuS9+ijj1567cknn+SeerInSqF6jxqx+1jNtEaNRoObbroJ2dnZKC8vD/hets9PP/2E7du3c4/qCf9IPXvKxFIk6mpTlqr63Xff4YEHHoDVauVeY6PQ7du3x9dff01NXEdMwJ6EDBkyJGA72e12LF68GCtWrODSsAm4p/SB0ktzcnK4GIplALC0J+aee+7h0iK///77kL2nNqIH+8FgOZAdO3a87DX2SJn9wbMcyVC9R21YHv6GDRtw33331bkva8///e9/3AWXlpbGdQjkauyD0JtvvokXX3wRLVq0wF/+8pc627W265QFUyxHndSOpZNs3br1qra7kl6vx2uvvYb//Oc/XM7uLbfcwgWvasSuNfZhMjY29tJrnTt3vrQtVO8hF7EgKDU1lRtoCoSlRLD+lF2b7dq143LMydXYh6EPP/wQDz30ENe3shQpPiyFjwWjtfWtdN3yKysr41JIg4kJ2GDWv//9by4tisUEL730El22dai+9mpelyzFlH1ACNQH1/c9guTss0kJbCQtEHbTZZ1afS5ANuGppuqcW75R5oa8R64dIOvYAhk3bhyX63wldoNJTEzEhAkTAr6f5eG98cYbiIiI4L5nuWJsxITl7Hbt2hVKxSbM7ty5M+A+bD4I6+gYNteE5eqynDqGTThnT03YDYblPNfnOmU5fyygrRlkKW2UjgVDgbBRuOrAsiaWU3r//fdzgfwf//hH3vezCWZs5J/lUFePoLKJTezm9M9//hNqU9u1xp6oshGi+vSjdb2HgBvx/OCDD+p8QscGBtiIM3sSwJ4K3nHHHdyE/iNHjtAk6BpYbjK7X1VnALDA8s477+T6XDYKXdt1y9TWt7K2JbVjmQ9skIm1bSAsY4Ll+Ve3L3vqz56+stjuyjlrJLjrMlAfXN/3CBLss8lbbDJnIOxGUZ9gn/2Bs8Cnpurv+SbnNeQ9csRmxLOJoYGwiYxXBvvsD/rLL7/k/qhrmy1e05WP8x577DFucg67oSk52GfBYV3XMkstqRns1zR06FCMGDGCG7njC/bVcp1eqbi4uM62ZUF9bcE+e7rEJtqz6/7KyU81Vf9eqrFUNRY0sJQJNQb7tV1rLKXR4XDUqx+t6z1qx9JM2ADJzJkzuQnigYwZM+ay0brnn3+e+5DLPqSygQRy0ZUTRZ955hm88sorWL58ea3BfvWHgtr6Vrpu+bEPVGzwjw2UBHJlMY8bb7yRS5tm9zoK9vnVvC4jIyMvvc6+Z4UnQvUeQYL9bt264dtvvw3pz2zVqtVVqTenT5/m8pdq5vFe63vkiI1wsq/6YtU08vPzuXkMDcE+PLCZ5ko2evRo7utasEf4gdqJ7zplf8RKvimxR5AN6SeeeOIJbrSUPRVgo0ih/n0oGbvW2JNX9kGfPRVh2LXHgveWLVuG7D1qxtIiWe4+qxzVkKov1Sk/ar1Gg8Xu4ywXn6+d2Ad79rSEXas1qyGxvpWu29qxssbsSTb7ENUQau5bg8X6U4ZdlzVLZ7LvBwwYELL3yDZnn3WerDwUe/RfjeXrDRs27FJqCQtcWfBQUVER9HvU/gmejfjXNpmElXVio/bVo6vsaU1NbNSJpauwT/Lkd1dOyGUl31gqT812YilX7DqtniTOrlM2GsJGShmWvsNyJlnqFbkcmxjKSpux0bzayvOypwWsbdl/a/t9sDZnE/zUet2yUWQ2GlRz7QHWJ7KbdHVZXdZGrA2rUwODeQ+5iK1DcP3113PXKRvVrw3rV1n/yrDa5ldOyGXroLBAltbauHyybfXfdM2nJ+zeXvNvmZXWrE4NZOmP7MlIzQmMubm5XPlO6lv5YwI2F6K2cqZsDlnNtryyb2UDAmwOlVr71mCxlF42j6dmW7J2YylRNa9Ldh2z67k+76mTX2Rut9v/zTffcF+tW7fmygux/2eli6o5nU5/r169/F27dvW/++67/ttvv91vsVj8O3bsuLRPdamjw4cPB/0etTp37pxfp9P5v/rqq1q3P/DAA/7MzEzu/71er79t27b+P/3pT/6PP/7YP3PmTK405PXXX8/97sjvbrjhBv9dd93FlcV68803ueu5ffv2/oKCgkv7sG3sOrXb7dz3xcXFXHm+oUOH+t977z3uZyQmJtarpJYavPzyy1y7/fnPf77UX7Cv5cuXX9qHldSrWVrv//7v//zjx4/3//vf/+b6gP79+3PlOnfv3u1Xqz/+8Y9cG7z++uv+559/nivfxq67auy6ZG3IrtNg30P83H0nKirK37t378uuT/ZVXl5+qYlYv8r6V2bXrl3+Tp06+V944QX/J5984n/ooYe4tq1Z5pT4ufZj96Cnn36auwc9++yz/ujoaP9tt912WfnXyZMnc+W7q23atMlvMpn899xzD/f337FjR/+AAQMulS8kv2Olz+Pi4nivvVdffZVry5qlIO+//37/Bx98wJWJTktL8/fo0YMrca5mu3fv5v7m//rXv3L96Icffsh9z0pqV5s3b55fr9dz1zMru5uamspduzWx67jma8G8py6iL6rFRjKrc3erF2lh37NPMtX5jCynnI2QsmowbIVSNgGSlX2rOSrN0h5YycLqx6DBvEet2MIvrK1Y9YfasE/n1eXK2GJQ7NEeG1FlVSLYiAlbZIvl6JHLsVFjVu6NTVBnKQ9/+9vfMGPGjMsWdGKrY7K2ry6hxSbdsEnW77//Pte+bA4Eu2bZomXk8rxF1m7s0WXNtKeaC+uw/H22T3UeP6vCw0ZIlixZwi1wxPKoWWm0mJgY1TYtq0rERjxZaVjWR7KRZjavpBq7Llkbsus02PeQi/mz1aU3r5yLUnPOFBuJYzn51SmvrC3Z3CmW/sOqHrHRPBrVvxxrOzaS+fnnn3PtwyYmsn625oJODLtGa+bvs9K87N7F7lesj2Upq6ywRHXfSy5fEZct2sS3SBO7ZtnE8WqsX2WTednTLJYpwVJ/pkyZovq2PXjwIPeknmH96MqVKy+llbG/7+pFNtmTKVYClqVOsaeAV06IZr8LVjylWjDvqYuGRfx00RNCCCGEEKI8ssjZJ4QQQgghhNQfBfuEEEIIIYQoFAX7hBBCCCGEKBQF+4QQQgghhCgUBfuEEEIIIYQoFAX7hBBCCCGEKBQF+4QQQgghhCgUBfuEEEIIIYQoFAX7hBBCCCGEKBQF+4QQQgghhCgUBfuEEEIIIYQoFAX7hBBCCCGEQJn+Pzs8gP/MIENFAAAAAElFTkSuQmCC\", \"__metadata__\": {\"image/png\": {\"width\": 763, \"height\": 351}}}"
+        }
+      ]
+    },
+    {
+      "id": "ZHCJ",
+      "code_hash": "dc92a5c71876b7a92c494920e1bca098",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Here I have attempted to show transmitter A, drawn in red, at (-4,0) and a second one B, drawn in blue, at (4,0). The red and blue circles show the range from the transmitters to the robot, with the width illustrating the effect of the <marimo-tex class=\"arithmatex\">||(1\\sigma||)</marimo-tex> angular error for each transmitter. Here I have given the blue transmitter more error than the red one. The most probable position for the robot is where the two circles intersect, which I have depicted with the red and blue lines. You will object that we have two intersections, not one, but we will see how we deal with that when we design the measurement function.</span>\n<span class=\"paragraph\">This is a very common sensor set up. Aircraft still use this system to navigate, where it is called DME (Distance Measuring Equipment). Today GPS is a much more common navigation system, but I have worked on an aircraft where we integrated sensors like this into our filter along with the GPS, INS, altimeters, etc. We will tackle what is called <em>multi-sensor fusion</em> later; for now we will just address this simple configuration.</span>\n<span class=\"paragraph\">The first step is to design our state variables. We will assume that the robot is traveling in a straight direction with constant velocity. This is unlikely to be true for a long period of time, but is acceptable for short periods of time. This does not differ from the previous problem - we will want to track the values for the robot's position and velocity. Hence,</span>\n<marimo-tex class=\"arithmatex\">||[\\mathbf{x} =\n\\begin{bmatrix}x\\\\v_x\\\\y\\\\v_y\\end{bmatrix}||]</marimo-tex><span class=\"paragraph\">The next step is to design the state transition function. This also will be the same as the previous problem, so without further ado,</span>\n<marimo-tex class=\"arithmatex\">||[\n\\mathbf{x}' = \\begin{bmatrix}1&amp; \\Delta t&amp; 0&amp; 0\\\\0&amp; 1&amp; 0&amp; 0\\\\0&amp; 0&amp; 1&amp; \\Delta t\\\\ 0&amp; 0&amp; 0&amp; 1\\end{bmatrix}\\mathbf{x}||]</marimo-tex><span class=\"paragraph\">The next step is to design the control inputs. We have none, so we set <marimo-tex class=\"arithmatex\">||({\\mathbf{B}}=0||)</marimo-tex>.</span>\n<span class=\"paragraph\">The next step is to design the measurement function <marimo-tex class=\"arithmatex\">||(\\mathbf{z} = \\mathbf{Hx}||)</marimo-tex>. We can model the measurement using the Pythagorean theorem.</span>\n<span class=\"paragraph\">$$</span>\n<span class=\"paragraph\">z_a = \\sqrt{(x-x_A)^2 + (y-y_A)^2} + v_a\\[1em]\nz_b = \\sqrt{(x-x_B])^2 + (y-y_B)^2} + v_b</span>\n<span class=\"paragraph\">$$</span>\n<span class=\"paragraph\">where <marimo-tex class=\"arithmatex\">||(v_a||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(v_b||)</marimo-tex> are white noise.</span>\n<span class=\"paragraph\">We see an immediate problem. The Kalman filter is designed for linear equations, and this is obviously nonlinear. In the next chapters we will look at several ways to handle nonlinear problems in a robust way, but for now we will do something simpler. If we know the approximate position of the robot than we can linearize these equations around that point. I could develop the generalized mathematics for this technique now, but instead let me just present the worked example to give context to that development.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ROlb",
+      "code_hash": "609fe7902b64b5c00434515016f4fce1",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Instead of computing <marimo-tex class=\"arithmatex\">||(\\mathbf{H}||)</marimo-tex> we will compute the partial derivative of <marimo-tex class=\"arithmatex\">||(\\mathbf{H}||)</marimo-tex> with respect to the robot's position <marimo-tex class=\"arithmatex\">||(\\mathbf{x}||)</marimo-tex>. You are probably familiar with the concept of partial derivative, but if not, it just means how <marimo-tex class=\"arithmatex\">||(\\mathbf{H}||)</marimo-tex> changes with respect to the robot's position. It is computed as the partial derivative of <marimo-tex class=\"arithmatex\">||(\\mathbf{H}||)</marimo-tex> as follows:</span>\n<span class=\"paragraph\">$$\\frac{\\partial \\mathbf{h}}{\\partial \\mathbf{x}} =\n\\begin{bmatrix}\n\\frac{\\partial h_1}{\\partial x_1} &amp; \\frac{\\partial h_1}{\\partial x_2} &amp;\\dots \\\n\\frac{\\partial h_2}{\\partial x_1} &amp; \\frac{\\partial h_2}{\\partial x_2} &amp;\\dots \\\n\\vdots &amp; \\vdots\n\\end{bmatrix}</span>\n<span class=\"paragraph\">$$</span>\n<span class=\"paragraph\">Let's work the first partial derivative. We want to find</span>\n<marimo-tex class=\"arithmatex\">||[\\frac{\\partial }{\\partial x} \\sqrt{(x-x_A)^2 + (y-y_A)^2}\n||]</marimo-tex><span class=\"paragraph\">Which we compute as</span>\n<marimo-tex class=\"arithmatex\">||[\n\\begin{aligned}\n\\frac{\\partial h_1}{\\partial x} &amp;= ((x-x_A)^2 + (y-y_A)^2))^\\frac{1}{2} \\\\\n&amp;= \\frac{1}{2}\\times 2(x-x_a)\\times ((x-x_A)^2 + (y-y_A)^2))^{-\\frac{1}{2}} \\\\\n&amp;= \\frac{x_r - x_A}{\\sqrt{(x_r-x_A)^2 + (y_r-y_A)^2}}\n\\end{aligned}\n||]</marimo-tex><span class=\"paragraph\">We continue this computation for the partial derivatives of the two distance equations with respect to <marimo-tex class=\"arithmatex\">||(x||)</marimo-tex>, <marimo-tex class=\"arithmatex\">||(y||)</marimo-tex>, <marimo-tex class=\"arithmatex\">||(dx||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(dy||)</marimo-tex>, yielding</span>\n<span class=\"paragraph\">$$\\frac{\\partial\\mathbf{h}}{\\partial\\mathbf{x}}=\n\\begin{bmatrix}\n\\frac{x_r - x_A}{\\sqrt{(x_r-x_A)^2 + (y_r-y_A)^2}} &amp; 0 &amp;\n\\frac{y_r - y_A}{\\sqrt{(x_r-x_A)^2 + (y_r-y_A)^2}} &amp; 0 \\\n\\frac{x_r - x_B}{\\sqrt{(x_r-x_B)^2 + (y_r-y_B)^2}} &amp; 0 &amp;\n\\frac{y_r - y_B}{\\sqrt{(x_r-x_B)^2 + (y_r-y_B)^2}} &amp; 0 \\\n\\end{bmatrix}</span>\n<span class=\"paragraph\">$$</span>\n<span class=\"paragraph\">That is pretty painful, and these are very simple equations. Computing the Jacobian can be extremely difficult or even impossible for more complicated systems. However, there is an easy way to get Python to do the work for you by using the SymPy module [1]. SymPy is a Python library for symbolic mathematics. The full scope of its abilities are beyond this book, but it can perform algebra, integrate and differentiate equations, find solutions to differential equations, and much more. We will use it to compute our Jacobian!</span>\n<span class=\"paragraph\">First, a simple example. We will import SymPy, initialize its pretty print functionality (which will print equations using LaTeX). We will then declare a symbol for NumPy to use.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "qnkX",
+      "code_hash": "7a24a28c000923495a495893fb591b9e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<span class=\"markdown prose dark:prose-invert contents\"><marimo-tex class=\"arithmatex\">||[\n\\phi\n||]</marimo-tex></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "TqIu",
+      "code_hash": "5cbaf7b8f4bb410e5c9710e52db5e7c6",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Notice how we use a latex expression for the symbol <code>phi</code>. This is not necessary, but if you do it will render as LaTeX when output. Now let's do some math. What is the derivative of <marimo-tex class=\"arithmatex\">||(\\sqrt{\\phi}||)</marimo-tex>?</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Vxnm",
+      "code_hash": "4f9f8d14a7dea07008998749b0e3a2c6",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<span class=\"markdown prose dark:prose-invert contents\"><marimo-tex class=\"arithmatex\">||[\n\\frac{1}{2 \\sqrt{\\phi}}\n||]</marimo-tex></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "DnEU",
+      "code_hash": "ff709532b7ba2a44e9d79ca4a8d4785e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">We can factor equations.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ulZA",
+      "code_hash": "0d46e0dd26544de26caf371d73c411d6",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<span class=\"markdown prose dark:prose-invert contents\"><marimo-tex class=\"arithmatex\">||[\n\\left(\\phi - 1\\right) \\left(\\phi^{2} + 1\\right)\n||]</marimo-tex></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ecfG",
+      "code_hash": "5ade54d46293871fa0266d890d4723f4",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">SymPy has a remarkable list of features, and as much as I enjoy exercising its features we cannot cover them all here. Instead, let's compute our Jacobian.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Pvdt",
+      "code_hash": "2d878270f325113cf5ee94e3a61eca0d",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<span class=\"markdown prose dark:prose-invert contents\"><marimo-tex class=\"arithmatex\">||[\n\\left[\\begin{matrix}\\frac{x - x_{a}}{\\sqrt{\\left(x - x_{a}\\right)^{2} + \\left(y - y_{a}\\right)^{2}}} &amp; 0 &amp; \\frac{y - y_{a}}{\\sqrt{\\left(x - x_{a}\\right)^{2} + \\left(y - y_{a}\\right)^{2}}} &amp; 0\\\\\\frac{x - x_{b}}{\\sqrt{\\left(x - x_{b}\\right)^{2} + \\left(y - y_{b}\\right)^{2}}} &amp; 0 &amp; \\frac{y - y_{b}}{\\sqrt{\\left(x - x_{b}\\right)^{2} + \\left(y - y_{b}\\right)^{2}}} &amp; 0\\end{matrix}\\right]\n||]</marimo-tex></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ZBYS",
+      "code_hash": "4cc78f26ece69bb2a3d0e3d291993ae4",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">In a nutshell, the entry (0,0) contains the difference between the x coordinate of the robot and transmitter A's x coordinate divided by the distance between the robot and A. (2,0) contains the same, except for the y coordinates of the robot and transmitters. The bottom row contains the same computations, except for transmitter B. The 0 entries account for the velocity components of the state variables; naturally the range does not provide us with velocity.</span>\n<span class=\"paragraph\">The values in this matrix change as the robot's position changes, so this is no longer a constant; we will have to recompute it for every time step of the filter.</span>\n<span class=\"paragraph\">If you look at this you may realize that this is just a computation of x/dist and y/dist, so we can switch this to a trigonometic form with no loss of generality:</span>\n<span class=\"paragraph\">$$\\frac{\\partial\\mathbf{h}}{\\partial\\mathbf{x}}=\n\\begin{bmatrix}\n-\\cos{\\theta_A} &amp; 0 &amp; -\\sin{\\theta_A} &amp; 0 \\\n-\\cos{\\theta_B} &amp; 0 &amp; -\\sin{\\theta_B} &amp; 0\n\\end{bmatrix}</span>\n<span class=\"paragraph\">$$</span>\n<span class=\"paragraph\">However, this raises a huge problem. We are no longer computing <marimo-tex class=\"arithmatex\">||(\\mathbf{H}||)</marimo-tex>, but <marimo-tex class=\"arithmatex\">||(\\Delta\\mathbf{H}||)</marimo-tex>, the change of <marimo-tex class=\"arithmatex\">||(\\mathbf{H}||)</marimo-tex>. If we passed this into our Kalman filter without altering the rest of the design the output would be nonsense. Recall, for example, that we multiply <marimo-tex class=\"arithmatex\">||(\\mathbf{Hx}||)</marimo-tex> to generate the measurements that would result from the given estimate of <marimo-tex class=\"arithmatex\">||(\\mathbf{x}||)</marimo-tex> But now that <marimo-tex class=\"arithmatex\">||(\\mathbf{H}||)</marimo-tex> is linearized around our position it contains the <em>change</em> in the measurement function.</span>\n<span class=\"paragraph\">We are forced, therefore, to use the <em>change</em> in <marimo-tex class=\"arithmatex\">||(\\mathbf{x}||)</marimo-tex> for our state variables. So we have to go back and redesign our state variables.</span>\n<blockquote>\n<span class=\"paragraph\">Please note this is a completely normal occurrence in designing Kalman filters. The textbooks present examples like this as <em>fait accompli</em>, as if it is trivially obvious that the state variables needed to be velocities, not positions. Perhaps once you do enough of these problems it would be trivially obvious, but at that point why are you reading a textbook? I find myself reading through a presentation multiple times, trying to figure out why they made a choice, finally to realize that it is because of the consequences of something on the next page. My presentation is longer, but it reflects what actually happens when you design a filter. You make what seem reasonable design choices, and as you move forward you discover properties that require you to recast your earlier steps. As a result, I am going to somewhat abandon my <strong>step 1</strong>, <strong>step 2</strong>, etc.,  approach, since so many real problems are not quite that straightforward.</span>\n</blockquote></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "aLJB",
+      "code_hash": "f8376a466bdc70f29f4f52b9381ea553",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">If our state variables contain the velocities of the robot and not the position then how do we track where the robot is? We can't. Kalman filters that are linearized in this fashion use what is called a <em>nominal trajectory</em> - i.e. you assume a position and track direction, and then apply the changes in velocity and acceleration to compute the changes in that trajectory. How could it be otherwise? Recall the graphic showing the intersection of the two range circles - there are two areas of intersection. Think of what this would look like if the two transmitters were very close to each other - the intersections would be two very long crescent shapes. This Kalman filter, as designed, has no way of knowing your true position from only distance measurements to the transmitters. Perhaps your mind is already leaping to ways of working around this problem. If so, stay engaged, as later sections and chapters will provide you with these techniques. Presenting the full solution all at once leads to more confusion than insight, in my opinion.</span>\n<span class=\"paragraph\">So let's redesign our <em>state transition function</em>. We are assuming constant velocity and no acceleration, giving state equations of</span>\n<marimo-tex class=\"arithmatex\">||[\n\\dot{x}' = \\dot{x} \\\\\n\\ddot{x}' = 0 \\\\\n\\dot{y}' = \\dot{y} \\\\\n\\dot{y}' = 0||]</marimo-tex><span class=\"paragraph\">This gives us the the <em>state transition function</em> of</span>\n<span class=\"paragraph\">$$</span>\n<span class=\"paragraph\">\\mathbf{F} = \\begin{bmatrix}0 &amp;1 &amp; 0&amp; 0\\0&amp; 0&amp; 0&amp; 0\\0&amp; 0&amp; 0&amp; 1\\ 0&amp; 0&amp; 0&amp; 0\\end{bmatrix}$$</span>\n<span class=\"paragraph\">A final complication comes from the measurements that we pass in. <marimo-tex class=\"arithmatex\">||(\\mathbf{Hx}||)</marimo-tex> is now computing the <em>change</em> in the measurement from our nominal position, so the measurement that we pass in needs to be not the range to A and B, but the <em>change</em> in range from our measured range to our nominal position.</span>\n<span class=\"paragraph\">There is a lot here to take in, so let's work through the code bit by bit. First we will define a function to compute <marimo-tex class=\"arithmatex\">||(\\frac{\\partial\\mathbf{h}}{\\partial\\mathbf{x}}||)</marimo-tex> for each time step.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "nHfw",
+      "code_hash": "4cdc836dc85528e6a1dff91582b11df3",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "cycle",
+          "evalue": "This cell is in a cycle",
+          "traceback": []
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "xXTn",
+      "code_hash": "1ad362ea49dffdffb7557223232d66d0",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Now we need to create our simulated sensor.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "AjVT",
+      "code_hash": "46a92f291cc501dd94dc8a0b3e7bf147",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "cycle",
+          "evalue": "This cell is in a cycle",
+          "traceback": []
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "pHFh",
+      "code_hash": "d6d4c30746b87f94db0d2a6ed0f0563f",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Finally, we are ready for the Kalman filter code. I will position the transmitters at x=-100 and 100, both with y=-20. This gives me enough space to get good triangulation from both as the robot moves. I will start the robot at (0,0) and move by (1,1) each time step.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "NCOB",
+      "code_hash": "7f7f973c3dc1e5dc8692b52b9665ecc9",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "cycle",
+          "evalue": "This cell is in a cycle",
+          "traceback": []
+        },
+        {
+          "type": "error",
+          "ename": "cycle",
+          "evalue": "This cell is in a cycle",
+          "traceback": []
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "aqbW",
+      "code_hash": "4d24fb47a32136044796ba1401ab7536",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"linearizing-the-kalman-filter\">Linearizing the Kalman Filter</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "TRpd",
+      "code_hash": "cd6fd70ef8aa0990671b9505203924e8",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Now that we have seen an example of linearizing the Kalman filter we are in a position to better understand the math.</span>\n<span class=\"paragraph\">We start by assuming some function <marimo-tex class=\"arithmatex\">||(\\mathbf f||)</marimo-tex></span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "TXez",
+      "code_hash": "08dd3d5254734fcf75605b36904f5426",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"example-a-falling-ball\">Example: A falling Ball</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "dNNg",
+      "code_hash": "e093645c598129afd4508292891384d7",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">**author's note: ignore this section for now. **</span>\n<span class=\"paragraph\">In the <strong>Designing Kalman Filters</strong> chapter I first considered tracking a ball in a vacuum, and then in the atmosphere. The Kalman filter performed very well for vacuum, but diverged from the ball's path in the atmosphere. Let us look at the output; to avoid littering this chapter with code from that chapter I have placed it all in the file `ekf_internal.py'.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "yCnT",
+      "code_hash": "844ecd048bb54185bff126f73cfb90e0",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "`np.mat` was removed in the NumPy 2.0 release. Use `np.asmatrix` instead.",
+          "traceback": null
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stderr",
+          "text": "<span class=\"codehilite\"><div class=\"highlight\"><pre><span></span><span class=\"gt\">Traceback (most recent call last):</span>\n  File <span class=\"nb\">&quot;C:\\Users\\goper\\AppData\\Local\\Temp\\marimo_27680\\__marimo__cell_yCnT_.py&quot;</span>, line <span class=\"m\">2</span>, in <span class=\"n\">&lt;module&gt;</span>\n<span class=\"w\">    </span><span class=\"n\">ekf</span><span class=\"o\">.</span><span class=\"n\">plot_ball</span><span class=\"p\">()</span>\n  File <span class=\"nb\">&quot;C:\\Users\\goper\\Files\\vsCode\\Kalman-and-Bayesian-Filters-in-Python\\kf_book\\ekf_internal.py&quot;</span>, line <span class=\"m\">180</span>, in <span class=\"n\">plot_ball</span>\n<span class=\"w\">    </span><span class=\"n\">z</span> <span class=\"o\">=</span> <span class=\"n\">np</span><span class=\"o\">.</span><span class=\"n\">mat</span><span class=\"p\">([[</span><span class=\"n\">x</span><span class=\"p\">,</span><span class=\"n\">y</span><span class=\"p\">]])</span><span class=\"o\">.</span><span class=\"n\">T</span>\n<span class=\"w\">        </span><span class=\"pm\">^^^^^^</span>\n  File <span class=\"nb\">&quot;C:\\Users\\goper\\Files\\vsCode\\Kalman-and-Bayesian-Filters-in-Python\\.venv\\Lib\\site-packages\\numpy\\__init__.py&quot;</span>, line <span class=\"m\">791</span>, in <span class=\"n\">__getattr__</span>\n<span class=\"w\">    </span><span class=\"k\">raise</span> <span class=\"ne\">AttributeError</span><span class=\"p\">(</span>\n<span class=\"gr\">AttributeError</span>: <span class=\"n\">`np.mat` was removed in the NumPy 2.0 release. Use `np.asmatrix` instead.</span>\n</pre></div>\n</span>",
+          "mimetype": "application/vnd.marimo+traceback"
+        }
+      ]
+    },
+    {
+      "id": "wlCL",
+      "code_hash": "1a323bb2fc7a05f2e55e1ea113d37665",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">We can artificially force the Kalman filter to track the ball by making <marimo-tex class=\"arithmatex\">||(Q||)</marimo-tex> large. That would cause the filter to mistrust its prediction, and scale the kalman gain <marimo-tex class=\"arithmatex\">||(K||)</marimo-tex> to strongly favor the measurments. However, this is not a valid approach. If the Kalman filter is correctly predicting the process we should not 'lie' to the filter by telling it there are process errors that do not exist. We may get away with that for some problems, in some conditions, but in general the Kalman filter's performance will be substandard.</span>\n<span class=\"paragraph\">Recall from the <strong>Designing Kalman Filters</strong> chapter that the acceleration is</span>\n<span class=\"paragraph\">$$a_x = (0.0039 + \\frac{0.0058}{1+\\exp{[(v-35)/5]}})<em>v</em>v_x \\\na_y = (0.0039 + \\frac{0.0058}{1+\\exp{[(v-35)/5]}})<em>v</em>v_y- g</span>\n<span class=\"paragraph\">$$</span>\n<span class=\"paragraph\">These equations will be <em>very</em> unpleasant to work with while we develop this subject, so for now I will retreat to a simpler one dimensional problem using this simplified equation for acceleration that does not take the nonlinearity of the drag coefficient into account:</span>\n<marimo-tex class=\"arithmatex\">||[\\begin{aligned}\n\\ddot{y} &amp;= \\frac{0.0034ge^{-y/20000}\\dot{y}^2}{2\\beta} - g \\\\\n\\ddot{x} &amp;= \\frac{0.0034ge^{-x/20000}\\dot{x}^2}{2\\beta}\n\\end{aligned}||]</marimo-tex><span class=\"paragraph\">Here <marimo-tex class=\"arithmatex\">||(\\beta||)</marimo-tex> is the ballistic coefficient, where a high number indicates a low drag.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "kqZH",
+      "code_hash": "f6f220bce5cba6ee1f4bfcfb292d37cf",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">This is still nonlinear, so we need to linearize this equation at the current state point. If our state is position and velocity, we need an equation for some arbitrarily small change in <marimo-tex class=\"arithmatex\">||(\\mathbf{x}||)</marimo-tex>, like so:</span>\n<marimo-tex class=\"arithmatex\">||[ \\begin{bmatrix}\\Delta \\dot{x} \\\\ \\Delta \\ddot{x} \\\\ \\Delta \\dot{y} \\\\ \\Delta \\ddot{y}\\end{bmatrix} =\n\\large\\begin{bmatrix}\n\\frac{\\partial \\dot{x}}{\\partial x} &amp;\n\\frac{\\partial \\dot{x}}{\\partial \\dot{x}} &amp;\n\\frac{\\partial \\dot{x}}{\\partial y} &amp;\n\\frac{\\partial \\dot{x}}{\\partial \\dot{y}} \\\\\n\\frac{\\partial \\ddot{x}}{\\partial x} &amp;\n\\frac{\\partial \\ddot{x}}{\\partial \\dot{x}}&amp;\n\\frac{\\partial \\ddot{x}}{\\partial y}&amp;\n\\frac{\\partial \\dot{x}}{\\partial \\dot{y}}\\\\\n\\frac{\\partial \\dot{y}}{\\partial x} &amp;\n\\frac{\\partial \\dot{y}}{\\partial \\dot{x}} &amp;\n\\frac{\\partial \\dot{y}}{\\partial y} &amp;\n\\frac{\\partial \\dot{y}}{\\partial \\dot{y}} \\\\\n\\frac{\\partial \\ddot{y}}{\\partial x} &amp;\n\\frac{\\partial \\ddot{y}}{\\partial \\dot{x}}&amp;\n\\frac{\\partial \\ddot{y}}{\\partial y}&amp;\n\\frac{\\partial \\dot{y}}{\\partial \\dot{y}}\n\\end{bmatrix}\\normalsize\n\\begin{bmatrix}\\Delta x \\\\ \\Delta \\dot{x} \\\\ \\Delta \\dot{y} \\\\ \\Delta \\ddot{y}\\end{bmatrix}||]</marimo-tex><span class=\"paragraph\">The equations do not contain both an x and a y, so any partial derivative with both in it must be equal to zero. We also know that <marimo-tex class=\"arithmatex\">||(\\large\\frac{\\partial \\dot{x}}{\\partial x}\\normalsize = 0||)</marimo-tex> and that  <marimo-tex class=\"arithmatex\">||(\\large\\frac{\\partial \\dot{x}}{\\partial \\dot{x}}\\normalsize = 1||)</marimo-tex>, so our matrix ends up being</span>\n<marimo-tex class=\"arithmatex\">||[\\mathbf{F} = \\begin{bmatrix}0&amp;1&amp;0&amp;0 \\\\\n\\frac{0.0034e^{-x/22000}\\dot{x}^2g}{44000\\beta}&amp;0&amp;0&amp;0\n\\end{bmatrix}||]</marimo-tex></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "wAgl",
+      "code_hash": "481ba705ec1a20ff68912cc64e73d7d2",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><marimo-tex class=\"arithmatex\">||[\\begin{aligned}\\ddot{x} &amp;= -\\frac{1}{2}C_d\\rho A \\dot{x}\\\\\n\\ddot{y} &amp;= -\\frac{1}{2}C_d\\rho A \\dot{y}-g\\end{aligned}||]</marimo-tex></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "rEll",
+      "code_hash": "2d81c04820714da6b74b5d57e888dc7a",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "import-star",
+          "evalue": "line 1 SyntaxError: Importing symbols with `import *` is not allowed in marimo.",
+          "traceback": []
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "dGlV",
+      "code_hash": "f49e038689c99228e643144e4b6eea4a",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">** orphan text\nThis approach has many issues. First, of course, is the fact that the linearization does not produce an exact answer. More importantly, we are not linearizing the actual path, but our filter's estimation of the path. We linearize the estimation because it is statistically likely to be correct; but of course it is not required to be. So if the filter's output is bad that will cause us to linearize an incorrect estimate, which will almost certainly lead to an even worse estimate. In these cases the filter will quickly diverge. This is where the 'black art' of Kalman filter comes in. We are trying to linearize an estimate, and there is no guarantee that the filter will be stable. A vast amount of the literature on Kalman filters is devoted to this problem. Another issue is that we need to linearize the system using analytic methods. It may be difficult or impossible to find an analytic solution to some problems. In other cases we may be able to find the linearization, but the computation is very expensive. **</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "SdmI",
+      "code_hash": "7f292a84e59f0f976328ffd6f1332812",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"references\">References</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "lgWD",
+      "code_hash": "c978c30e3892bbd558734fa2571b92ba",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">[1] <a href=\"http://sympy.org\" rel=\"noopener noreferrer\" target=\"_blank\">http://sympy.org</a></span></span>"
+          }
+        }
+      ],
+      "console": []
+    }
+  ]
+}

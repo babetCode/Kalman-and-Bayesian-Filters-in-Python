@@ -1,0 +1,1590 @@
+{
+  "version": "1",
+  "metadata": {
+    "marimo_version": "0.23.10",
+    "script_metadata_hash": null
+  },
+  "cells": [
+    {
+      "id": "Hbol",
+      "code_hash": "1d0db38904205bec4d6f6f6a1f6cec3e",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "MJUe",
+      "code_hash": "aae9eb2d3ea3a449680bedd58a67c8f0",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\"><a href=\"./table_of_contents.ipynb\">Table of Contents</a></span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vblA",
+      "code_hash": "5f15879ad7d9a5099d4e83f6fbda1339",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h1 id=\"multivariate-kalman-filters\">Multivariate Kalman Filters</h1>\n<span class=\"paragraph\">Filtering Multiple Random Variables</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "bkHC",
+      "code_hash": "e8538e1461e4aa6f23e893d65c7f11e3",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "lEQa",
+      "code_hash": "eafb355248acc454199a7ab51eddc522",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "PKri",
+      "code_hash": "e74c57cbcaaf2389c3c4b86fe4837e57",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"introduction\">Introduction</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Xref",
+      "code_hash": "7e5dcfeeb97225dafff2b65752d1b1c1",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">We are now ready to study and implement the full, multivariate form of the Kalman filter. In the last chapter we learned how multivariate Gaussians express the correlation between multiple random variables, such as the position and velocity of an aircraft. We also learned how correlation between variables drastically improves the posterior. If we only roughly know position and velocity, but they are correlated, then our new estimate can be very accurate.</span>\n<span class=\"paragraph\">I prefer that you develop an intuition for how these filters work through several worked examples. I'm going to gloss over many issues. Some things I show you will only work for special cases, others will be 'magical' - it will not be clear how I derived a certain result. If I started with rigorous, generalized equations you would be left scratching your head about what all these terms mean and how you might apply them to your problem. In later chapters I will provide a more rigorous mathematical foundation, and at that time I will have to either correct approximations that I made in this chapter or provide additional information that I did not cover here.</span>\n<span class=\"paragraph\">To make this possible we will restrict ourselves to a subset of problems which we can describe with Newton's equations of motion. These filters are called <em>discretized continuous-time kinematic filters</em>. In the <strong>Kalman Filter Math</strong> chapter we will develop the math for non-Newtonian systems.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "SFPL",
+      "code_hash": "7d5e8427e59de2a0c215e5639966dc39",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"newtons-equations-of-motion\">Newton's Equations of Motion</h2>\n<span class=\"paragraph\">Newton's equations of motion tells us that given a constant velocity <marimo-tex class=\"arithmatex\">||(v||)</marimo-tex> of a system we can compute its position <marimo-tex class=\"arithmatex\">||(x||)</marimo-tex> after time <marimo-tex class=\"arithmatex\">||(t||)</marimo-tex> with:</span>\n<marimo-tex class=\"arithmatex\">||[x = vt + x_0||]</marimo-tex><span class=\"paragraph\">For example, if we start at position 13, our velocity is 10 m/s, and we travel for 12 seconds our final position is 133 (<marimo-tex class=\"arithmatex\">||(10\\times 12 + 13||)</marimo-tex>).</span>\n<span class=\"paragraph\">We can incorporate constant acceleration with this equation</span>\n<marimo-tex class=\"arithmatex\">||[x = \\frac{1}{2}at^2 + v_0t + x_0||]</marimo-tex><span class=\"paragraph\">And if we assume constant jerk we get</span>\n<marimo-tex class=\"arithmatex\">||[x = \\frac{1}{6}jt^3 +  \\frac{1}{2}a_0 t^2 + v_0 t + x_0||]</marimo-tex><span class=\"paragraph\">These equations were generated by integrating a differential equation. Given a constant velocity v we can compute the distance traveled over time with the equation</span>\n<marimo-tex class=\"arithmatex\">||[x = vt + x_0||]</marimo-tex><span class=\"paragraph\">which we can derive with</span>\n<marimo-tex class=\"arithmatex\">||[\\begin{aligned} v &amp;= \\frac{dx}{dt}\\\\\ndx &amp;= v\\, dt \\\\\n\\int_{x_0}^x\\, dx &amp;= \\int_0^t v\\, dt\\\\\nx - x_0 &amp;= vt - 0\\\\\nx &amp;= vt + x_0\\end{aligned}||]</marimo-tex><span class=\"paragraph\">When you design a Kalman filter you start with a system of differential equations that describe the dynamics of the system. Most systems of differential equations do not easily integrate in this way. We start with Newton's equation because we can integrate and get a closed form solution, which makes the Kalman filter easier to design. An added benefit is that Newton's equations are the right equations to use to track moving objects, one of the main uses of Kalman filters.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "BYtC",
+      "code_hash": "00c6de0b5d311aa0e6196bf7c10a05e3",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"kalman-filter-algorithm\">Kalman Filter Algorithm</h2>\n<span class=\"paragraph\">The algorithm is the same Bayesian filter algorithm that we have used in every chapter. The update step is slightly more complicated, but I will explain why when we get to it.</span>\n<span class=\"paragraph\"><strong>Initialization</strong></span>\n<div class=\"language-cbmbas highlight\"><pre><span></span><code><span class=\"mf\">1.</span><span class=\"w\"> </span><span class=\"n\">Initialize</span><span class=\"w\"> </span><span class=\"n\">the</span><span class=\"w\"> </span><span class=\"n\">state</span><span class=\"w\"> </span><span class=\"n\">of</span><span class=\"w\"> </span><span class=\"n\">the</span><span class=\"w\"> </span><span class=\"n\">filter</span>\n\n<span class=\"mf\">2.</span><span class=\"w\"> </span><span class=\"n\">Initialize</span><span class=\"w\"> </span><span class=\"n\">our</span><span class=\"w\"> </span><span class=\"n\">belief</span><span class=\"w\"> </span><span class=\"n\">in</span><span class=\"w\"> </span><span class=\"n\">the</span><span class=\"w\"> </span><span class=\"n\">state</span>\n</code></pre></div>\n<span class=\"paragraph\"><strong>Predict</strong></span>\n<div class=\"language-cbmbas highlight\"><pre><span></span><code><span class=\"mf\">1.</span><span class=\"w\"> </span><span class=\"n\">Use</span><span class=\"w\"> </span><span class=\"n\">process</span><span class=\"w\"> </span><span class=\"n\">model</span><span class=\"w\"> </span><span class=\"kr\">to</span><span class=\"w\"> </span><span class=\"n\">predict</span><span class=\"w\"> </span><span class=\"n\">state</span><span class=\"w\"> </span><span class=\"n\">at</span><span class=\"w\"> </span><span class=\"n\">the</span><span class=\"w\"> </span><span class=\"kr\">next</span><span class=\"w\"> </span><span class=\"n\">time</span><span class=\"w\"> </span><span class=\"kr\">step</span>\n\n<span class=\"mf\">2.</span><span class=\"w\"> </span><span class=\"n\">Adjust</span><span class=\"w\"> </span><span class=\"n\">belief</span><span class=\"w\"> </span><span class=\"kr\">to</span><span class=\"w\"> </span><span class=\"n\">account</span><span class=\"w\"> </span><span class=\"kr\">for</span><span class=\"w\"> </span><span class=\"n\">the</span><span class=\"w\"> </span><span class=\"n\">uncertainty</span><span class=\"w\"> </span><span class=\"n\">in</span><span class=\"w\"> </span><span class=\"n\">prediction</span>\n</code></pre></div>\n<span class=\"paragraph\"><strong>Update</strong></span>\n<div class=\"language-cbmbas highlight\"><pre><span></span><code><span class=\"mf\">1.</span><span class=\"w\"> </span><span class=\"kr\">Get</span><span class=\"w\"> </span><span class=\"n\">a</span><span class=\"w\"> </span><span class=\"n\">measurement</span><span class=\"w\"> </span><span class=\"ow\">and</span><span class=\"w\"> </span><span class=\"n\">associated</span><span class=\"w\"> </span><span class=\"n\">belief</span><span class=\"w\"> </span><span class=\"n\">about</span><span class=\"w\"> </span><span class=\"n\">its</span><span class=\"w\"> </span><span class=\"n\">accuracy</span>\n\n<span class=\"mf\">2.</span><span class=\"w\"> </span><span class=\"n\">Compute</span><span class=\"w\"> </span><span class=\"n\">residual</span><span class=\"w\"> </span><span class=\"n\">between</span><span class=\"w\"> </span><span class=\"n\">estimated</span><span class=\"w\"> </span><span class=\"n\">state</span><span class=\"w\"> </span><span class=\"ow\">and</span><span class=\"w\"> </span><span class=\"n\">measurement</span>\n\n<span class=\"mf\">3.</span><span class=\"w\"> </span><span class=\"n\">Compute</span><span class=\"w\"> </span><span class=\"n\">scaling</span><span class=\"w\"> </span><span class=\"n\">factor</span><span class=\"w\"> </span><span class=\"n\">based</span><span class=\"w\"> </span><span class=\"kr\">on</span><span class=\"w\"> </span><span class=\"n\">whether</span><span class=\"w\"> </span><span class=\"n\">the</span><span class=\"w\"> </span><span class=\"n\">measurement</span>\n<span class=\"ow\">or</span><span class=\"w\"> </span><span class=\"n\">prediction</span><span class=\"w\"> </span><span class=\"n\">is</span><span class=\"w\"> </span><span class=\"n\">more</span><span class=\"w\"> </span><span class=\"n\">accurate</span>\n\n<span class=\"mf\">4.</span><span class=\"w\"> </span><span class=\"n\">set</span><span class=\"w\"> </span><span class=\"n\">state</span><span class=\"w\"> </span><span class=\"n\">between</span><span class=\"w\"> </span><span class=\"n\">the</span><span class=\"w\"> </span><span class=\"n\">prediction</span><span class=\"w\"> </span><span class=\"ow\">and</span><span class=\"w\"> </span><span class=\"n\">measurement</span><span class=\"w\"> </span><span class=\"n\">based</span>\n<span class=\"kr\">on</span><span class=\"w\"> </span><span class=\"n\">scaling</span><span class=\"w\"> </span><span class=\"n\">factor</span>\n\n<span class=\"mf\">5.</span><span class=\"w\"> </span><span class=\"n\">update</span><span class=\"w\"> </span><span class=\"n\">belief</span><span class=\"w\"> </span><span class=\"n\">in</span><span class=\"w\"> </span><span class=\"n\">the</span><span class=\"w\"> </span><span class=\"n\">state</span><span class=\"w\"> </span><span class=\"n\">based</span><span class=\"w\"> </span><span class=\"kr\">on</span><span class=\"w\"> </span><span class=\"n\">how</span><span class=\"w\"> </span><span class=\"n\">certain</span><span class=\"w\"> </span><span class=\"n\">we</span><span class=\"w\"> </span><span class=\"n\">are</span>\n<span class=\"n\">in</span><span class=\"w\"> </span><span class=\"n\">the</span><span class=\"w\"> </span><span class=\"n\">measurement</span>\n</code></pre></div>\n<span class=\"paragraph\">As a reminder, here is a graphical depiction of the algorithm:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "RGSE",
+      "code_hash": "8bd002d39d7417d23ae63700fbf2937b",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "Kclp",
+      "code_hash": "fdd322458dbee24b7bd081175528f76e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">The univariate Kalman filter represented the state with a univariate Gaussian. Naturally the multivariate Kalman filter will use a multivariate Gaussian for the state. We learned in the last chapter that multivariate Gaussians use a vector for the mean and a matrix for the covariances. That means that the Kalman filter needs to use linear algebra to perform the estimations.</span>\n<span class=\"paragraph\">I don't want you to memorize these equations, but I have listed the univariate and multivariate equations below. They are quite similar.</span>\n<span class=\"paragraph\"><u><strong>Predict</strong></u></span>\n<span class=\"paragraph\"><marimo-tex class=\"arithmatex\">||(\\begin{array}{|l|l|l|}\n\\hline\n\\text{Univariate} &amp; \\text{Univariate} &amp; \\text{Multivariate}\\\\\n&amp; \\text{(Kalman form)} &amp; \\\\\n\\hline\n\\bar \\mu = \\mu + \\mu_{f_x} &amp; \\bar x = x + dx &amp; \\bar{\\mathbf x} = \\mathbf{Fx} + \\mathbf{Bu}\\\\\n\\bar\\sigma^2 = \\sigma_x^2 + \\sigma_{f_x}^2 &amp; \\bar P = P + Q &amp; \\bar{\\mathbf P} = \\mathbf{FPF}^\\mathsf T + \\mathbf Q \\\\\n\\hline\n\\end{array}||)</marimo-tex></span>\n<span class=\"paragraph\">Without worrying about the specifics of the linear algebra, we can see that:</span>\n<span class=\"paragraph\"><marimo-tex class=\"arithmatex\">||(\\mathbf x,\\, \\mathbf P||)</marimo-tex> are the state mean and covariance. They correspond to <marimo-tex class=\"arithmatex\">||(x||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(\\sigma^2||)</marimo-tex>.</span>\n<span class=\"paragraph\"><marimo-tex class=\"arithmatex\">||(\\mathbf F||)</marimo-tex> is the <em>state transition function</em>. When multiplied by <marimo-tex class=\"arithmatex\">||(\\bf x||)</marimo-tex> it computes the prior.</span>\n<span class=\"paragraph\"><marimo-tex class=\"arithmatex\">||(\\mathbf Q||)</marimo-tex> is the process covariance. It corresponds to <marimo-tex class=\"arithmatex\">||(\\sigma^2_{f_x}||)</marimo-tex>.</span>\n<span class=\"paragraph\"><marimo-tex class=\"arithmatex\">||(\\mathbf B||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(\\mathbf u||)</marimo-tex> are new to us. They let us model control inputs to the system.</span>\n<span class=\"paragraph\"><u><strong>Update</strong></u></span>\n<span class=\"paragraph\"><marimo-tex class=\"arithmatex\">||(\\begin{array}{|l|l|l|}\n\\hline\n\\text{Univariate} &amp; \\text{Univariate} &amp; \\text{Multivariate}\\\\\n&amp; \\text{(Kalman form)} &amp; \\\\\n\\hline\n&amp; y = z - \\bar x &amp; \\mathbf y = \\mathbf z - \\mathbf{H\\bar x} \\\\\n&amp; K = \\frac{\\bar P}{\\bar P+R}&amp;\n\\mathbf K = \\mathbf{\\bar{P}H}^\\mathsf T (\\mathbf{H\\bar{P}H}^\\mathsf T + \\mathbf R)^{-1} \\\\\n\\mu=\\frac{\\bar\\sigma^2\\, \\mu_z + \\sigma_z^2 \\, \\bar\\mu} {\\bar\\sigma^2 + \\sigma_z^2} &amp; x = \\bar x + Ky &amp; \\mathbf x = \\bar{\\mathbf x} + \\mathbf{Ky} \\\\\n\\sigma^2 = \\frac{\\sigma_1^2\\sigma_2^2}{\\sigma_1^2+\\sigma_2^2} &amp; P = (1-K)\\bar P &amp;\n\\mathbf P = (\\mathbf I - \\mathbf{KH})\\mathbf{\\bar{P}} \\\\\n\\hline\n\\end{array}||)</marimo-tex></span>\n<span class=\"paragraph\"><marimo-tex class=\"arithmatex\">||(\\mathbf H||)</marimo-tex> is the measurement function. We haven't seen this yet in this book and I'll explain it later. If you mentally remove <marimo-tex class=\"arithmatex\">||(\\mathbf H||)</marimo-tex> from the equations, you should be able to see these equations are similar as well.</span>\n<span class=\"paragraph\"><marimo-tex class=\"arithmatex\">||(\\mathbf z,\\, \\mathbf R||)</marimo-tex> are the measurement mean and noise covariance. They correspond to <marimo-tex class=\"arithmatex\">||(z||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(\\sigma_z^2||)</marimo-tex> in the univariate filter (I've substituted <marimo-tex class=\"arithmatex\">||(\\mu||)</marimo-tex> with <marimo-tex class=\"arithmatex\">||(x||)</marimo-tex> for the univariate equations to make the notation as similar as possible).</span>\n<span class=\"paragraph\"><marimo-tex class=\"arithmatex\">||(\\mathbf y||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(\\mathbf K||)</marimo-tex> are the residual and Kalman gain.</span>\n<span class=\"paragraph\">The details will be different than the univariate filter because these are vectors and matrices, but the concepts are exactly the same:</span>\n<ul>\n<li>Use a Gaussian to represent our estimate of the state and error</li>\n<li>Use a Gaussian to represent the measurement and its error</li>\n<li>Use a Gaussian to represent the process model</li>\n<li>Use the process model to predict the next state (the prior)</li>\n<li>Form an estimate part way between the measurement and the prior</li>\n</ul>\n<span class=\"paragraph\">Your job as a designer will be to design the state <marimo-tex class=\"arithmatex\">||(\\left(\\mathbf x, \\mathbf P\\right)||)</marimo-tex>, the process <marimo-tex class=\"arithmatex\">||(\\left(\\mathbf F, \\mathbf Q\\right)||)</marimo-tex>, the measurement <marimo-tex class=\"arithmatex\">||(\\left(\\mathbf z, \\mathbf R\\right)||)</marimo-tex>, and the  measurement function <marimo-tex class=\"arithmatex\">||(\\mathbf H||)</marimo-tex>. If the system has control inputs, such as a robot, you will also design <marimo-tex class=\"arithmatex\">||(\\mathbf B||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(\\mathbf u||)</marimo-tex>.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "emfo",
+      "code_hash": "5918b1527cb63cef4b09ea443242314c",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">I have programmed the equations of the Kalman filter into the <code>predict</code> and <code>update</code> functions in FilterPy. You will import them with:</span>\n<div class=\"language-python codehilite\"><pre><span></span><code><span class=\"kn\">from</span><span class=\"w\"> </span><span class=\"nn\">filterpy.kalman</span><span class=\"w\"> </span><span class=\"kn\">import</span> <span class=\"n\">predict</span><span class=\"p\">,</span> <span class=\"n\">update</span>\n</code></pre></div></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Hstk",
+      "code_hash": "9d3e69b8e1ff133ca2d6da0931179f8b",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"tracking-a-dog\">Tracking a Dog</h2>\n<span class=\"paragraph\">Let's go back to our tried and true problem of tracking a dog. This time we will include the fundamental insight of the previous chapter and use <em>hidden variables</em> to improve our estimates. I could start with the math, but instead let's implement a filter, learning as we go. On the surface the math is different and perhaps more complicated than the previous chapters, but the ideas are all the same - we are just multiplying and adding Gaussians.</span>\n<span class=\"paragraph\">We start by writing a simulation for the dog. The simulation will run for <code>count</code> steps, moving the dog forward approximately 1 meter for each step. At each step the velocity will vary according to the process variance <code>process_var</code>. After updating the position we compute a measurement with an assumed sensor variance of <code>z_var</code>. The function returns an NumPy array of the positions and another of the measurements.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "nWHF",
+      "code_hash": "1d01f2c8b7e0c21847c216c4472b4f91",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "iLit",
+      "code_hash": "93174fcbcb905c3b839cec2bb0554336",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"predict-step\">Predict Step</h2>\n<span class=\"paragraph\">For the prediction we need to design the state and covariance, the process model and the process noise, and optionally the control input. We'll take them in order.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ZHCJ",
+      "code_hash": "754f65f79ec32ac47d1a06c1e277ac94",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"design-state-variable\">Design State Variable</h3>\n<span class=\"paragraph\">We previously tracked a dog in one dimension by using a Gaussian. The mean <marimo-tex class=\"arithmatex\">||((\\mu)||)</marimo-tex> represented the most likely position, and the variance (<marimo-tex class=\"arithmatex\">||(\\sigma^2||)</marimo-tex>) represented the probability distribution of the position. The position is the <em>state</em> of the system, and we call <marimo-tex class=\"arithmatex\">||(\\mu||)</marimo-tex> the <em>state variable</em>.</span>\n<span class=\"paragraph\">In this problem we will be tracking both the position and velocity of the dog. This requires us to use a multivariate Gaussian represented with the state vector <marimo-tex class=\"arithmatex\">||(\\mathbf x||)</marimo-tex> and its corresponding covariance matrix <marimo-tex class=\"arithmatex\">||(\\mathbf P||)</marimo-tex>.</span>\n<span class=\"paragraph\">State variables can either be <em>observed variables</em> - directly measured by a sensor, or <em>hidden variables</em> - inferred from the observed variables. For our dog tracking problem the sensor only reads position, so position is observed and velocity is hidden. We will learn how to track hidden variables soon.</span>\n<span class=\"paragraph\">It is important to understand that tracking position and velocity is a design choice with implications and assumptions that we are not yet prepared to explore. For example, we could also track acceleration, or even jerk. For now, recall that in the last chapter we showed that including velocity in the covariance matrix resulted in much smaller variances in position. We will learn how the Kalman filter computes estimates for hidden variables later in this chapter.</span>\n<span class=\"paragraph\">In the univariate chapter we represented the dog's position with a scalar value (e.g. <marimo-tex class=\"arithmatex\">||(\\mu=3.27||)</marimo-tex>). In the last chapter we learned to use a multivariate Gaussian for multiple variables. For example, if we wanted to specify a position of 10.0 m and a velocity of 4.5 m/s, we would write:</span>\n<marimo-tex class=\"arithmatex\">||[\\mu = \\begin{bmatrix}10.0\\\\4.5\\end{bmatrix}||]</marimo-tex><span class=\"paragraph\">The Kalman filter is implemented using linear algebra. We use an <marimo-tex class=\"arithmatex\">||(n\\times 1||)</marimo-tex> matrix (called a <em>vector</em>) to store  <marimo-tex class=\"arithmatex\">||(n||)</marimo-tex> state variables. For the dog tracking problem, we use <marimo-tex class=\"arithmatex\">||(x||)</marimo-tex> to denote position, and the first derivative of <marimo-tex class=\"arithmatex\">||(x||)</marimo-tex>, <marimo-tex class=\"arithmatex\">||(\\dot x||)</marimo-tex>, for velocity. I use Newton's dot notation for derivatives; <marimo-tex class=\"arithmatex\">||(\\dot x||)</marimo-tex> represents the first derivative of x with respect to t: <marimo-tex class=\"arithmatex\">||(\\dot x = \\frac{dx}{dt}||)</marimo-tex>. Kalman filter equations use <marimo-tex class=\"arithmatex\">||(\\mathbf x||)</marimo-tex> for the state, so we define <marimo-tex class=\"arithmatex\">||(\\mathbf x||)</marimo-tex> as:</span>\n<marimo-tex class=\"arithmatex\">||[\\mathbf x =\\begin{bmatrix}x \\\\ \\dot x\\end{bmatrix}||]</marimo-tex><span class=\"paragraph\">We use <marimo-tex class=\"arithmatex\">||(\\mathbf x||)</marimo-tex> instead of <marimo-tex class=\"arithmatex\">||(\\mu||)</marimo-tex>, but recognize this is the mean of the multivariate Gaussian.</span>\n<span class=\"paragraph\">Another way to write this is <marimo-tex class=\"arithmatex\">||(\\mathbf x =\\begin{bmatrix}x &amp; \\dot x\\end{bmatrix}^\\mathsf T||)</marimo-tex> because the transpose of a row vector is a column vector. This notation is easier to use in text because it takes less vertical space.</span>\n<span class=\"paragraph\"><marimo-tex class=\"arithmatex\">||(\\mathbf x||)</marimo-tex> and the position <marimo-tex class=\"arithmatex\">||(x||)</marimo-tex> coincidentally have the same name. If we were tracking the dog in the y-axis we would write <marimo-tex class=\"arithmatex\">||(\\mathbf x =\\begin{bmatrix}y &amp; \\dot y\\end{bmatrix}^\\mathsf T||)</marimo-tex>, not  <marimo-tex class=\"arithmatex\">||(\\mathbf y =\\begin{bmatrix}y &amp; \\dot y\\end{bmatrix}^\\mathsf T||)</marimo-tex>. <marimo-tex class=\"arithmatex\">||(\\mathbf x||)</marimo-tex> is the standard name for the state variable used in the Kalman filter literature and we will not vary it to give it a more meaningful name. This consistency in naming allows us to communicate with our peers.</span>\n<span class=\"paragraph\">Let's code this. Initialization of <code>x</code> is as simple as</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ROlb",
+      "code_hash": "c396ba0d71feb11b7a95e888869cf7aa",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "qnkX",
+      "code_hash": "7168ff159fb0c443908990c0d23564e8",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">I often use the transpose in my code to turn a row matrix into a column vector, as I find it easier to type and read:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "TqIu",
+      "code_hash": "7b1298359936b94e4fa051c0fae6d129",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "Vxnm",
+      "code_hash": "2dc1dea539d55b13c40ae54420e15d90",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">However, NumPy recognizes 1D arrays as vectors, so I can simplify this line to use a 1D array.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "DnEU",
+      "code_hash": "823448c4c2a40bf395327c010b7b0a0d",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "ulZA",
+      "code_hash": "fb36f7f64e348b480c40f7bcce71b911",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">All of the array elements have the same type, typically either <code>float</code> or <code>int</code>. If the list contains all <code>int</code>s then the created array will also have a data type of <code>int</code>, otherwise it will be <code>float</code>. I will often take advantage of this by only specifying one number as a floating point:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ecfG",
+      "code_hash": "373eff8ca1142b6a054b5b3c160fdce3",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "Pvdt",
+      "code_hash": "11cb7685b339cd4e1eb85b80415aa717",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Here are some examples.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ZBYS",
+      "code_hash": "6b429193768c6a454350f859fb786216",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "aLJB",
+      "code_hash": "0df7024c36ac9f8302457fc6241ca84b",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">In Python 3.5+ we have the matrix multiplier @, where <code>np.dot(A, B) == A @ B</code>. It is somewhat less useful then you might realize because it requires both <code>A</code> and <code>B</code> to be arrays. It is entirely valid in the math in this book for some of these variables to be scalars, therefore the utility of <code>@</code> is often lost.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "nHfw",
+      "code_hash": "fe39cff81fbc82e00b475baacafb2d26",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "xXTn",
+      "code_hash": "ef73804f4d2a66a9eaaf45be175f0a90",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">The last returns a 1D array, but I have written the Kalman filter class to be able to handle this. In retrospect that might lead to confusion, but it does work.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "AjVT",
+      "code_hash": "4c4fc9bab4abf624b75905f6d4db4468",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"design-state-covariance\">Design State Covariance</h3>\n<span class=\"paragraph\">The other half of the state Gaussian is the covariance matrix <marimo-tex class=\"arithmatex\">||(\\mathbf P||)</marimo-tex>. In the univariate Kalman filter we specified an initial value for <marimo-tex class=\"arithmatex\">||(\\sigma^2||)</marimo-tex>, and then the filter took care of updating its value as measurements were added to the filter. The same thing happens in the multidimensional Kalman filter. We specify an initial value for <marimo-tex class=\"arithmatex\">||(\\mathbf P||)</marimo-tex> and the filter updates it during each epoch.</span>\n<span class=\"paragraph\">We need to set the variances to reasonable values. For example, we may choose <marimo-tex class=\"arithmatex\">||(\\sigma_\\mathtt{pos}^2=500 m^2||)</marimo-tex> if we are quite uncertain about the initial position. Top speed for a dog is around 21 m/s, so in the absence of any other information about the velocity we can set <marimo-tex class=\"arithmatex\">||(3\\sigma_\\mathtt{vel}=21||)</marimo-tex>, or <marimo-tex class=\"arithmatex\">||(\\sigma_\\mathtt{vel}^2=7^2=49||)</marimo-tex>.</span>\n<span class=\"paragraph\">In the last chapter we showed that the position and velocities are correlated. But how correlated are they for a dog? I have no idea. As we will see the filter computes this for us, so I initialize the covariances to zero. Of course, if you know the covariances you should use them.</span>\n<span class=\"paragraph\">Recall that the diagonals of the covariance matrix contains the variance of each variable, and the off-diagonal elements contains the covariances. Thus we have:</span>\n<marimo-tex class=\"arithmatex\">||[\n\\mathbf P = \\begin{bmatrix}500 &amp; 0 \\\\ 0&amp;49\\end{bmatrix}\n||]</marimo-tex><span class=\"paragraph\">We can use <code>numpy.diag</code>, which creates a diagonal matrix from the values for the diagonal. Recall from linear algebra that a diagonal matrix is one with zeros in the off-diagonal elements.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "pHFh",
+      "code_hash": "8d3c6583ab03abcf3db301f27ecf40fc",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "NCOB",
+      "code_hash": "5e7e2a133cbf372353add6111ad53a73",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">I could have written:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "aqbW",
+      "code_hash": "dd955393f02a1aad7d66f2c6dd509236",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "TRpd",
+      "code_hash": "84bf760cfe4278d7beba90b670dc67f1",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">We are done. We've expressed the state of the filter as a multivariate Gaussian and implemented it in code.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "TXez",
+      "code_hash": "e0b32ae6a28507de934b0ad93062eaa6",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"design-the-process-model\">Design the Process Model</h3>\n<span class=\"paragraph\">The next step is designing the <em>process model</em>. It is a mathematical model which describes the behavior of the system. The filter uses it to predict the state after a discrete time step. We do this with a set of equations that describe the dynamics of the system.</span>\n<span class=\"paragraph\">In the univariate chapter we modeled the dog's motion with</span>\n<marimo-tex class=\"arithmatex\">||[ x = v \\Delta t + x_0||]</marimo-tex><span class=\"paragraph\">We implemented this as follows:</span>\n<div class=\"language-python codehilite\"><pre><span></span><code><span class=\"k\">def</span><span class=\"w\"> </span><span class=\"nf\">predict</span><span class=\"p\">(</span><span class=\"n\">pos</span><span class=\"p\">,</span> <span class=\"n\">movement</span><span class=\"p\">):</span>\n    <span class=\"k\">return</span> <span class=\"n\">gaussian</span><span class=\"p\">(</span><span class=\"n\">pos</span><span class=\"o\">.</span><span class=\"n\">mean</span> <span class=\"o\">+</span> <span class=\"n\">movement</span><span class=\"o\">.</span><span class=\"n\">mean</span><span class=\"p\">,</span>\n                    <span class=\"n\">pos</span><span class=\"o\">.</span><span class=\"n\">var</span> <span class=\"o\">+</span> <span class=\"n\">movement</span><span class=\"o\">.</span><span class=\"n\">var</span><span class=\"p\">)</span>\n</code></pre></div>\n<span class=\"paragraph\">We will do the same thing in this chapter, using multivariate Gaussians instead of univariate Gaussians. You might imagine this sort of implementation:</span>\n<marimo-tex class=\"arithmatex\">||[ \\mathbf x = \\begin{bmatrix}5.4\\\\4.2\\end{bmatrix}, \\, \\,\n\\dot{\\mathbf x} =  \\begin{bmatrix}1.1\\\\0.\\end{bmatrix} \\\\\n\\mathbf x = \\dot{\\mathbf x}t + \\mathbf x||]</marimo-tex><span class=\"paragraph\">But we need to generalize this. The Kalman filter equations work with any linear system, not just Newtonian ones. Maybe the system you are filtering is the plumbing system in a chemical plant, and the flow in a given pipe is determined by a linear combination of the settings of different valves.</span>\n<marimo-tex class=\"arithmatex\">||[\\mathtt{pipe_1} = 0.134(\\mathtt{valve}_1) + 0.41(\\mathtt{valve}_2 - \\mathtt{valve}_3) + 1.34||]</marimo-tex><marimo-tex class=\"arithmatex\">||[\\mathtt{pipe_2} = 0.210(\\mathtt{valve}_2) - 0.62(\\mathtt{valve}_1 - \\mathtt{valve}_5) + 1.86||]</marimo-tex><span class=\"paragraph\">Linear algebra has a powerful way to express systems of equations. Take this system</span>\n<marimo-tex class=\"arithmatex\">||[\\begin{cases}\n2x+3y=8\\\\4x-y=2\n\\end{cases}||]</marimo-tex><span class=\"paragraph\">We can put this in matrix form by writing:</span>\n<marimo-tex class=\"arithmatex\">||[\\begin{bmatrix}2&amp; 3 \\\\ 4&amp;-1\\end{bmatrix} \\begin{bmatrix}x\\\\y\\end{bmatrix} = \\begin{bmatrix}8\\\\2\\end{bmatrix}||]</marimo-tex><span class=\"paragraph\">If you perform the <a href=\"https://en.wikipedia.org/wiki/Matrix_multiplication#General_definition_of_the_matrix_product\" rel=\"noopener noreferrer\" target=\"_blank\">matrix multiplication</a> in this equation the result will be the two equations above. In linear algebra we would write this as <marimo-tex class=\"arithmatex\">||(\\mathbf{Ax}=\\mathbf B||)</marimo-tex>, where</span>\n<marimo-tex class=\"arithmatex\">||[\\mathbf{A} = \\begin{bmatrix}2&amp; 3 \\\\ 4&amp;-1\\end{bmatrix},\\, \\mathbf x = \\begin{bmatrix}x\\\\y\\end{bmatrix}, \\mathbf B=\\begin{bmatrix}8\\\\2\\end{bmatrix}||]</marimo-tex><span class=\"paragraph\">And then we can use the SciPy's <code>linalg</code> package to solve for <marimo-tex class=\"arithmatex\">||(\\mathbf x||)</marimo-tex>:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "dNNg",
+      "code_hash": "53fe9930467cea787055bb052fbd7651",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "yCnT",
+      "code_hash": "3fdc65461f0f2d10077cae60a6e9a0e1",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">We use the process model to perform the <em>innovation</em>, because the equations tell us what the next state will be given the current state. Kalman filters implement this using this linear equation, where <marimo-tex class=\"arithmatex\">||(\\mathbf{\\bar x}||)</marimo-tex> is the <em>prior</em>, or predicted state:</span>\n<marimo-tex class=\"arithmatex\">||[\\mathbf{\\bar x} = \\mathbf{Fx}||]</marimo-tex><span class=\"paragraph\">which we can make explicit as</span>\n<marimo-tex class=\"arithmatex\">||[\\begin{bmatrix} \\bar x \\\\ \\dot{\\bar x}\\end{bmatrix} = \\begin{bmatrix}? &amp; ? \\\\? &amp; ?\\end{bmatrix}\\begin{bmatrix}x\\\\\\dot x\\end{bmatrix}||]</marimo-tex><span class=\"paragraph\">Our job as Kalman filters designers is to specify <marimo-tex class=\"arithmatex\">||(\\mathbf F||)</marimo-tex> such that <marimo-tex class=\"arithmatex\">||(\\bar{\\mathbf x}  = \\mathbf{Fx}||)</marimo-tex> performs the innovation (prediction) for our system. To do this we need one equation for each state variable. In our problem <marimo-tex class=\"arithmatex\">||(\\mathbf x = \\begin{bmatrix}x &amp; \\dot x\\end{bmatrix}^\\mathtt{T}||)</marimo-tex>, so we need one equation to compute the position <marimo-tex class=\"arithmatex\">||(x||)</marimo-tex> and another to compute the velocity <marimo-tex class=\"arithmatex\">||(\\dot x||)</marimo-tex> . We already know the equation for the position innovation:</span>\n<marimo-tex class=\"arithmatex\">||[\\bar x = x + \\dot x \\Delta t||]</marimo-tex><span class=\"paragraph\">What is our equation for velocity? We have no predictive model for how our dog's velocity will change over time. In this case we assume that it remains constant between innovations. Of course this is not exactly true, but so long as the velocity doesn't change too much over each innovation you will see that the filter performs very well. So we say</span>\n<marimo-tex class=\"arithmatex\">||[\\bar{\\dot x} = \\dot x||]</marimo-tex><span class=\"paragraph\">This gives us the process model for our system</span>\n<marimo-tex class=\"arithmatex\">||[\\begin{cases}\n\\begin{aligned}\n\\bar x &amp;= x + \\dot x \\Delta t \\\\\n\\bar{\\dot x} &amp;= \\dot x\n\\end{aligned}\n\\end{cases}||]</marimo-tex><span class=\"paragraph\">This correctly has one equation for each variable in the state, isolated on the left hand side. We need to express this set of equations in the form <marimo-tex class=\"arithmatex\">||(\\bar{\\mathbf x}  = \\mathbf{Fx}||)</marimo-tex>. Rearranging terms makes it easier to see what to do.</span>\n<marimo-tex class=\"arithmatex\">||[\\begin{cases}\n\\begin{aligned}\n\\bar x &amp;= 1x + &amp;\\Delta t\\, \\dot x \\\\\n\\bar{\\dot x} &amp;=0x + &amp;1\\, \\dot x\n\\end{aligned}\n\\end{cases}||]</marimo-tex><span class=\"paragraph\">We can rewrite this in matrix form as</span>\n<marimo-tex class=\"arithmatex\">||[\\begin{aligned}\n\\begin{bmatrix}\\bar x \\\\ \\bar{\\dot x}\\end{bmatrix} &amp;= \\begin{bmatrix}1&amp;\\Delta t  \\\\ 0&amp;1\\end{bmatrix}  \\begin{bmatrix}x \\\\ \\dot x\\end{bmatrix}\\\\\n\\mathbf{\\bar x} &amp;= \\mathbf{Fx}\n\\end{aligned}||]</marimo-tex><span class=\"paragraph\"><marimo-tex class=\"arithmatex\">||(\\mathbf F||)</marimo-tex> is called the <em>state transition function</em> or the <em>state transition matrix</em>. In later chapters it will be a true function, not a  matrix, so calling it a function is a bit more general.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "wlCL",
+      "code_hash": "7fe6d960a8ee252cb3afa1ff452b69fd",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "kqZH",
+      "code_hash": "dac195d6e636db2db7084ead82f917cc",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Let's test this! FilterPy has a <code>predict</code> method that performs the prediction by computing <marimo-tex class=\"arithmatex\">||(\\mathbf{\\bar x} = \\mathbf{Fx}||)</marimo-tex>. Let's call it and see what happens. We've set the position to 10.0 and the velocity to  4.5 meter/sec. We've defined <code>dt = 0.1</code>, which means the time step is 0.1 seconds, so we expect the new position to be 10.45 meters after the innovation. The velocity should be unchanged.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "wAgl",
+      "code_hash": "cb34bf8cc12c895f11e9d899bfafff27",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "rEll",
+      "code_hash": "f7d96c69efe19c83a21485193d241009",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">This worked. If we call <code>predict()</code> several times in a row the value will be updated each time.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "dGlV",
+      "code_hash": "3c957a66668856d0b5d292bccef676e3",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "SdmI",
+      "code_hash": "6fa75ef903522a4ba0258c7626dcd823",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\"><code>predict()</code> computes both the mean and covariance of the innovation. This is the value of <marimo-tex class=\"arithmatex\">||(\\mathbf P||)</marimo-tex> after five innovations (predictions), which we denote <marimo-tex class=\"arithmatex\">||(\\mathbf{\\bar P}||)</marimo-tex> in the Kalman filter equations.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "lgWD",
+      "code_hash": "d937057f8fc55f57aba48fff2743b769",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "yOPj",
+      "code_hash": "1c50de0ebdc4d11390c38a32dec348eb",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Inspecting the diagonals shows us that the position variance got larger. We've performed five prediction steps with no measurements, and our uncertainty grew. The off-diagonal elements became non-zero - the Kalman filter detected a correlation between position and velocity! The variance of the velocity did not change.</span>\n<span class=\"paragraph\">Here I plot the covariance before and after the prediction. The initial value is in solid red, and the prior (prediction) is in dashed black. I've altered the covariance and time step to better illustrate the change.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "fwwy",
+      "code_hash": "89e54e721a2fbf6d3fae6f7792cc3b8c",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "LJZf",
+      "code_hash": "21be237bb1815952cf25c12ea9c45000",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">You can see that the center of the ellipse shifted by a small amount (from 10 to 11.35) because the position changed. The ellipse also elongated, showing the correlation between position and velocity. How does the filter compute new values for <marimo-tex class=\"arithmatex\">||(\\mathbf{\\bar P}||)</marimo-tex>, and what is it based on? Note that I set the process noise <code>Q</code> to zero each time, so it is not due to me adding noise. It's a little to early to discuss this, but recall that in every filter so far the predict step entailed a loss of information. The same is true here. I will give you the details once we have covered a bit more ground.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "urSm",
+      "code_hash": "ee0d0f0e165718fb85e13eb28e89cac6",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"design-process-noise\">Design Process Noise</h3>\n<span class=\"paragraph\">A quick review on <em>process noise</em>. A car is driving along the road with the cruise control on; it should travel at a constant speed. We model this with <marimo-tex class=\"arithmatex\">||(\\bar x_k=\\dot x_k\\Delta t + x_{k-1}||)</marimo-tex>. However, it is affected by a number of unknown factors. The cruise control cannot perfectly maintain a constant velocity. Winds affect the car, as do hills and potholes. Passengers roll down windows, changing the drag profile of the car.</span>\n<span class=\"paragraph\">We can model this system with the differential equation</span>\n<marimo-tex class=\"arithmatex\">||[\\dot{\\mathbf x} = f(\\mathbf x) + w||]</marimo-tex><span class=\"paragraph\">where <marimo-tex class=\"arithmatex\">||(f(\\mathbf x)||)</marimo-tex> models the state transition and <marimo-tex class=\"arithmatex\">||(w||)</marimo-tex> is <em>white process noise</em>.</span>\n<span class=\"paragraph\">We will learn how to go from a set of differential equations to the Kalman filter matrices in the <strong>Kalman Filter Math</strong> chapter. In this chapter we take advantage of the fact that Newton already derived the equations of motion for us. For now you just need to know that we account for the  noise in the system by adding a process noise covariance matrix <marimo-tex class=\"arithmatex\">||(\\mathbf Q||)</marimo-tex> to the covariance <marimo-tex class=\"arithmatex\">||(\\mathbf P||)</marimo-tex>. We do not add anything to <marimo-tex class=\"arithmatex\">||(\\mathbf x||)</marimo-tex> because the noise is <em>white</em> - which means that the mean of the noise will be 0. If the mean is 0, <marimo-tex class=\"arithmatex\">||(\\mathbf x||)</marimo-tex> will not change.</span>\n<span class=\"paragraph\">The univariate Kalman filter used <code>variance = variance + process_noise</code> to compute the variance for the variance of the prediction step. The multivariate Kalman filter does the same, essentially <code>P = P + Q</code>. I say 'essentially' because there are other terms unrelated to noise in the covariance equation that we will see later.</span>\n<span class=\"paragraph\">Deriving the process noise matrix can be quite demanding, and we will put it off until the Kalman math chapter. For now know that <marimo-tex class=\"arithmatex\">||(\\mathbf Q||)</marimo-tex> equals the expected value of the white noise <marimo-tex class=\"arithmatex\">||(w||)</marimo-tex>, computed as <marimo-tex class=\"arithmatex\">||(\\mathbf Q = \\mathbb E[\\mathbf{ww}^\\mathsf T]||)</marimo-tex>. In this chapter we will focus on building an intuitive understanding on how modifying this matrix alters the behavior of the filter.</span>\n<span class=\"paragraph\">FilterPy provides functions which compute <marimo-tex class=\"arithmatex\">||(\\mathbf Q||)</marimo-tex> for the kinematic problems of this chapter. <code>Q_discrete_white_noise</code> takes 3 parameters. <code>dim</code>, which specifies the dimension of the matrix, <code>dt</code>, which is the time step in seconds, and <code>var</code>, the variance in the noise. Briefly, it discretizes the noise over the given time period under assumptions that we will discuss later. This code computes <marimo-tex class=\"arithmatex\">||(\\mathbf Q||)</marimo-tex> for white noise with a variance of 2.35 and a time step of 1 seconds:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "jxvo",
+      "code_hash": "c764f0f3f48758f8985c7dc4fa5c3d32",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "mWxS",
+      "code_hash": "55944f04d7c3c4f2ed38a7b8ebe8569d",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"design-the-control-function\">Design the Control Function</h3>\n<span class=\"paragraph\">The Kalman filter does not just filter data, it allows us to incorporate the control inputs of systems like robots and airplanes. Suppose we are controlling a robot. At each time step we would send steering and velocity signals to the robot based on its current position vs desired position. Kalman filter equations incorporate that knowledge into the filter equations, creating a predicted position based both on current velocity and control inputs to the drive motors. Remember, we <em>never</em> throw information away.</span>\n<span class=\"paragraph\">For a linear system the effect of control inputs can be described as a set of linear equations, which we can express with linear algebra as</span>\n<marimo-tex class=\"arithmatex\">||[\\Delta\\mathbf x = \\mathbf{Bu}||]</marimo-tex><span class=\"paragraph\">Here <marimo-tex class=\"arithmatex\">||(\\mathbf u||)</marimo-tex> is the <em>control input</em>, and <marimo-tex class=\"arithmatex\">||(\\mathbf B||)</marimo-tex> is the <em>control input model</em> or <em>control function</em>. For example, <marimo-tex class=\"arithmatex\">||(\\mathbf u||)</marimo-tex> might be a voltage controlling how fast the wheel's motor turns, and multiplying by <marimo-tex class=\"arithmatex\">||(\\mathbf B||)</marimo-tex> yields <marimo-tex class=\"arithmatex\">||(\\Delta[\\begin{smallmatrix}x\\\\\\dot x\\end{smallmatrix}]||)</marimo-tex>. In other words, it must compute how much <marimo-tex class=\"arithmatex\">||(\\mathbf x||)</marimo-tex> changes due to the control input.</span>\n<span class=\"paragraph\">Therefore the complete Kalman filter equation for the prior mean is</span>\n<marimo-tex class=\"arithmatex\">||[\\mathbf{\\bar x} = \\mathbf{Fx} + \\mathbf{Bu}||]</marimo-tex><span class=\"paragraph\">and this is the equation that is computed when you call <code>KalmanFilter.predict()</code>.</span>\n<span class=\"paragraph\">Your dog may be trained to respond to voice commands. All available evidence suggests that my dog has no control inputs whatsoever, so I set <marimo-tex class=\"arithmatex\">||(\\mathbf B||)</marimo-tex> to zero. In Python we write:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "CcZR",
+      "code_hash": "c6de414dc785794c4066f4ab9ba2594a",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "YWSi",
+      "code_hash": "b0a5cad0d1cc33c58e6112ab6aa19287",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Setting <marimo-tex class=\"arithmatex\">||(\\mathbf B||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(\\mathbf u||)</marimo-tex> to zero is not necessary since <code>predict</code> uses 0 for their default value:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "zlud",
+      "code_hash": "e217637009dbe598d34d0bae228b4545",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "tZnO",
+      "code_hash": "22281108aafd31e8de576ab2f6770e44",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "xvXZ",
+      "code_hash": "2b258415a020ab65fa3283f73488a2ca",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h4 id=\"prediction-summary\">Prediction: Summary</h4>\n<span class=\"paragraph\">Your job as a designer is to specify the matrices for</span>\n<ul>\n<li><marimo-tex class=\"arithmatex\">||(\\mathbf x||)</marimo-tex>, <marimo-tex class=\"arithmatex\">||(\\mathbf P||)</marimo-tex>: the state and covariance</li>\n<li><marimo-tex class=\"arithmatex\">||(\\mathbf F||)</marimo-tex>,  <marimo-tex class=\"arithmatex\">||(\\mathbf Q||)</marimo-tex>: the process model and noise covariance</li>\n<li><marimo-tex class=\"arithmatex\">||(\\mathbf{B,u}||)</marimo-tex>: Optionally, the control input and function</li>\n</ul></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "CLip",
+      "code_hash": "2346f55e51dccf351050a4d3235ec4b7",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"update-step\">Update Step</h2>\n<span class=\"paragraph\">Now we can implement the update step of the filter. You only have to supply two more matrices, and they are easy to understand.</span>\n<h3 id=\"design-the-measurement-function\">Design the Measurement Function</h3>\n<span class=\"paragraph\">The Kalman filter computes the update step in what we call <em>measurement space</em>. We mostly ignored this issue in the univariate chapter because of the complication it adds. We tracked our dog's position using a sensor that reported his position. Computing the <em>residual</em> was easy - subtract the filter's predicted position from the measurement:</span>\n<marimo-tex class=\"arithmatex\">||[ \\mathtt{residual} = \\mathtt{measured\\, \\, position} - \\mathtt{predicted\\, \\, position}||]</marimo-tex><span class=\"paragraph\">We need to compute the residual because we scale it by the Kalman gain to get the new estimate.</span>\n<span class=\"paragraph\">What would happen if we were trying to track temperature using a thermometer that outputs a voltage corresponding to the temperature reading? The equation for the residual computation would be meaningless; you can't subtract a temperature from a voltage.</span>\n<marimo-tex class=\"arithmatex\">||[ \\mathtt{residual} = \\mathtt{voltage} - \\mathtt{temperature}\\;\\;\\;(NONSENSE!)||]</marimo-tex><span class=\"paragraph\">We need to convert the temperature into a voltage so we can perform the subtraction. For the thermometer we might write:</span>\n<div class=\"language-python codehilite\"><pre><span></span><code><span class=\"n\">CELSIUS_TO_VOLTS</span> <span class=\"o\">=</span> <span class=\"mf\">0.21475</span>\n<span class=\"n\">residual</span> <span class=\"o\">=</span> <span class=\"n\">voltage</span> <span class=\"o\">-</span> <span class=\"p\">(</span><span class=\"n\">CELSIUS_TO_VOLTS</span> <span class=\"o\">*</span> <span class=\"n\">predicted_temperature</span><span class=\"p\">)</span>\n</code></pre></div>\n<span class=\"paragraph\">The Kalman filter generalizes this problem by having you supply a <em>measurement function</em> that converts a state into a measurement.</span>\n<span class=\"paragraph\">Why are we working in measurement space? Why not work in state space by converting the voltage into a temperature, allowing the residual to be a difference in temperature?</span>\n<span class=\"paragraph\">We cannot do that because most measurements are not <em>invertible</em>. The state for the tracking problem contains the hidden variable <marimo-tex class=\"arithmatex\">||(\\dot x||)</marimo-tex>. There is no way to convert a measurement of position into a state containing velocity. On the other hand, it is trivial to convert a state containing position and velocity into a equivalent \"measurement\" containing only position. We have to work in measurement space to make the computation of the residual possible.</span>\n<span class=\"paragraph\">Both the measurement <marimo-tex class=\"arithmatex\">||(\\mathbf z||)</marimo-tex> and state <marimo-tex class=\"arithmatex\">||(\\mathbf x||)</marimo-tex> are vectors so we need to use a matrix to perform the conversion. The Kalman filter equation that performs this step is:</span>\n<marimo-tex class=\"arithmatex\">||[\\mathbf y = \\mathbf z - \\mathbf{H \\bar x}||]</marimo-tex><span class=\"paragraph\">where <marimo-tex class=\"arithmatex\">||(\\mathbf y||)</marimo-tex> is the residual, <marimo-tex class=\"arithmatex\">||(\\mathbf{\\bar x}||)</marimo-tex> is the prior, <marimo-tex class=\"arithmatex\">||(\\mathbf z||)</marimo-tex> is the measurement, and <marimo-tex class=\"arithmatex\">||(\\mathbf H||)</marimo-tex> is the measurement function. So we take the prior, convert it to a measurement by multiplying it with <marimo-tex class=\"arithmatex\">||(\\mathbf H||)</marimo-tex>, and subtract that from the measurement. This gives us the difference between our prediction and measurement in measurement space!\n<img src=\"./figs/residual_chart_with_h.png\"></span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "YECM",
+      "code_hash": "3a1c8e23a9e5fdfbebc06837e66b55e1",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">We need to design <marimo-tex class=\"arithmatex\">||(\\mathbf H||)</marimo-tex> so that <marimo-tex class=\"arithmatex\">||(\\mathbf{H\\bar x}||)</marimo-tex> yields a measurement. For this problem we have a sensor that measures position, so <marimo-tex class=\"arithmatex\">||(\\mathbf z||)</marimo-tex> will be a one variable vector:</span>\n<marimo-tex class=\"arithmatex\">||[\\mathbf z = \\begin{bmatrix}z\\end{bmatrix}||]</marimo-tex><span class=\"paragraph\">The residual equation will have the form</span>\n<marimo-tex class=\"arithmatex\">||[\n\\begin{aligned}\n\\textbf{y} &amp;= \\mathbf z - \\mathbf{H\\bar x}  \\\\\n\\begin{bmatrix}y \\end{bmatrix} &amp;= \\begin{bmatrix}z\\end{bmatrix} - \\begin{bmatrix}?&amp;?\\end{bmatrix} \\begin{bmatrix}x \\\\ \\dot x\\end{bmatrix}\n\\end{aligned}\n||]</marimo-tex><span class=\"paragraph\"><marimo-tex class=\"arithmatex\">||(\\mathbf H||)</marimo-tex> has to be a 1x2 matrix for <marimo-tex class=\"arithmatex\">||(\\mathbf{Hx}||)</marimo-tex> to be 1x1. Recall that multiplying matrices <marimo-tex class=\"arithmatex\">||(m\\times n||)</marimo-tex> by <marimo-tex class=\"arithmatex\">||(n\\times p||)</marimo-tex> yields a <marimo-tex class=\"arithmatex\">||(m\\times p||)</marimo-tex> matrix.</span>\n<span class=\"paragraph\">We will want to multiply the position <marimo-tex class=\"arithmatex\">||(x||)</marimo-tex> by 1 to get the corresponding measurement of the position. We do not need to use velocity to find the corresponding measurement so we multiply  <marimo-tex class=\"arithmatex\">||(\\dot x||)</marimo-tex> by 0.</span>\n<marimo-tex class=\"arithmatex\">||[\\begin{aligned}\n\\textbf{y} &amp;= \\mathbf z - \\begin{bmatrix}1&amp;0\\end{bmatrix} \\begin{bmatrix}x \\\\ \\dot x\\end{bmatrix} \\\\\n&amp;= [z] - [x]\n\\end{aligned}||]</marimo-tex><span class=\"paragraph\">And so, for our Kalman filter we set</span>\n<marimo-tex class=\"arithmatex\">||[\\mathbf H=\\begin{bmatrix}1&amp;0\\end{bmatrix}||]</marimo-tex></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "cEAS",
+      "code_hash": "59fb2a17fd72792545cd77579292db75",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "iXej",
+      "code_hash": "a71bceb19f7819651a6a36b75f679ed4",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">We have designed the majority of our Kalman filter. All that is left is to model the noise in the sensors.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "EJmg",
+      "code_hash": "64a72090caf785480054686d9a0dddc5",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h4 id=\"design-the-measurement\">Design the Measurement</h4>\n<span class=\"paragraph\">The measurement is implemented with <marimo-tex class=\"arithmatex\">||(\\mathbf z||)</marimo-tex>, the measurement mean, and <marimo-tex class=\"arithmatex\">||(\\mathbf R||)</marimo-tex>, the measurement covariance.</span>\n<span class=\"paragraph\"><marimo-tex class=\"arithmatex\">||(\\mathbf z||)</marimo-tex> is easy. it contains the measurement(s) as a vector. We have only one measurement, so we have:</span>\n<marimo-tex class=\"arithmatex\">||[\\mathbf z = \\begin{bmatrix}z\\end{bmatrix}||]</marimo-tex><span class=\"paragraph\">If we have two sensors or measurements we'd have:</span>\n<marimo-tex class=\"arithmatex\">||[\\mathbf z = \\begin{bmatrix}z_1 \\\\ z_2\\end{bmatrix}||]</marimo-tex><span class=\"paragraph\">The <em>measurement noise matrix</em> models the noise in our sensors as a covariance matrix. In practice this can be difficult. A complicated system may have many sensors, the correlation between them might not be clear, and usually their noise is not a pure Gaussian. For example, a sensor might be biased to read high if the temperature is high, and so the noise is not distributed equally on both sides of the mean. We will learn to deal with these problems later.</span>\n<span class=\"paragraph\">The Kalman filter equations uses a covariance matrix <marimo-tex class=\"arithmatex\">||(\\mathbf R||)</marimo-tex> for the measurement noise. The matrix will have dimension <marimo-tex class=\"arithmatex\">||(m{\\times}m||)</marimo-tex>, where <marimo-tex class=\"arithmatex\">||(m||)</marimo-tex> is the number of sensors. It is a covariance matrix to account for correlations between the sensors. We have only 1 sensor so <marimo-tex class=\"arithmatex\">||(\\mathbf R||)</marimo-tex> is:</span>\n<marimo-tex class=\"arithmatex\">||[\\mathbf R = \\begin{bmatrix}\\sigma^2_z\\end{bmatrix}||]</marimo-tex><span class=\"paragraph\">If <marimo-tex class=\"arithmatex\">||(\\sigma^2_z||)</marimo-tex> is 5 meters squared we'd have <marimo-tex class=\"arithmatex\">||(\\mathbf R = \\begin{bmatrix}5\\end{bmatrix}||)</marimo-tex>.</span>\n<span class=\"paragraph\">If we had two position sensors, the first with a variance of 5 m<marimo-tex class=\"arithmatex\">||(^2||)</marimo-tex>, the second with a variance of 3 m<marimo-tex class=\"arithmatex\">||(^2||)</marimo-tex>, we would write</span>\n<marimo-tex class=\"arithmatex\">||[\\mathbf R = \\begin{bmatrix}5&amp;0\\\\0&amp;3\\end{bmatrix}||]</marimo-tex><span class=\"paragraph\">We put the variances on the diagonal because this is a <em>covariance</em> matrix, where the variances lie on the diagonal, and the covariances, if any, lie in the off-diagonal elements. Here we assume there is no correlation in the noise between the two sensors, so the covariances are 0.</span>\n<span class=\"paragraph\">For our problem we only have one sensor, so we can implement this as</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "UmEG",
+      "code_hash": "a2b3f59a3460d074bfbec087786cba54",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "vEBW",
+      "code_hash": "628d46e8af2a0ce716766aed2278766b",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">We perform the update by calling <code>update</code>.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "kLmu",
+      "code_hash": "eaa9713a7396a241aa9be89c4167501f",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "IpqN",
+      "code_hash": "c1c541ef3a196b886831cd8f6e678b25",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Keeping track of all of these variables is burdensome, so FilterPy also implements the filter with the class <code>KalmanFilter</code>. I will use the class in the rest of this book, but I wanted you to see the procedural form of these functions since I know some of you are not fans of object oriented programming.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "dxZZ",
+      "code_hash": "76e2255387ad067373f784b86729d6fc",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"implementing-the-kalman-filter\">Implementing the Kalman Filter</h2>\n<span class=\"paragraph\">I've given you all of the code for the filter, but now let's collect it in one place. First we construct a <code>KalmanFilter</code> object. We have to specify the number of variables in the state with the <code>dim_x</code> parameter, and the number of measurements with <code>dim_z</code>. We have two random variables in the state and one measurement, so we write:</span>\n<div class=\"language-python codehilite\"><pre><span></span><code><span class=\"kn\">from</span><span class=\"w\"> </span><span class=\"nn\">filterpy.kalman</span><span class=\"w\"> </span><span class=\"kn\">import</span> <span class=\"n\">KalmanFilter</span>\n<span class=\"n\">dog_filter</span> <span class=\"o\">=</span> <span class=\"n\">KalmanFilter</span><span class=\"p\">(</span><span class=\"n\">dim_x</span><span class=\"o\">=</span><span class=\"mi\">2</span><span class=\"p\">,</span> <span class=\"n\">dim_z</span><span class=\"o\">=</span><span class=\"mi\">1</span><span class=\"p\">)</span>\n</code></pre></div>\n<span class=\"paragraph\">This creates an object with default values for all the Kalman filter matrices:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "dlnW",
+      "code_hash": "8a694d6f47462d172c3508bd58a027d0",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "TTti",
+      "code_hash": "c2e6364ada3a204c29ee225b04234277",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Now we initialize the filter's matrices and vectors with values valid for our problem. I've put this in a function to allow you to specify different initial values for <code>R</code>, <code>P</code>, and <code>Q</code> and put it in a helper function. We will be creating and running many of these filters, and this saves us a lot of headaches.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "RKFZ",
+      "code_hash": "d90af45aff3440d1e94db8ea3bd774b3",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "IaQp",
+      "code_hash": "9692d9d69084814590d30d17fcb33438",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\"><code>KalmanFilter</code> initializes <code>R</code>, <code>P</code>, and <code>Q</code> to the identity matrix, so <code>kf.P *= P</code> is one way to quickly assign all of the diagonal elements to the same scalar value. Now we create the filter:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "IWgg",
+      "code_hash": "0121e884cc20a7fd14024ebfff1836f1",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "fCoF",
+      "code_hash": "80d34c4ddf2e9804ad7b5f669099c9f4",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">You can inspect the current values of all attributes of the filter by entering the variable on the command line.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "LkGn",
+      "code_hash": "d3789a3f91258fcf605452196e19c21c",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "zVRe",
+      "code_hash": "87831ba0c08c2689f08f994b114e9d17",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">All that is left is to write the code to run the Kalman filter.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "woaO",
+      "code_hash": "3875f7d39a1a40349d75c65aa236b46c",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "HnMC",
+      "code_hash": "20d05150302e1bedd270913708fbd414",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">This is the complete code for the filter, and most of it is boilerplate. I've made it flexible enough to support several uses in this chapter, so it is a bit verbose. Let's work through it line by line.</span>\n<span class=\"paragraph\">The first lines checks to see if you provided it with measurement data in <code>zs</code>. If not, it creates the data using the <code>compute_dog_data</code> function we wrote earlier.</span>\n<span class=\"paragraph\">The next lines uses our helper function to create a Kalman filter.</span>\n<div class=\"language-python codehilite\"><pre><span></span><code><span class=\"c1\"># create the Kalman filter</span>\n <span class=\"n\">kf</span> <span class=\"o\">=</span> <span class=\"n\">pos_vel_filter</span><span class=\"p\">(</span><span class=\"n\">x0</span><span class=\"p\">,</span> <span class=\"n\">R</span><span class=\"o\">=</span><span class=\"n\">R</span><span class=\"p\">,</span> <span class=\"n\">P</span><span class=\"o\">=</span><span class=\"n\">P</span><span class=\"p\">,</span> <span class=\"n\">Q</span><span class=\"o\">=</span><span class=\"n\">Q</span><span class=\"p\">,</span> <span class=\"n\">dt</span><span class=\"o\">=</span><span class=\"n\">dt</span><span class=\"p\">)</span>\n</code></pre></div>\n<span class=\"paragraph\">All we need to do is perform the update and predict steps of the Kalman filter for each measurement. The <code>KalmanFilter</code> class provides the two methods <code>update()</code> and <code>predict()</code> for this purpose. <code>update()</code> performs the measurement update step of the Kalman filter, and so it takes a variable containing the sensor measurement.</span>\n<span class=\"paragraph\">Absent the work of storing the results, the loop reads:</span>\n<div class=\"language-python codehilite\"><pre><span></span><code>    <span class=\"k\">for</span> <span class=\"n\">z</span> <span class=\"ow\">in</span> <span class=\"n\">zs</span><span class=\"p\">:</span>\n        <span class=\"n\">kf</span><span class=\"o\">.</span><span class=\"n\">predict</span><span class=\"p\">()</span>\n        <span class=\"n\">kf</span><span class=\"o\">.</span><span class=\"n\">update</span><span class=\"p\">(</span><span class=\"n\">z</span><span class=\"p\">)</span>\n</code></pre></div>\n<span class=\"paragraph\">Each call to <code>predict</code> and <code>update</code> modifies the state variables <code>x</code> and <code>P</code>. Therefore, after the call to <code>predict</code>, <code>kf.x</code> contains the prior. After the call to update, <code>kf.x</code> contains the posterior. The states and covariances are saved in <code>xs</code> and <code>cov</code>.</span>\n<span class=\"paragraph\">It really cannot get much simpler than that. As we tackle more complicated problems this code will remain largely the same; all of the work goes into setting up the <code>KalmanFilter</code> matrices; executing the filter is trivial.</span>\n<span class=\"paragraph\">The rest of the code optionally plots the results and then returns the saved states and covariances.</span>\n<span class=\"paragraph\">Let's run it. We have 50 measurements with a noise variance of 10 and a process variance of 0.01.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "wadT",
+      "code_hash": "78b0bdbbba2ee9ecbee858d0afb81be9",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "VCRE",
+      "code_hash": "5786fb0a9deff245f5a04e41aef6da5b",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">There is still a lot to learn, but we have implemented a Kalman filter using the same theory and equations as published by Rudolf Kalman! Code very much like this runs inside of your GPS, airliners, robots, and so on.</span>\n<span class=\"paragraph\">The first plot plots the output of the Kalman filter against the measurements and the actual position of our dog (labelled <em>Track</em>). After the initial settling in period the filter should track the dog's position very closely. The yellow shaded portion between the black dotted lines shows 1 standard deviations of the filter's variance, which I explain in the next paragraph.</span>\n<span class=\"paragraph\">The next two plots show the variance of <marimo-tex class=\"arithmatex\">||(x||)</marimo-tex> and of <marimo-tex class=\"arithmatex\">||(\\dot x||)</marimo-tex>. I have plotted the diagonals of <marimo-tex class=\"arithmatex\">||(\\mathbf P||)</marimo-tex> over time. Recall that the diagonal of a covariance matrix contains the variance of each state variable. So <marimo-tex class=\"arithmatex\">||(\\mathbf P[0,0]||)</marimo-tex> is the variance of <marimo-tex class=\"arithmatex\">||(x||)</marimo-tex>, and <marimo-tex class=\"arithmatex\">||(\\mathbf P[1,1]||)</marimo-tex> is the variance of <marimo-tex class=\"arithmatex\">||(\\dot x||)</marimo-tex>. You can see that we quickly converge to small variances for both.</span>\n<span class=\"paragraph\">The covariance matrix <marimo-tex class=\"arithmatex\">||(\\mathbf P||)</marimo-tex> tells us the <em>theoretical</em> performance of the filter <em>assuming</em> everything we tell it is true. Recall that the standard deviation is the square root of the variance, and that approximately 68% of a Gaussian distribution occurs within one standard deviation. If at least 68% of the filter output is within one standard deviation  the filter may be performing well. In the top chart I have displayed the one standard deviation as the yellow shaded area between the two dotted lines. To my eye it looks like perhaps the filter is slightly exceeding that bounds, so the filter probably needs some tuning.</span>\n<span class=\"paragraph\">In the univariate chapter we filtered very noisy signals with much simpler code than the code above. However, realize that right now we are working with a very simple example - an object moving through 1-D space and one sensor. That is about the limit of what we can compute with the code in the last chapter. In contrast, we can implement very complicated, multidimensional filters with this code merely by altering our assignments to the filter's variables. Perhaps we want to track 100 dimensions in financial models. Or we have an aircraft with a GPS, INS, TACAN, radar altimeter, baro altimeter, and airspeed indicator, and we want to integrate all those sensors into a model that predicts position, velocity, and acceleration in 3D space. We can do that with the code in this chapter.</span>\n<span class=\"paragraph\">I want you to get a better feel for how the Gaussians change over time, so here is a 3D plot showing the Gaussians every 7th epoch (time step). Every 7th separates them enough so can see each one independently. The first Gaussian at <marimo-tex class=\"arithmatex\">||(t=0||)</marimo-tex> is to the left.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "hgqU",
+      "code_hash": "b0eda1b6aea4c8284128d94170572f60",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "PSUk",
+      "code_hash": "919663b814510a931ff49d422d7b56d8",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"the-saver-class\">The Saver Class</h2>\n<span class=\"paragraph\">In the <code>run()</code> method I wrote boilerplate code to save the results of the filter\n<div class=\"language-python codehilite\"><pre><span></span><code>    <span class=\"n\">xs</span><span class=\"p\">,</span> <span class=\"n\">cov</span> <span class=\"o\">=</span> <span class=\"p\">[],</span> <span class=\"p\">[]</span>\n    <span class=\"k\">for</span> <span class=\"n\">z</span> <span class=\"ow\">in</span> <span class=\"n\">zs</span><span class=\"p\">:</span>\n        <span class=\"n\">kf</span><span class=\"o\">.</span><span class=\"n\">predict</span><span class=\"p\">()</span>\n        <span class=\"n\">kf</span><span class=\"o\">.</span><span class=\"n\">update</span><span class=\"p\">(</span><span class=\"n\">z</span><span class=\"p\">)</span>\n        <span class=\"n\">xs</span><span class=\"o\">.</span><span class=\"n\">append</span><span class=\"p\">(</span><span class=\"n\">kf</span><span class=\"o\">.</span><span class=\"n\">x</span><span class=\"p\">)</span>\n        <span class=\"n\">cov</span><span class=\"o\">.</span><span class=\"n\">append</span><span class=\"p\">(</span><span class=\"n\">kf</span><span class=\"o\">.</span><span class=\"n\">P</span><span class=\"p\">)</span>\n\n    <span class=\"n\">xs</span><span class=\"p\">,</span> <span class=\"n\">cov</span> <span class=\"o\">=</span> <span class=\"n\">np</span><span class=\"o\">.</span><span class=\"n\">array</span><span class=\"p\">(</span><span class=\"n\">xs</span><span class=\"p\">),</span> <span class=\"n\">np</span><span class=\"o\">.</span><span class=\"n\">array</span><span class=\"p\">(</span><span class=\"n\">cov</span><span class=\"p\">)</span>\n</code></pre></div></span>\n<span class=\"paragraph\">There's an easy way to avoid this. <code>filterpy.common</code> provides the <code>Saver</code> class which will save all attributes in the Kalman filter class each time <code>Saver.save()</code> is called. Let's see it in action and then we will talk about it more.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "mfOT",
+      "code_hash": "ed39bd513803258fe1f169d6a662a7d0",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "vGiW",
+      "code_hash": "a94dc352cc39ba403ed0b46f446b1454",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">The <code>Saver</code> object now contains lists of all the attributes of the KalmanFilter object. <code>kf.x</code> is the current state estimate of the filter. Therefore <code>s.x</code> contains the saved state estimate that was computed inside the loop:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "SYQT",
+      "code_hash": "9141f2cdef858bccb36d14c4b35ed493",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "bMrW",
+      "code_hash": "bbe7bef66b5d7f1395a8bfd7a37a319d",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">You can see all the available attributes with the <code>keys</code> attribute:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "PSQn",
+      "code_hash": "f80093e8e8d81ef6c67208fe133edd53",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "OfTS",
+      "code_hash": "aa4417c845e3b17fee3cd6d730869246",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">There are many attributes there that we haven't discussed yet, but many should be familar.</span>\n<span class=\"paragraph\">At this point you could write code to plot any of these variables. However, it is often more useful to use <code>np.array</code> instead of lists. Calling <code>Saver.to_array()</code> will convert the lists into <code>np.array</code>. There is one caveat: if the shape of any of the attributes changes during the run, the <code>to_array</code> will raise an exception since <code>np.array</code> requires all of the elements to be of the same type and size.</span>\n<span class=\"paragraph\">If you look at the keys again you'll see that <code>z</code> is one of the choices. This is promising; apparently the measurement <code>z</code> is saved for us. Let's plot it against the estimate.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "lQxp",
+      "code_hash": "a370eb84a5f026bb20c59a83618d1dda",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "Plbk",
+      "code_hash": "54624b10eceb3307d29f37417196094b",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">While I've demonstrated this with the <code>KalmanFilter</code> class, it will work with all filter classes implemented by <code>FilterPy</code>. It will probably work with any class you write as well, as it inspects the object to retrieve the attribute names. We will use this class throughout the book to keep the code readable and short. Using the <code>Saver</code> will slow down your code because a lot happens behind the scenes, but for learning and exploring the convience cannot be beat.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "rSYo",
+      "code_hash": "873ab6646887379f1975ee5f3e71a640",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"the-kalman-filter-equations\">The Kalman Filter Equations</h2>\n<span class=\"paragraph\">We are now ready to learn how <code>predict()</code> and <code>update()</code> perform their computations.</span>\n<span class=\"paragraph\">A word about notation. I'm a programmer, and I am used to code that reads</span>\n<div class=\"language-python codehilite\"><pre><span></span><code><span class=\"n\">x</span> <span class=\"o\">=</span> <span class=\"n\">x</span> <span class=\"o\">+</span> <span class=\"mi\">1</span>\n</code></pre></div>\n<span class=\"paragraph\">That is not an equation as the sides are not equal, but an <em>assignment</em>. If we wanted to write this in mathematical notation we'd write</span>\n<marimo-tex class=\"arithmatex\">||[x_k = x_{k-1} + 1||]</marimo-tex><span class=\"paragraph\">Kalman filter equations are littered with subscripts and superscripts to keep the equations mathematically consistent. I find this makes them extremely hard to read. In most of the book I opt for subscriptless assignments. As a programmer you should understand that I am showing you assignments which implement an algorithm that is to be executed step by step. I'll elaborate on this once we have a concrete example.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "HuZB",
+      "code_hash": "e460b3d5728616c2d2145cc0922e369e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"prediction-equations\">Prediction Equations</h3>\n<span class=\"paragraph\">The Kalman filter uses these equations to compute the <em>prior</em> - the predicted next state of the system. They compute the prior mean (<marimo-tex class=\"arithmatex\">||(\\bar{\\mathbf x}||)</marimo-tex>)  and covariance (<marimo-tex class=\"arithmatex\">||(\\bar{\\mathbf P}||)</marimo-tex>) of the system.</span>\n<marimo-tex class=\"arithmatex\">||[\\begin{aligned}\n\\mathbf{\\bar x} &amp;= \\mathbf{Fx} + \\mathbf{Bu}\\\\\n\\mathbf{\\bar P} &amp;= \\mathbf{FPF}^\\mathsf T + \\mathbf Q\n\\end{aligned}||]</marimo-tex><span class=\"paragraph\"><marimo-tex class=\"arithmatex\">||(\\underline{\\textbf{Mean}}||)</marimo-tex></span>\n<span class=\"paragraph\"><marimo-tex class=\"arithmatex\">||(\\mathbf{\\bar x} = \\mathbf{Fx} + \\mathbf{Bu}||)</marimo-tex></span>\n<span class=\"paragraph\">As a reminder, the linear equation <marimo-tex class=\"arithmatex\">||(\\mathbf{Ax} = \\mathbf b||)</marimo-tex> represents a system of equations, where <marimo-tex class=\"arithmatex\">||(\\mathbf A||)</marimo-tex> holds the coefficients set of equations, <marimo-tex class=\"arithmatex\">||(\\mathbf x||)</marimo-tex> is the vector of variables. Performing the multiplication <marimo-tex class=\"arithmatex\">||(\\mathbf{Ax}||)</marimo-tex> computes the right hand side values for that set of equations, represented by <marimo-tex class=\"arithmatex\">||(\\mathbf b||)</marimo-tex>.</span>\n<span class=\"paragraph\">If <marimo-tex class=\"arithmatex\">||(\\mathbf F||)</marimo-tex> contains the state transition for a given time step, then the product <marimo-tex class=\"arithmatex\">||(\\mathbf{Fx}||)</marimo-tex> computes the state after that transition. Easy! Likewise, <marimo-tex class=\"arithmatex\">||(\\mathbf B||)</marimo-tex> is the control function, <marimo-tex class=\"arithmatex\">||(\\mathbf u||)</marimo-tex> is the control input, so <marimo-tex class=\"arithmatex\">||(\\mathbf{Bu}||)</marimo-tex> computes the contribution of the controls to the state after the transition. Thus, the prior <marimo-tex class=\"arithmatex\">||(\\mathbf{\\bar x}||)</marimo-tex> is computed as the sum of <marimo-tex class=\"arithmatex\">||(\\mathbf{Fx}||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(\\mathbf{Bu}||)</marimo-tex>.</span>\n<span class=\"paragraph\">The equivalent univariate equation is</span>\n<marimo-tex class=\"arithmatex\">||[\\bar\\mu = \\mu + \\mu_{move}||]</marimo-tex><span class=\"paragraph\">If you perform the matrix multiplication <marimo-tex class=\"arithmatex\">||(\\mathbf{Fx}||)</marimo-tex> it generates this equation for <marimo-tex class=\"arithmatex\">||(x||)</marimo-tex>.</span>\n<span class=\"paragraph\">Let's make this explicit. Recall the value for <marimo-tex class=\"arithmatex\">||(\\mathbf F||)</marimo-tex> from the last chapter:</span>\n<marimo-tex class=\"arithmatex\">||[\\mathbf F = \\begin{bmatrix}1&amp;\\Delta t  \\\\ 0&amp;1\\end{bmatrix}||]</marimo-tex><span class=\"paragraph\">Thus <marimo-tex class=\"arithmatex\">||(\\mathbf{\\bar x} = \\mathbf{Fx}||)</marimo-tex> corresponds to the set of linear equations:</span>\n<marimo-tex class=\"arithmatex\">||[\\begin{cases}\n\\begin{aligned}\n\\bar x &amp;= 1x + &amp;\\Delta t\\, \\dot x \\\\\n\\bar{\\dot x} &amp;=0x + &amp;1\\, \\dot x\n\\end{aligned}\n\\end{cases}||]</marimo-tex></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "WfYj",
+      "code_hash": "f64f28ce374edfda39b135e4d8910e47",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\"><marimo-tex class=\"arithmatex\">||(\\underline{\\textbf{Covariance}}||)</marimo-tex></span>\n<span class=\"paragraph\"><marimo-tex class=\"arithmatex\">||(\\mathbf{\\bar P} = \\mathbf{FPF}^\\mathsf T + \\mathbf Q||)</marimo-tex></span>\n<span class=\"paragraph\">This equation is not as easy to understand so we will spend more time on it.</span>\n<span class=\"paragraph\">In univariate version of this equation is:</span>\n<marimo-tex class=\"arithmatex\">||[\\bar\\sigma^2 = \\sigma^2 + \\sigma^2_{move}||]</marimo-tex><span class=\"paragraph\">We add the variance of the movement to the variance of our estimate to reflect the loss of knowlege. We need to do the same thing here, except it isn't quite that easy with multivariate Gaussians.</span>\n<span class=\"paragraph\">We can't simply write <marimo-tex class=\"arithmatex\">||(\\mathbf{\\bar P} = \\mathbf P + \\mathbf Q||)</marimo-tex>. In a multivariate Gaussians the state variables are <em>correlated</em>. What does this imply? Our knowledge of the velocity is imperfect, but we are adding it to the position with</span>\n<marimo-tex class=\"arithmatex\">||[\\bar x = \\dot x\\Delta t + x||]</marimo-tex><span class=\"paragraph\">Since we do not have perfect knowledge of the value of <marimo-tex class=\"arithmatex\">||(\\dot x||)</marimo-tex> the sum <marimo-tex class=\"arithmatex\">||(\\bar x = \\dot x\\Delta t + x||)</marimo-tex> gains uncertainty. Because the positions and velocities are correlated we cannot simply add the covariance matrices. For example, if <marimo-tex class=\"arithmatex\">||(\\mathbf P||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(\\mathbf Q||)</marimo-tex> are diagonal matrices the sum would also be diagonal. But we know position is correlated to velocity so the off-diagonal elements should be non-zero.</span>\n<span class=\"paragraph\">The correct equation is</span>\n<marimo-tex class=\"arithmatex\">||[\\mathbf{\\bar P} = \\mathbf{FPF}^\\mathsf T + \\mathbf Q||]</marimo-tex><span class=\"paragraph\">Expressions in the form <marimo-tex class=\"arithmatex\">||(\\mathbf{ABA}^\\mathsf T||)</marimo-tex> are common in linear algebra. You can think of it as <em>projecting</em> the middle term by the outer term. We will be using this many times in the rest of the book. I admit this may be a 'magical' equation to you. Let's explore it.</span>\n<span class=\"paragraph\">When we initialize <marimo-tex class=\"arithmatex\">||(\\mathbf P||)</marimo-tex> with</span>\n<marimo-tex class=\"arithmatex\">||[\\mathbf P = \\begin{bmatrix}\\sigma^2_x &amp; 0 \\\\ 0 &amp; \\sigma^2_v\\end{bmatrix}||]</marimo-tex><span class=\"paragraph\">the value for <marimo-tex class=\"arithmatex\">||(\\mathbf{FPF}^\\mathsf T||)</marimo-tex> is:</span>\n<marimo-tex class=\"arithmatex\">||[\\begin{aligned}\n\\mathbf{FPF}^\\mathsf T &amp;= \\begin{bmatrix}1&amp;\\Delta t\\\\0&amp;1\\end{bmatrix}\n\\begin{bmatrix}\\sigma^2_x &amp; 0 \\\\  0 &amp; \\sigma^2_{v}\\end{bmatrix}\n\\begin{bmatrix}1&amp;0\\\\\\Delta t&amp;1\\end{bmatrix} \\\\\n&amp;= \\begin{bmatrix}\\sigma^2_x&amp;\\sigma_v^2\\Delta t\\\\  0 &amp; \\sigma^2_{v}\\end{bmatrix}\n\\begin{bmatrix}1&amp;0\\\\\\Delta t&amp;1\\end{bmatrix} \\\\\n&amp;= \\begin{bmatrix}\\sigma^2_x +  \\sigma_v^2\\Delta t^2  &amp;  \\sigma_v^2\\Delta t \\\\\n\\sigma_v^2\\Delta t &amp; \\sigma^2_{v}\\end{bmatrix}\n\\end{aligned}||]</marimo-tex><span class=\"paragraph\">The initial value for <marimo-tex class=\"arithmatex\">||(\\mathbf P||)</marimo-tex> had no covariance between the position and velocity.  Position is computed as <marimo-tex class=\"arithmatex\">||(\\dot x\\Delta t + x||)</marimo-tex>, so there is a correlation between the position and velocity. The multiplication <marimo-tex class=\"arithmatex\">||(\\mathbf{FPF}^\\mathsf T||)</marimo-tex> computes a covariance of <marimo-tex class=\"arithmatex\">||(\\sigma_v^2 \\Delta t||)</marimo-tex>. The exact value is not important; you just need to recognize that <marimo-tex class=\"arithmatex\">||(\\mathbf{FPF}^\\mathsf T||)</marimo-tex> uses the process model to automatically compute the covariance between the position and velocity!</span>\n<span class=\"paragraph\">Another way to think of this is to reflect on the <marimo-tex class=\"arithmatex\">||(\\mathbf{Fx}||)</marimo-tex> multiplication. That projected <marimo-tex class=\"arithmatex\">||(\\mathbf x||)</marimo-tex> forward in time. <marimo-tex class=\"arithmatex\">||(\\mathbf {FP}||)</marimo-tex> might seem to be the equivalent operation, but <marimo-tex class=\"arithmatex\">||(\\mathbf P||)</marimo-tex> is a matrix while <marimo-tex class=\"arithmatex\">||(\\mathbf x||)</marimo-tex> is a vector. The trailing <marimo-tex class=\"arithmatex\">||(\\mathbf F^\\mathsf T||)</marimo-tex> term ensures that we multiply by both the rows and columns of <marimo-tex class=\"arithmatex\">||(\\mathbf F||)</marimo-tex>. In the second line of the computation of <marimo-tex class=\"arithmatex\">||(\\mathbf{FPF}^\\mathsf T||)</marimo-tex> we have the value for <marimo-tex class=\"arithmatex\">||(\\mathbf{FP}||)</marimo-tex>. You can see that it is an upper triangular matrix because we haven't fully incorporated <marimo-tex class=\"arithmatex\">||(\\mathbf F||)</marimo-tex> into the multiplication.</span>\n<span class=\"paragraph\">If you have some experience with linear algebra and statistics, this may help. The covariance due to the prediction can be modeled as the expected value of the error in the prediction step, given by this equation.</span>\n<marimo-tex class=\"arithmatex\">||[\\begin{aligned}\n\\bar{\\mathbf P} &amp;= \\mathbb E[(\\mathbf{Fx - F\\bar \\mu})(\\mathbf{Fx - F\\bar\\mu})^\\mathsf T]\\\\\n &amp;= \\mathbf F\\, \\mathbb E[\\mathbf{(x- \\bar\\mu)(x- \\bar\\mu)}^\\mathsf T]\\, \\mathbf F^\\mathsf T\n\\end{aligned}||]</marimo-tex><span class=\"paragraph\">Of course, <marimo-tex class=\"arithmatex\">||(\\mathbb E[\\mathbf{(x- \\bar\\mu)(x- \\bar\\mu)}^\\mathsf T]||)</marimo-tex> is just <marimo-tex class=\"arithmatex\">||(\\mathbf P||)</marimo-tex>, giving us</span>\n<marimo-tex class=\"arithmatex\">||[\\bar{\\mathbf P} = \\mathbf{FPF}^\\mathsf T||]</marimo-tex><span class=\"paragraph\">Let's look at its effect. Here I use <marimo-tex class=\"arithmatex\">||(\\mathbf F||)</marimo-tex> from our filter and project the state forward 6/10ths of a second. I do this five times so you can see how <marimo-tex class=\"arithmatex\">||(\\mathbf{\\bar P}||)</marimo-tex> continues to change.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Ynfw",
+      "code_hash": "4a70b518876530401acc8790888b82ec",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "LqFA",
+      "code_hash": "fd322e34a94e455e02a38d935f60d431",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">You can see that with a velocity of 5 the position correctly moves 3 units in each 6/10ths of a second step. At each step the width of the ellipse is larger, indicating that we have lost information about the position due to adding <marimo-tex class=\"arithmatex\">||(\\dot x\\Delta t||)</marimo-tex> to x at each step. The height has not changed - our system model says the velocity does not change, so the belief we have about the velocity cannot change. As time continues you can see that the ellipse becomes more and more tilted. Recall that a tilt indicates <em>correlation</em>. <marimo-tex class=\"arithmatex\">||(\\mathbf F||)</marimo-tex> linearly correlates <marimo-tex class=\"arithmatex\">||(x||)</marimo-tex> with <marimo-tex class=\"arithmatex\">||(\\dot x||)</marimo-tex> with the expression <marimo-tex class=\"arithmatex\">||(\\bar x = \\dot x \\Delta t + x||)</marimo-tex>. The <marimo-tex class=\"arithmatex\">||(\\mathbf{FPF}^\\mathsf T||)</marimo-tex> computation correctly incorporates this correlation into the covariance matrix.</span>\n<span class=\"paragraph\">Here is an animation of this equation that allows you to change the design of <marimo-tex class=\"arithmatex\">||(\\mathbf F||)</marimo-tex> to see how it affects shape of <marimo-tex class=\"arithmatex\">||(\\mathbf P||)</marimo-tex>. The <code>F00</code> slider affects the value of F[0, 0]. <code>covar</code> sets the intial covariance between the position and velocity(<marimo-tex class=\"arithmatex\">||(\\sigma_x\\sigma_{\\dot x}||)</marimo-tex>). I recommend answering these questions at a minimum</span>\n<ul>\n<li>what if <marimo-tex class=\"arithmatex\">||(x||)</marimo-tex> is not correlated to <marimo-tex class=\"arithmatex\">||(\\dot x||)</marimo-tex>? (set F01 to 0, the rest at defaults)</li>\n<li>what if <marimo-tex class=\"arithmatex\">||(x = 2\\dot x\\Delta t + x_0||)</marimo-tex>? (set F01 to 2, the rest at defaults)</li>\n<li>what if <marimo-tex class=\"arithmatex\">||(x = \\dot x\\Delta t + 2x_0||)</marimo-tex>? (set F00 to 2, the rest at defaults)</li>\n<li>what if <marimo-tex class=\"arithmatex\">||(x = \\dot x\\Delta t||)</marimo-tex>?  (set F00 to 0, the rest at defaults)</li>\n</ul></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "uDnK",
+      "code_hash": "f78f5be4981a760a7418ab4babe5ea1f",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "aWBL",
+      "code_hash": "e21e7374ccabdad25a2edce2c1942ad8",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">(If you are reading this in a static form: instructions to run this online are here: <a href=\"https://git.io/vza7b\" rel=\"noopener noreferrer\" target=\"_blank\">https://git.io/vza7b</a>). Or, go to binder using the link below, and open this notebook from there.</span>\n<span class=\"paragraph\"><a href=\"http://mybinder.org/repo/rlabbe/Kalman-and-Bayesian-Filters-in-Python\" rel=\"noopener noreferrer\" target=\"_blank\">http://mybinder.org/repo/rlabbe/Kalman-and-Bayesian-Filters-in-Python</a></span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "MIsd",
+      "code_hash": "b1e462caa119d762ef19f4da1df2787f",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"update-equations\">Update Equations</h3>\n<span class=\"paragraph\">The update equations look messier than the predict equations, but that is mostly due to the Kalman filter computing the update in measurement space. This is because measurements are not <em>invertible</em>. For example, consider a  sensor that gives the range to a target. It is impossible to convert a range into a position - an infinite number of positions in a circle will yield the same range. On the other hand, we can always compute the range (measurement) given a position (state).</span>\n<span class=\"paragraph\">Before I continue, recall that we are trying to do something very simple: choose a new estimate chosen somewhere between a measurement and a prediction, as in this chart:\n<img src=\"./figs/residual_chart.png\"></span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "IrqS",
+      "code_hash": "17f28b6cbc85784d6f7519b96eda013b",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">The equations will be complicated because the state has multiple dimensions, but this operations is what we are doing. Don't let the equations distract you from the simplicity of this idea.</span>\n<span class=\"paragraph\"><marimo-tex class=\"arithmatex\">||(\\underline{\\textbf{System Uncertainty}}||)</marimo-tex></span>\n<span class=\"paragraph\"><marimo-tex class=\"arithmatex\">||(\\textbf{S} = \\mathbf{H\\bar PH}^\\mathsf T + \\mathbf R||)</marimo-tex></span>\n<span class=\"paragraph\">To work in measurement space the Kalman filter has to project the covariance matrix into measurement space. The math for this is <marimo-tex class=\"arithmatex\">||(\\mathbf{H\\bar PH}^\\mathsf T||)</marimo-tex>, where <marimo-tex class=\"arithmatex\">||(\\mathbf{\\bar P}||)</marimo-tex> is the <em>prior</em> covariance and <marimo-tex class=\"arithmatex\">||(\\mathbf H||)</marimo-tex> is the measurement function.</span>\n<span class=\"paragraph\">You should recognize this <marimo-tex class=\"arithmatex\">||(\\mathbf{ABA}^\\mathsf T||)</marimo-tex> form - the prediction step used <marimo-tex class=\"arithmatex\">||(\\mathbf{FPF}^\\mathsf T||)</marimo-tex> to update <marimo-tex class=\"arithmatex\">||(\\mathbf P||)</marimo-tex> with the state transition function. Here, we use the same form to update it with the measurement function. The linear algebra is changing the coordinate system for us.</span>\n<span class=\"paragraph\">Once the covariance is in measurement space we need to account for the sensor noise. This is very easy  - we just add matrices. The result is variously called the <em>system uncertainty</em> or <em>innovation covariance</em>.</span>\n<span class=\"paragraph\">If you ignore the <marimo-tex class=\"arithmatex\">||(\\mathbf H||)</marimo-tex> term this equation is the equivalent to the denominator in the univariate equation for the Kalman gain:</span>\n<marimo-tex class=\"arithmatex\">||[K = \\frac {\\bar\\sigma^2} {\\bar\\sigma^2 + \\sigma_z^2}||]</marimo-tex><span class=\"paragraph\">Compare the equations for the system uncertainty and the covariance</span>\n<marimo-tex class=\"arithmatex\">||[\\begin{aligned}\n\\mathbf{S} &amp;= \\mathbf{H\\bar PH}^\\mathsf T + \\mathbf R\\\\\n\\mathbf{\\bar P} &amp;= \\mathbf{FPF}^\\mathsf T + \\mathbf Q\n\\end{aligned}||]</marimo-tex><span class=\"paragraph\">In each equation <marimo-tex class=\"arithmatex\">||(\\mathbf P||)</marimo-tex> is put into a different space with either the function <marimo-tex class=\"arithmatex\">||(\\mathbf H||)</marimo-tex> or <marimo-tex class=\"arithmatex\">||(\\mathbf F||)</marimo-tex>. Then we add the noise matrix associated with that space.</span>\n<span class=\"paragraph\"><marimo-tex class=\"arithmatex\">||(\\underline{\\textbf{Kalman Gain}}||)</marimo-tex></span>\n<span class=\"paragraph\"><marimo-tex class=\"arithmatex\">||(\\mathbf K = \\mathbf{\\bar PH}^\\mathsf T \\mathbf{S}^{-1}||)</marimo-tex></span>\n<span class=\"paragraph\">Look back at the residual diagram. Once we have a prediction and a measurement we need to select an estimate somewhere between the two. If we have more certainty about the measurement the estimate will be closer to it. If instead we have more certainty about the prediction then the estimate will be closer to it.</span>\n<span class=\"paragraph\">In the univariate chapter we scaled the mean using this equation</span>\n<marimo-tex class=\"arithmatex\">||[\n\\mu =\\frac{\\bar\\sigma^2 \\mu_z + \\sigma_\\mathtt{z}^2 \\bar\\mu} {\\bar\\sigma^2 + \\sigma_\\mathtt{z}^2}||]</marimo-tex><span class=\"paragraph\">which we simplified to</span>\n<marimo-tex class=\"arithmatex\">||[\\mu = (1-K)\\bar\\mu + K\\mu_\\mathtt{z}||]</marimo-tex><span class=\"paragraph\">which gave us</span>\n<marimo-tex class=\"arithmatex\">||[K = \\frac {\\bar\\sigma^2} {\\bar\\sigma^2 + \\sigma_z^2}||]</marimo-tex><span class=\"paragraph\"><marimo-tex class=\"arithmatex\">||(K||)</marimo-tex> is the <em>Kalman gain</em>, and it is a real number between 0 and 1. Ensure you understand how it selects a mean somewhere between the prediction and measurement. The Kalman gain is a <em>percentage</em> or <em>ratio</em> - if K is .9 it takes 90% of the measurement and 10% of the prediction.</span>\n<span class=\"paragraph\">For the multivariate Kalman filter <marimo-tex class=\"arithmatex\">||(\\mathbf K||)</marimo-tex> is a vector, not a scalar. Here is the equation again: <marimo-tex class=\"arithmatex\">||(\\mathbf K = \\mathbf{\\bar PH}^\\mathsf T \\mathbf{S}^{-1}||)</marimo-tex>. Is this a <em>ratio</em>? We can think of the inverse of a matrix as linear algebra's way of finding the reciprocal. Division is not defined for matrices, but it is useful to think of it in this way. So we can read the equation for <marimo-tex class=\"arithmatex\">||(\\textbf{K}||)</marimo-tex> as meaning</span>\n<marimo-tex class=\"arithmatex\">||[\\begin{aligned} \\mathbf K &amp;\\approx \\frac{\\mathbf{\\bar P}\\mathbf H^\\mathsf T}{\\mathbf{S}} \\\\\n\\mathbf K &amp;\\approx \\frac{\\mathsf{uncertainty}_\\mathsf{prediction}}{\\mathsf{uncertainty}_\\mathsf{measurement}}\\mathbf H^\\mathsf T\n\\end{aligned}||]</marimo-tex><span class=\"paragraph\">The Kalman gain equation computes a ratio based on how much we trust the prediction vs the measurement. We did the same thing in every prior chapter. The equation is complicated because we are doing this in multiple dimensions via matrices, but the concept is simple. The <marimo-tex class=\"arithmatex\">||(\\mathbf H^\\mathsf T||)</marimo-tex> term is less clear, I'll explain it soon. If you ignore that term the equation for the Kalman gain is the same as the univariate case: divide the uncertainty of the prior with the of the sum of the uncertainty of the prior and measurement.</span>\n<span class=\"paragraph\"><marimo-tex class=\"arithmatex\">||(\\underline{\\textbf{Residual}}||)</marimo-tex></span>\n<span class=\"paragraph\"><marimo-tex class=\"arithmatex\">||(\\mathbf y = \\mathbf z - \\mathbf{H\\bar{x}}||)</marimo-tex></span>\n<span class=\"paragraph\">This is an easy one as we've covered this equation while designing the measurement function <marimo-tex class=\"arithmatex\">||(\\mathbf H||)</marimo-tex>. Recall that the measurement function converts a state into a measurement. So <marimo-tex class=\"arithmatex\">||(\\mathbf{Hx}||)</marimo-tex> converts <marimo-tex class=\"arithmatex\">||(\\mathbf x||)</marimo-tex> into an equivalent measurement. Once that is done, we can subtract it from the measurement <marimo-tex class=\"arithmatex\">||(\\mathbf z||)</marimo-tex> to get the residual - the difference between the measurement and prediction.</span>\n<span class=\"paragraph\">The univariate equation is</span>\n<marimo-tex class=\"arithmatex\">||[y = z - \\bar x||]</marimo-tex><span class=\"paragraph\">and clearly computes the same thing, but only in one dimension.</span>\n<span class=\"paragraph\"><marimo-tex class=\"arithmatex\">||(\\underline{\\textbf{State Update}}||)</marimo-tex></span>\n<span class=\"paragraph\"><marimo-tex class=\"arithmatex\">||(\\mathbf x = \\mathbf{\\bar x} + \\mathbf{Ky}||)</marimo-tex></span>\n<span class=\"paragraph\">We select our new state to be along the residual, scaled by the Kalman gain. The scaling is performed by <marimo-tex class=\"arithmatex\">||(\\mathbf{Ky}||)</marimo-tex>, which both scales the residual and converts it back into state space with the <marimo-tex class=\"arithmatex\">||(\\mathbf H^\\mathsf T||)</marimo-tex> term which is in <marimo-tex class=\"arithmatex\">||(\\mathbf K||)</marimo-tex>. This is added to the prior, yielding the equation: <marimo-tex class=\"arithmatex\">||(\\mathbf x =\\mathbf{\\bar x} + \\mathbf{Ky}||)</marimo-tex>. Let me write out <marimo-tex class=\"arithmatex\">||(\\mathbf K||)</marimo-tex> so we can see the entire computation:</span>\n<marimo-tex class=\"arithmatex\">||[\\begin{aligned}\n\\mathbf x &amp;= \\mathbf{\\bar x} + \\mathbf{Ky} \\\\\n&amp;= \\mathbf{\\bar x} + \\mathbf{\\bar PH}^\\mathsf T \\mathbf{S}^{-1}\\mathbf y \\\\\n&amp;\\approx \\mathbf{\\bar x} + \\frac{\\mathsf{uncertainty}_\\mathsf{prediction}}{\\mathsf{uncertainty}_\\mathsf{measurement}}\\mathbf H^\\mathsf T \\mathbf y\n\\end{aligned}||]</marimo-tex><span class=\"paragraph\">Perhaps a better way to <em>see</em> the ratio is to rewrite the estimate equation:</span>\n<marimo-tex class=\"arithmatex\">||[\\begin{aligned}\n\\mathbf x &amp;= \\mathbf{\\bar x} + \\mathbf{Ky} \\\\\n&amp;= \\mathbf{\\bar x} +\\mathbf K(\\mathbf z - \\mathbf{H\\bar x}) \\\\\n&amp;= (\\mathbf I - \\mathbf{KH})\\mathbf{\\bar x} + \\mathbf{Kz}\n\\end{aligned}||]</marimo-tex><span class=\"paragraph\">The similarity between this and the univariate form should be obvious:\n$<marimo-tex class=\"arithmatex\">||(\\mu = (1-K)\\bar\\mu + K\\mu_\\mathtt{z}||)</marimo-tex>$</span>\n<span class=\"paragraph\"><marimo-tex class=\"arithmatex\">||(\\underline{\\textbf{Covariance Update}}||)</marimo-tex></span>\n<span class=\"paragraph\"><marimo-tex class=\"arithmatex\">||(\\mathbf P = (\\mathbf{I}-\\mathbf{KH})\\mathbf{\\bar P}||)</marimo-tex></span>\n<span class=\"paragraph\"><marimo-tex class=\"arithmatex\">||(\\mathbf{I}||)</marimo-tex> is the identity matrix, and is the way we represent <marimo-tex class=\"arithmatex\">||(1||)</marimo-tex> in multiple dimensions. <marimo-tex class=\"arithmatex\">||(\\mathbf H||)</marimo-tex> is our measurement function, and is a constant.  We can think of the equation as <marimo-tex class=\"arithmatex\">||(\\mathbf P = (1-c\\mathbf K)\\mathbf P||)</marimo-tex>. <marimo-tex class=\"arithmatex\">||(\\mathbf K||)</marimo-tex> is our ratio of how much prediction vs measurement we use. If <marimo-tex class=\"arithmatex\">||(\\mathbf K||)</marimo-tex> is large then <marimo-tex class=\"arithmatex\">||((1-\\mathbf{cK})||)</marimo-tex> is small, and <marimo-tex class=\"arithmatex\">||(\\mathbf P||)</marimo-tex> will be made smaller than it was. If <marimo-tex class=\"arithmatex\">||(\\mathbf K||)</marimo-tex> is small, then <marimo-tex class=\"arithmatex\">||((1-\\mathbf{cK})||)</marimo-tex> is large, and <marimo-tex class=\"arithmatex\">||(\\mathbf P||)</marimo-tex> will be relatively larger. This means that we adjust the size of our uncertainty by some factor of the Kalman gain.</span>\n<span class=\"paragraph\">This equation can be numerically unstable and I don't use it in FilterPy. The subtraction can destroy symmetry and lead to floating point errors over time. Later I'll share more complicated but numerically stable forms of this equation.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Lpqv",
+      "code_hash": "494e450cd6cf0dfb73f6cfe16432c4ce",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"an-example-not-using-filterpy\">An Example not using FilterPy</h3>\n<span class=\"paragraph\">FilterPy hides the details of the implementation from us. Normally you will appreciate this, but let's implement the last filter without FilterPy. To do so we need to define our matrices as variables, and then implement the Kalman filter equations explicitly.</span>\n<span class=\"paragraph\">Here we initialize our matrices:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "upgv",
+      "code_hash": "fca932459d10fd96f56e25ee96b9dc0c",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "WJUG",
+      "code_hash": "ad04663b0d5841cd1163b62f5ac892e7",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "pCao",
+      "code_hash": "ec10211d6a8f15ff0fadfeefdb16069e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">The results are identical to the FilterPy version. Which you prefer is up to you. I prefer not polluting my namespace with variables such as <code>x</code>, <code>P</code>, and so on; <code>dog_filter.x</code> is, to me, more readable.</span>\n<span class=\"paragraph\">More importantly, this example requires you to remember and program the equations for the Kalman filter. Sooner or later you will make a mistake. FilterPy's version ensures that your code will be correct. On the other hand, if you make a mistake in your definitions, such as making <marimo-tex class=\"arithmatex\">||(\\mathbf H||)</marimo-tex> a column vector instead of a row vector, FilterPy's error message will be harder to debug than this explicit code.</span>\n<span class=\"paragraph\">FilterPy's KalmanFilter class provides additional functionality such as smoothing, batch processing, faded memory filtering, computation of the maximum likelihood function, and more. You get all of this functionality without having to explicitly program it.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "wEIy",
+      "code_hash": "f56b6feec1b23271bca6c3af5497d046",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"summary\">Summary</h3>\n<span class=\"paragraph\">We have learned the Kalman filter equations. Here they are all together for your review. There was a lot to learn, but I hope that as you went through each you recognized it's kinship with the equations in the univariate filter. In the <em>Kalman Math</em> chapter I will show you that if we set the dimension of <marimo-tex class=\"arithmatex\">||(\\mathbf x||)</marimo-tex> to one that these equations revert back to the equations for the univariate filter. This is not \"like\" the univariate filter - it is a multidimensional implementation of it.</span>\n<marimo-tex class=\"arithmatex\">||[\n\\begin{aligned}\n\\text{Predict Step}\\\\\n\\mathbf{\\bar x} &amp;= \\mathbf{F x} + \\mathbf{B u} \\\\\n\\mathbf{\\bar P} &amp;= \\mathbf{FP{F}}^\\mathsf T + \\mathbf Q \\\\\n\\\\\n\\text{Update Step}\\\\\n\\textbf{S} &amp;= \\mathbf{H\\bar PH}^\\mathsf T + \\mathbf R \\\\\n\\mathbf K &amp;= \\mathbf{\\bar PH}^\\mathsf T \\mathbf{S}^{-1} \\\\\n\\textbf{y} &amp;= \\mathbf z - \\mathbf{H \\bar x} \\\\\n\\mathbf x &amp;=\\mathbf{\\bar x} +\\mathbf{K\\textbf{y}} \\\\\n\\mathbf P &amp;= (\\mathbf{I}-\\mathbf{KH})\\mathbf{\\bar P}\n\\end{aligned}\n||]</marimo-tex><span class=\"paragraph\">I want to share a form of the equations that you will see in the literature. There are many different notation systems used, but this gives you an idea of what to expect.</span>\n<span class=\"paragraph\">$$\n\\begin{aligned}\n\\hat{\\mathbf x}<em>{k\\mid k-1} &amp;= \\mathbf F_k\\hat{\\mathbf x}</em>{k-1\\mid k-1} + \\mathbf B_k \\mathbf u_k  \\\n\\mathbf P_{k\\mid k-1} &amp;=  \\mathbf F_k \\mathbf P_{k-1\\mid k-1} \\mathbf F_k^\\mathsf T + \\mathbf Q_k \\\n\\tilde{\\mathbf y}<em>k &amp;= \\mathbf z_k - \\mathbf H_k\\hat{\\mathbf x}</em>{k\\mid k-1}\\\n\\mathbf{S}<em>k &amp;= \\mathbf H_k \\mathbf P</em>{k\\mid k-1} \\mathbf H_k^\\mathsf T + \\mathbf R_k \\\n\\mathbf K_k &amp;= \\mathbf P_{k\\mid k-1}\\mathbf H_k^\\mathsf T \\mathbf{S}<em>k^{-1}\\\n\\hat{\\mathbf x}</em>{k\\mid k} &amp;= \\hat{\\mathbf x}<em>{k\\mid k-1} + \\mathbf K_k\\tilde{\\mathbf y}_k\\\n\\mathbf P</em>{k|k} &amp;= (I - \\mathbf K_k \\mathbf H_k) \\mathbf P_{k|k-1}\n\\\\end{aligned}\n$$</span>\n<span class=\"paragraph\">This notation uses the Bayesian <marimo-tex class=\"arithmatex\">||(a\\mid b||)</marimo-tex> notation, which means <marimo-tex class=\"arithmatex\">||(a||)</marimo-tex> given the evidence of <marimo-tex class=\"arithmatex\">||(b||)</marimo-tex>. The hat means estimate. Thus <marimo-tex class=\"arithmatex\">||(\\hat{\\mathbf x}_{k\\mid k}||)</marimo-tex> means the estimate of the state <marimo-tex class=\"arithmatex\">||(\\mathbf x||)</marimo-tex> at step <marimo-tex class=\"arithmatex\">||(k||)</marimo-tex> (the first <marimo-tex class=\"arithmatex\">||(k||)</marimo-tex>) given the evidence from step <marimo-tex class=\"arithmatex\">||(k||)</marimo-tex> (the second <marimo-tex class=\"arithmatex\">||(k||)</marimo-tex>). The posterior, in other words. <marimo-tex class=\"arithmatex\">||(\\hat{\\mathbf x}_{k\\mid k-1}||)</marimo-tex> means the estimate for the state <marimo-tex class=\"arithmatex\">||(\\mathbf x||)</marimo-tex> at step <marimo-tex class=\"arithmatex\">||(k||)</marimo-tex> given the estimate from step <marimo-tex class=\"arithmatex\">||(k - 1||)</marimo-tex>. The prior, in other words.</span>\n<span class=\"paragraph\">This notation, copied from <a href=\"https://en.wikipedia.org/wiki/Kalman_filter#Details\" rel=\"noopener noreferrer\" target=\"_blank\">Wikipedia</a> <a href=\"#[wiki_article]\">[1]</a>, allows a mathematician to express himself exactly. In formal publications presenting new results this precision is necessary. As a programmer I find it fairly unreadable. I am used to thinking about variables changing state as a program runs, and do not use a different variable name for each new computation. There is no agreed upon format in the literature, so each author makes different choices. I find it challenging to switch quickly between books and papers, and so have adopted my admittedly less precise notation. Mathematicians may write scathing emails to me, but I hope programmers and students will rejoice at my simplified notation.</span>\n<span class=\"paragraph\">The <strong>Symbology</strong> Appendix lists the notation used by various authors. This brings up another difficulty. Different authors use different variable names. <marimo-tex class=\"arithmatex\">||(\\mathbf x||)</marimo-tex> is fairly universal, but after that it is anybody's guess. For example, it is common to use <marimo-tex class=\"arithmatex\">||(\\mathbf{A}||)</marimo-tex> for what I call <marimo-tex class=\"arithmatex\">||(\\mathbf F||)</marimo-tex>. You must read carefully, and hope that the author defines their variables (they often do not).</span>\n<span class=\"paragraph\">If you are a programmer trying to understand a paper's equations, I suggest starting by removing all of the superscripts, subscripts, and diacriticals, replacing them with a single letter. If you work with equations like this every day this is superfluous advice, but when I read I am usually trying to understand the flow of computation. To me it is far more understandable to remember that <marimo-tex class=\"arithmatex\">||(P||)</marimo-tex> in this step represents the updated value of <marimo-tex class=\"arithmatex\">||(P||)</marimo-tex> computed in the last step, as opposed to trying to remember what <marimo-tex class=\"arithmatex\">||(P_{k-1}(+)||)</marimo-tex> denotes, and what its relation to <marimo-tex class=\"arithmatex\">||(P_k(-)||)</marimo-tex> is, if any, and how any of that relates to the completely different notation used in the paper I read 5 minutes ago.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "wlyU",
+      "code_hash": "57c319c21489a6fcf9332dce88334d29",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"exercise-show-effect-of-hidden-variables\">Exercise: Show Effect of Hidden Variables</h2>\n<span class=\"paragraph\">In our filter velocity is a hidden variable. How would a filter perform if we did not use velocity in the state?</span>\n<span class=\"paragraph\">Write a Kalman filter that uses the state <marimo-tex class=\"arithmatex\">||(\\mathbf x=\\begin{bmatrix}x\\end{bmatrix}||)</marimo-tex> and compare it against a filter that uses <marimo-tex class=\"arithmatex\">||(\\mathbf x=\\begin{bmatrix}x &amp; \\dot x\\end{bmatrix}^\\mathsf T||)</marimo-tex>.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "PieA",
+      "code_hash": "c8eefd80f5ccaa989dde69fb402cfd83",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "GrQN",
+      "code_hash": "9be8cf5f965556ddf5e0564cbcbae31d",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"solution\">Solution</h3>\n<span class=\"paragraph\">We've already implemented a Kalman filter for position and velocity, so I will provide the code without much comment, and then plot the result.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Ilkb",
+      "code_hash": "c97b63e49f6045f32b0dea10865e0623",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "mySd",
+      "code_hash": "3f4511cfef1cbbb95c7757781f25f26e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"discussion\">Discussion</h3>\n<span class=\"paragraph\">The filter that incorporates velocity into the state produces much better estimates than the filter that only tracks position. The univariate filter has no way to estimate the velocity or change in position, so it lags the tracked object.</span>\n<span class=\"paragraph\">In the univarate Kalman filter chapter we had a control input <code>u</code> to the predict equation:</span>\n<div class=\"language-python codehilite\"><pre><span></span><code>    <span class=\"k\">def</span><span class=\"w\"> </span><span class=\"nf\">predict</span><span class=\"p\">(</span><span class=\"bp\">self</span><span class=\"p\">,</span> <span class=\"n\">u</span><span class=\"o\">=</span><span class=\"mf\">0.0</span><span class=\"p\">):</span>\n        <span class=\"bp\">self</span><span class=\"o\">.</span><span class=\"n\">x</span> <span class=\"o\">+=</span> <span class=\"n\">u</span>\n        <span class=\"bp\">self</span><span class=\"o\">.</span><span class=\"n\">P</span> <span class=\"o\">+=</span> <span class=\"bp\">self</span><span class=\"o\">.</span><span class=\"n\">Q</span>\n</code></pre></div>\n<span class=\"paragraph\">Let's try specifying the control input:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vGkK",
+      "code_hash": "e2e5f19663871a2159b71f8d1b3a528a",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "zmIa",
+      "code_hash": "f6f306004b8624729d9395c3d356b813",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Here the performance of the two filters are similar, and perhaps the univariate filter is tracking more closely. But let's see what happens when the actual velocity <code>vel</code> is different from the control input <code>u</code>:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "NOfw",
+      "code_hash": "6a5b62cd3dadd1ec45fd47cc4dad90ce",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "jXAc",
+      "code_hash": "16106bef3f1beb88e25051708af46cd7",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">If we are tracking a robot which we are also controlling the univariate filter can do a very good job because the control input allows the filter to make an accurate prediction. But if we are tracking passively the control input is not much help unless we can make an accurate <em>apriori</em> guess as to the velocity. This is rarely possible.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "mSxP",
+      "code_hash": "ab05ec01b75ec33da270adff5ca305d7",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"how-velocity-is-calculated\">How Velocity is Calculated</h2>\n<span class=\"paragraph\">I haven't explained how the filter computes the velocity, or any hidden variable. If we plug in the values we calculated for each of the filter's matrices we can see what happens.</span>\n<span class=\"paragraph\">First we need to compute the system uncertainty.</span>\n<marimo-tex class=\"arithmatex\">||[\\begin{aligned}\n\\textbf{S} &amp;= \\mathbf{H\\bar PH}^\\mathsf T + \\mathbf R \\\\\n&amp;= \\begin{bmatrix} 1 &amp; 0\\end{bmatrix}\n\\begin{bmatrix}\\sigma^2_x &amp; \\sigma_{xv} \\\\ \\sigma_{xv} &amp; \\sigma^2_v\\end{bmatrix}\n\\begin{bmatrix} 1 \\\\ 0\\end{bmatrix} + \\begin{bmatrix}\\sigma_z^2\\end{bmatrix}\\\\\n&amp;= \\begin{bmatrix}\\sigma_x^2 &amp; \\sigma_{xv}\\end{bmatrix}\\begin{bmatrix} 1 \\\\ 0\\end{bmatrix}+ \\begin{bmatrix}\\sigma_z^2\\end{bmatrix} \\\\\n&amp;= \\begin{bmatrix}\\sigma_x^2 +\\sigma_z^2\\end{bmatrix}\n\\end{aligned}||]</marimo-tex><span class=\"paragraph\">Now that we have <marimo-tex class=\"arithmatex\">||(\\mathbf S||)</marimo-tex> we can find the value for the Kalman gain:\n$$\\begin{aligned}\n\\mathbf K &amp;= \\mathbf{\\bar PH}^\\mathsf T \\mathbf{S}^{-1} \\\n&amp;= \\begin{bmatrix}\\sigma^2_x &amp; \\sigma_{xv} \\ \\sigma_{xv} &amp; \\sigma^2_v\\end{bmatrix}\n\\begin{bmatrix} 1 \\ 0\\end{bmatrix}\n\\begin{bmatrix}\\frac{1}{\\sigma_x^2 +\\sigma_z^2}\\end{bmatrix} \\\n&amp;= \\begin{bmatrix}\\sigma^2_x  \\ \\sigma_{xv}\\end{bmatrix}\n\\begin{bmatrix}\\frac{1}{\\sigma_x^2 +\\sigma_z^2}\\end{bmatrix} \\\n&amp;= \\begin{bmatrix}\\sigma<sup>2_x/(\\sigma_x</sup>2 +\\sigma_z^2)  \\ \\sigma_{xv}/(\\sigma_x^2 +\\sigma_z^2)\\end{bmatrix}\n\\end{aligned}</span>\n<span class=\"paragraph\">$$</span>\n<span class=\"paragraph\">In other words, the Kalman gain for <marimo-tex class=\"arithmatex\">||(x||)</marimo-tex> is</span>\n<marimo-tex class=\"arithmatex\">||[K_x = \\frac{VAR(x)}{VAR(x)+VAR(z)}||]</marimo-tex><span class=\"paragraph\">This should be very familiar to you from the univariate case.</span>\n<span class=\"paragraph\">The Kalman gain for the velocity <marimo-tex class=\"arithmatex\">||(\\dot x||)</marimo-tex> is\n$<marimo-tex class=\"arithmatex\">||(K_{\\dot x} = \\frac{COV(x, \\dot x)}{VAR(x)+VAR(z)}||)</marimo-tex>$</span>\n<span class=\"paragraph\">What is the effect of this? Recall that we compute the state as</span>\n<marimo-tex class=\"arithmatex\">||[\\begin{aligned}\\mathbf x\n&amp;=\\mathbf{\\bar x}+\\mathbf K(z-\\mathbf{Hx)} \\\\\n&amp;= \\mathbf{\\bar x}+\\mathbf Ky\\end{aligned}||]</marimo-tex><span class=\"paragraph\">Here the residual <marimo-tex class=\"arithmatex\">||(y||)</marimo-tex> is a scalar. Therefore it is multiplied into each element of <marimo-tex class=\"arithmatex\">||(\\mathbf K||)</marimo-tex>. Therefore we have</span>\n<marimo-tex class=\"arithmatex\">||[\\begin{bmatrix}x \\\\ \\dot x\\end{bmatrix}=\\begin{bmatrix}\\bar x \\\\ \\bar{\\dot x}\\end{bmatrix} + \\begin{bmatrix}K_x \\\\ K_{\\dot x}\\end{bmatrix}y||]</marimo-tex><span class=\"paragraph\">Which gives this system of equations:</span>\n<marimo-tex class=\"arithmatex\">||[\\begin{aligned}x&amp; = \\bar x + yK_x\\\\\n\\dot x &amp;= \\bar{\\dot x} + yK_{\\dot x}\\end{aligned}||]</marimo-tex><span class=\"paragraph\">The prediction <marimo-tex class=\"arithmatex\">||(\\bar x||)</marimo-tex> was computed as <marimo-tex class=\"arithmatex\">||(x + \\bar x \\Delta t||)</marimo-tex>. If the prediction was perfect then the residual will be <marimo-tex class=\"arithmatex\">||(y=0||)</marimo-tex> (ignoring noise in the measurement) and the velocity estimate will be unchanged. On the other hand, if the velocity estimate was very bad then the prediction will be very bad, and the residual will be large: <marimo-tex class=\"arithmatex\">||(y &gt;&gt; 0||)</marimo-tex>. In this case we update the velocity estimate with <marimo-tex class=\"arithmatex\">||(yK_{\\dot x}||)</marimo-tex>. <marimo-tex class=\"arithmatex\">||(K_{\\dot x}||)</marimo-tex> is proportional to <marimo-tex class=\"arithmatex\">||(COV(x,\\dot x)||)</marimo-tex>. Therefore the velocity is updated by the error in the position times the value proportional to the covariance between the position and velocity. The higher the correlation the larger the correction.</span>\n<span class=\"paragraph\">To bring this full circle, <marimo-tex class=\"arithmatex\">||(COV(x,\\dot x)||)</marimo-tex> are the off-diagonal elements of <marimo-tex class=\"arithmatex\">||(\\mathbf P||)</marimo-tex>. Recall that those values were computed with <marimo-tex class=\"arithmatex\">||(\\mathbf{FPF}^\\mathsf T||)</marimo-tex>. So the covariance of position and velocity is computed during the predict step. The Kalman gain for the velocity is proportional to this covariance, and we adjust the velocity estimate based on how inaccurate it was during the last epoch times a value proportional to this covariance.</span>\n<span class=\"paragraph\">In summary, these linear algebra equations may be unfamiliar to you, but computation is actually very simple. It is essentially the same computation that we performed in the g-h filter. Our constants are different in this chapter because we take the noise in the process model and sensors into account, but the math is the same.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "IZEX",
+      "code_hash": "b934bf74a9402b63c49d7492dcc7ad21",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"adjusting-the-filter\">Adjusting the Filter</h2>\n<span class=\"paragraph\">Let's start varying our parameters to see the effect of various changes. This is a very normal thing to be doing with Kalman filters. It is difficult, and often impossible to exactly model our sensors. An imperfect model means imperfect output from our filter. Engineers spend a lot of time tuning Kalman filters so that they perform well with real world sensors. We will spend time now to learn the effect of these changes. As you learn the effect of each change you will develop an intuition for how to design a Kalman filter. Designing a Kalman filter is as much art as science. We are modeling a physical system using math, and models are imperfect.</span>\n<span class=\"paragraph\">Let's look at the effects of the measurement noise <marimo-tex class=\"arithmatex\">||(\\mathbf R||)</marimo-tex> and process noise <marimo-tex class=\"arithmatex\">||(\\mathbf Q||)</marimo-tex>. We will want to see the effect of different settings for <marimo-tex class=\"arithmatex\">||(\\mathbf R||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(\\mathbf Q||)</marimo-tex>, so I have given the measurements a variance of 225 meters squared. That is very large, but it magnifies the effects of various design choices on the graphs, making it easier to recognize what is happening. Our first experiment holds <marimo-tex class=\"arithmatex\">||(\\mathbf R||)</marimo-tex> constant while varying <marimo-tex class=\"arithmatex\">||(\\mathbf Q||)</marimo-tex>.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "UFLA",
+      "code_hash": "45c4b953239f742ba59fbc9d7b266eeb",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "RCUM",
+      "code_hash": "b3ce051e0e6ed58c9926e986dac368bc",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">The filter in the first plot should follow the noisy measurement closely. In the second plot the filter should vary from the measurement quite a bit, and be much closer to a straight line than in the first graph. Why does <marimo-tex class=\"arithmatex\">||({\\mathbf Q}||)</marimo-tex> affect the plots this way?</span>\n<span class=\"paragraph\">Let's remind ourselves of what the term <em>process uncertainty</em> means. Consider the problem of tracking a ball. We can accurately model its behavior in a vacuum with math, but with wind, varying air density, temperature, and a spinning ball with an imperfect surface our model will diverge from reality.</span>\n<span class=\"paragraph\">In the first case we set <code>Q_var=20 m^2</code>, which is quite large. In physical terms this is telling the filter \"I don't trust my motion prediction step\" as we are saying that the variance in the velocity is 20. Strictly speaking, we are telling the filter there is a lot of external noise that we are not modeling with <marimo-tex class=\"arithmatex\">||(\\small{\\mathbf F}||)</marimo-tex>, but the upshot of that is to not trust the motion prediction step. The filter will be computing velocity (<marimo-tex class=\"arithmatex\">||(\\dot x||)</marimo-tex>), but then mostly ignoring it because we are telling the filter that the computation is extremely suspect. Therefore the filter has nothing to trust but the measurements, and thus it follows the measurements closely.</span>\n<span class=\"paragraph\">In the second case we set <code>Q_var=0.02 m^2</code>, which is quite small. In physical terms we are telling the filter \"trust the prediction, it is really good!\". More strictly this actually says there is very small amounts of process noise (variance 0.02 <marimo-tex class=\"arithmatex\">||(m^2||)</marimo-tex>), so the process model is very accurate. So the filter ends up ignoring some of the measurement as it jumps up and down, because the variation in the measurement does not match our trustworthy velocity prediction.</span>\n<span class=\"paragraph\">Now let's set <code>Q_var</code> to <marimo-tex class=\"arithmatex\">||(0.2\\, m^2||)</marimo-tex>, and bump <code>R_var</code> up to <marimo-tex class=\"arithmatex\">||(10,000\\, m^2||)</marimo-tex>. This is telling the filter that the measurement noise is very large.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ynmH",
+      "code_hash": "b488d82280eb7b83aa59ae51539cee0a",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "NBGo",
+      "code_hash": "aecd091ddaca0bf7d02088dd6f77f5aa",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">The effect of this can be subtle. We have created an suboptimal filter because the actual measurement noise variance is 225 <marimo-tex class=\"arithmatex\">||(m^2||)</marimo-tex>, not 10,000 <marimo-tex class=\"arithmatex\">||(m^2||)</marimo-tex>. By setting the filter's noise variance so high we force the filter to favor the prediction over the measurement. This can lead to apparently very smooth and good looking results. In the chart above the track may look extremely good to you since it follows the ideal path very closely. But, the 'great' behavior at the start should give you pause - the filter has not converged yet (<marimo-tex class=\"arithmatex\">||(\\mathbf P||)</marimo-tex> is still large) so it should not be able to be so close to the actual position. We can see that <marimo-tex class=\"arithmatex\">||(\\mathbf P||)</marimo-tex> has not converged because the entire chart is colored with the yellow background denoting the size of <marimo-tex class=\"arithmatex\">||(\\mathbf P||)</marimo-tex>. Let's see the result of a bad initial guess for the position by guessing the initial position to be 50 m and the initial velocity to be 1 m/s.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "eooq",
+      "code_hash": "01f36aaa1b8796f92684e6aee358e73a",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "ChmK",
+      "code_hash": "69c1b64b23d2e709289bc9f1f721dfd1",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Here we can see that the filter cannot acquire the track. This happens because even though the filter is getting reasonably good measurements it assumes that the measurements are bad, and eventually predicts forward from a bad position at each step. If you think that perhaps that bad initial position would give similar results for a smaller measurement noise, let's set it back to the correct value of 225 <marimo-tex class=\"arithmatex\">||(m^2||)</marimo-tex>.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "KdvC",
+      "code_hash": "716ab021e4bbb56c0137b4461d5d5009",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "vkvV",
+      "code_hash": "5427a561ac619e4c2a1376b0f61d79ad",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Here we see that the filter initially struggles for several iterations to acquire the track, but then it accurately tracks our dog. In fact, this is nearly optimum - we have not designed <marimo-tex class=\"arithmatex\">||(\\mathbf Q||)</marimo-tex> optimally, but <marimo-tex class=\"arithmatex\">||(\\mathbf R||)</marimo-tex> is optimal. A rule of thumb for <marimo-tex class=\"arithmatex\">||(\\mathbf Q||)</marimo-tex> is to set it between <marimo-tex class=\"arithmatex\">||(\\frac{1}{2}\\Delta a||)</marimo-tex> to <marimo-tex class=\"arithmatex\">||(\\Delta a||)</marimo-tex>, where <marimo-tex class=\"arithmatex\">||(\\Delta a||)</marimo-tex> is the maximum amount that the acceleration will change between sample periods. This only applies for the assumption we are making in this chapter - that acceleration is constant and uncorrelated between each time period. In the Kalman Math chapter we will discuss several different ways of designing <marimo-tex class=\"arithmatex\">||(\\mathbf Q||)</marimo-tex>.</span>\n<span class=\"paragraph\">To some extent you can get similar looking output by varying either <marimo-tex class=\"arithmatex\">||({\\mathbf R}||)</marimo-tex> or <marimo-tex class=\"arithmatex\">||({\\mathbf Q}||)</marimo-tex>, but I urge you to not 'magically' alter these until you get output that you like. Always think about the physical implications of these assignments, and vary <marimo-tex class=\"arithmatex\">||({\\mathbf R}||)</marimo-tex> and/or <marimo-tex class=\"arithmatex\">||({\\mathbf Q}||)</marimo-tex> based on your knowledge of the system you are filtering. Back that up with extensive simulations and/or trial runs of real data.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "EKSN",
+      "code_hash": "321e84c7f9889319d7b38b3800945873",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"a-detailed-examination-of-the-covariance-matrix\">A Detailed Examination of the Covariance Matrix</h2>\n<span class=\"paragraph\">Let's start by revisiting plotting a track. I've hard coded the data and noise in <code>zs_var_275</code> to avoid being at the mercy of the random number generator, which might generate data that does not illustrate what I want to talk about. I will start with <code>P=500</code>.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "tasN",
+      "code_hash": "79ca850ee556dddc2be11afe6f656129",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "SXvM",
+      "code_hash": "5d1a7dedd7129bf545ac208d737c3b4a",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Looking at the output we see a very large spike in the filter output at the beginning. We set <marimo-tex class=\"arithmatex\">||(\\text{P}=500\\, \\mathbf{I}_2||)</marimo-tex> (this is shorthand notation for a 2x2 diagonal matrix with 500 in the diagonal). We now have enough information to understand what this means, and how the Kalman filter treats it. The 500 in the upper left hand corner corresponds to <marimo-tex class=\"arithmatex\">||(\\sigma^2_x||)</marimo-tex>; therefore we are saying the standard deviation of <code>x</code> is <marimo-tex class=\"arithmatex\">||(\\sqrt{500}||)</marimo-tex>, or roughly 22.36 m. Roughly 99% of the samples occur withing <marimo-tex class=\"arithmatex\">||(3\\sigma||)</marimo-tex>, therefore <marimo-tex class=\"arithmatex\">||(\\sigma^2_x=500||)</marimo-tex> is telling the Kalman filter that the prediction (the prior) could be up to 67 meters off. That is a large error, so when the measurement spikes the Kalman filter distrusts its own estimate and jumps wildly to try to incorporate the measurement. Then, as the filter evolves <marimo-tex class=\"arithmatex\">||(\\mathbf P||)</marimo-tex> quickly converges to a more realistic value.</span>\n<span class=\"paragraph\">Let's look at the math behind this. The equation for the Kalman gain is</span>\n<span class=\"paragraph\">$$\\mathbf K = \\mathbf{\\bar P} \\mathbf H^\\mathsf T\\mathbf{S}^{-1} \\approx \\frac{\\mathbf{\\bar P}\\mathbf H^\\mathsf T}{\\mathbf{S}}\n\\approx \\frac{\\mathsf{uncertainty}<em>\\mathsf{prediction}}{\\mathsf{uncertainty}</em>\\mathsf{measurement}}\\mathbf H^\\mathsf T</span>\n<span class=\"paragraph\">$$</span>\n<span class=\"paragraph\">It is a ratio of the uncertainty of the prediction vs measurement. Here the uncertainty in the prediction is large, so <marimo-tex class=\"arithmatex\">||(\\mathbf K||)</marimo-tex> is large (near 1 if this was a scalar). <marimo-tex class=\"arithmatex\">||(\\mathbf K||)</marimo-tex> is multiplied by the residual <marimo-tex class=\"arithmatex\">||(\\textbf{y} = \\mathbf z - \\mathbf{H \\bar x}||)</marimo-tex>, which is the measurement minus the prediction, so a large <marimo-tex class=\"arithmatex\">||(\\mathbf K||)</marimo-tex> favors the measurement. Therefore if <marimo-tex class=\"arithmatex\">||(\\mathbf P||)</marimo-tex> is large relative to the sensor uncertainty <marimo-tex class=\"arithmatex\">||(\\mathbf R||)</marimo-tex> the filter will form most of the estimate from the measurement.</span>\n<span class=\"paragraph\">Now let us see the effect of a smaller initial value of <marimo-tex class=\"arithmatex\">||(\\mathbf P = 1.0\\, \\mathbf{I}_2||)</marimo-tex>.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "CFll",
+      "code_hash": "989ff9b1cb06992552f47f8eae618261",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "wbrJ",
+      "code_hash": "e3d555a0c9b5b827a6f02eefaaff9a76",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">This <em>looks</em> good at first blush. The plot does not have the spike that the former plot did; the filter starts tracking the measurements and doesn't take any time to settle to the signal. However, if we look at the plots for P you can see that there is an initial spike for the variance in position, and that it never really converges. Poor design leads to a long convergence time, and suboptimal results.</span>\n<span class=\"paragraph\">So despite the filter tracking very close to the actual signal we cannot conclude that the 'magic' is to use a small <marimo-tex class=\"arithmatex\">||(\\mathbf P||)</marimo-tex>. Yes, this will avoid having the Kalman filter take time to accurately track the signal, but if we are truly uncertain about the initial measurements this can cause the filter to generate very bad results. If we are tracking a living object we are probably very uncertain about where it is before we start tracking it. On the other hand, if we are filtering the output of a thermometer, we are as certain about the first measurement as the 1000th. For your Kalman filter to perform well you must set <marimo-tex class=\"arithmatex\">||(\\mathbf P||)</marimo-tex> to a value that truly reflects your knowledge about the data.</span>\n<span class=\"paragraph\">Let's see the result of a bad initial estimate coupled with a very small <marimo-tex class=\"arithmatex\">||(\\mathbf P||)</marimo-tex>. We will set our initial estimate at x = 100 m (whereas the dog actually starts at 0m), but set <code>P=1</code> m<marimo-tex class=\"arithmatex\">||(^2||)</marimo-tex>. This is clearly an incorrect value for <marimo-tex class=\"arithmatex\">||(\\mathbf P||)</marimo-tex> as the estimate is off by 100 m but we tell the filter that it the <marimo-tex class=\"arithmatex\">||(3\\sigma||)</marimo-tex> error is 3 m.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "viyg",
+      "code_hash": "095af7ebab093ad6e09b4a9acb45e237",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "GbuD",
+      "code_hash": "5ac851d47c25643acb7fba7181f15da9",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">We can see that the initial estimates are terrible and that it takes the filter a long time to start converging onto the signal . This is because we told the Kalman filter that we strongly believe in our initial estimate of 100 m and were incorrect in that belief.</span>\n<span class=\"paragraph\">Now, let's provide a more reasonable value for <code>P</code> and see the difference.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "bHhy",
+      "code_hash": "ae688c4d11a3e36ac52b423a476302c9",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "ctlq",
+      "code_hash": "d4896c34d317a3b3421a0ced9041ba0a",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">In this case the Kalman filter is very uncertain about the initial state, so it converges onto the signal much faster. It is producing good output after only 5 to 6 epochs. With the theory we have developed so far this is about as good as we can do. However, this scenario is a bit artificial; if we do not know where the object is when we start tracking we do not initialize the filter to some arbitrary value, such as 0 m or 100 m. I address this in the <strong>Filter Initialization</strong> section below.</span>\n<span class=\"paragraph\">Let's do another Kalman filter for our dog, and this time plot the covariance ellipses on the same plot as the position.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "NtNR",
+      "code_hash": "7c77a6e9697d5ebcceef6b912a333e79",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "nebC",
+      "code_hash": "1812c590d8afc271945a001a818ec91b",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">If you are viewing this in Jupyter Notebook or on the web, here is an animation of the filter filtering the data. I've tuned the filter parameters such that it is easy to see a change in <marimo-tex class=\"arithmatex\">||(\\mathbf P||)</marimo-tex> as the filter progresses.\n<img src='animations/multivariate_track1.gif'></span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ZsHO",
+      "code_hash": "875fdddbf5126ac3d761c60902983d7c",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">The output on these is a bit messy, but you should be able to see what is happening. In both plots we are drawing the covariance matrix for each point. We start with the covariance <marimo-tex class=\"arithmatex\">||(\\mathbf P=(\\begin{smallmatrix}20&amp;0\\\\0&amp;20\\end{smallmatrix})||)</marimo-tex>, which signifies a lot of uncertainty about our initial belief. After we receive the first measurement the Kalman filter updates this belief, and so the variance is no longer as large. In the top plot the first ellipse (the one on the far left) should be a slightly squashed ellipse. As the filter continues processing the measurements the covariance ellipse quickly shifts shape until it settles down to being a long, narrow ellipse tilted in the direction of movement.</span>\n<span class=\"paragraph\">Think about what this means physically. The x-axis of the ellipse denotes our uncertainty in position, and the y-axis our uncertainty in velocity. So, an ellipse that is taller than it is wide signifies that we are more uncertain about the velocity than the position. Conversely, a wide, narrow ellipse shows high uncertainty in position and low uncertainty in velocity. Finally, the amount of tilt shows the amount of correlation between the two variables.</span>\n<span class=\"paragraph\">The first plot, with <code>R=5</code> <marimo-tex class=\"arithmatex\">||(m^2||)</marimo-tex>, finishes up with an ellipse that is wider than it is tall. If that is not clear I have printed out the variances for the last ellipse in the lower right hand corner.</span>\n<span class=\"paragraph\">In contrast, the second plot, with <code>R=0.5</code> <marimo-tex class=\"arithmatex\">||(m^2||)</marimo-tex>, has a final ellipse that is taller than wide. The ellipses in the second plot are all much smaller than the ellipses in the first plot. This stands to reason because a small <marimo-tex class=\"arithmatex\">||(\\small\\mathbf R||)</marimo-tex> implies a small amount of noise in our measurements. Small noise means accurate predictions, and thus a strong belief in our position.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "HNXk",
+      "code_hash": "ce8ae5b3c7cef6bd95208708107507ef",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"question-explain-ellipse-differences\">Question: Explain Ellipse Differences</h2>\n<span class=\"paragraph\">Why are the ellipses for <marimo-tex class=\"arithmatex\">||(\\mathbf R=5 m^2||)</marimo-tex> more tilted towards the horizontal than the ellipses for <marimo-tex class=\"arithmatex\">||(\\mathbf R=0.5 m^2||)</marimo-tex>. Hint: think about this in the context of what these ellipses mean physically, not in terms of the math. If you aren't sure about the answer,change <marimo-tex class=\"arithmatex\">||(\\mathbf R||)</marimo-tex> to truly large and small numbers such as 100 <marimo-tex class=\"arithmatex\">||(m^2||)</marimo-tex> and 0.1 <marimo-tex class=\"arithmatex\">||(m^2||)</marimo-tex>, observe the changes, and think about what this means.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "bhgI",
+      "code_hash": "10469d18e9c2e54f6d1f6589dccf25e6",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"solution\">Solution</h3>\n<span class=\"paragraph\">The x-axis is for position, and y-axis is velocity. An ellipse that is vertical, or nearly so, says there is no correlation between position and velocity, and an ellipse that is diagonal says that there is a lot of correlation. Phrased that way, the results sound unlikely. The tilt of the ellipse changes, but the correlation shouldn't be changing over time. But this is a measure of the <em>output of the filter</em>, not a description of the actual, physical world. When <marimo-tex class=\"arithmatex\">||(\\mathbf R||)</marimo-tex> is very large we are telling the filter that there is a lot of noise in the measurements. In that case the Kalman gain <marimo-tex class=\"arithmatex\">||(\\mathbf K||)</marimo-tex> is set to favor the prediction over the measurement, and the prediction comes from the velocity state variable. Thus there is a large correlation between <marimo-tex class=\"arithmatex\">||(x||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(\\dot x||)</marimo-tex>. Conversely, if <marimo-tex class=\"arithmatex\">||(\\mathbf R||)</marimo-tex> is small, we are telling the filter that the measurement is very trustworthy, and <marimo-tex class=\"arithmatex\">||(\\mathbf K||)</marimo-tex> is set to favor the measurement over the prediction. Why would the filter want to use the prediction if the measurement is nearly perfect? If the filter is not using much from the prediction there will be very little correlation reported.</span>\n<span class=\"paragraph\"><strong>This is a critical point to understand!</strong>. The Kalman filter is a mathematical model for a real world system. A report of little correlation <em>does not mean</em> there is no correlation in the physical system, just that there was no <em>linear</em> correlation in the mathematical model. It's a report of how much measurement vs prediction was incorporated into the model.</span>\n<span class=\"paragraph\">Let's bring that point home with a truly large measurement error. We will set <marimo-tex class=\"arithmatex\">||(\\mathbf R=200\\, m^2||)</marimo-tex>. Think about what the plot will look like before looking at it.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "DlKN",
+      "code_hash": "bec46379295ca4986e9e1ff5801a0b6f",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "iFMf",
+      "code_hash": "7f0a903faaeda4282f6a5c9b259526cb",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">I hope the result was what you were expecting. The ellipse quickly became very wide and not very tall. It did this because the Kalman filter mostly used the prediction vs the measurement to produce the filtered result. We can also see how the filter output is slow to acquire the track. The Kalman filter assumes that the measurements are extremely noisy, and so it is very slow to update its estimate for <marimo-tex class=\"arithmatex\">||(\\dot x||)</marimo-tex>.</span>\n<span class=\"paragraph\">Keep looking at these plots until you grasp how to interpret the covariance matrix <marimo-tex class=\"arithmatex\">||(\\mathbf P||)</marimo-tex>. When you work with a <marimo-tex class=\"arithmatex\">||(9{\\times}9||)</marimo-tex> matrix it may seem overwhelming - there are 81 numbers to interpret. Just break it down - the diagonal contains the variance for each state variable, and all off diagonal elements are the product of two variances and a scaling factor <marimo-tex class=\"arithmatex\">||(p||)</marimo-tex>. You cannot plot a <marimo-tex class=\"arithmatex\">||(9{\\times}9||)</marimo-tex> matrix on the screen so you have to develop your intuition and understanding in this simple, 2-D case.</span>\n<blockquote>\n<span class=\"paragraph\">When plotting covariance ellipses, make sure to always use ax.set_aspect('equal') or plt.axis('equal') in your code (the former lets you set the xlim and ylim values). If the axis use different scales the ellipses will be drawn distorted. For example, the ellipse may be drawn as being taller than it is wide, but it may actually be wider than tall.</span>\n</blockquote></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "QYfb",
+      "code_hash": "f764726fe864f9b4fb0061c2cffec438",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"filter-initialization\">Filter Initialization</h2>\n<span class=\"paragraph\">There are many schemes for initializing the filter. The following approach performs well in most situations. In this scheme you do not initialize the filter until you get the first measurement, <marimo-tex class=\"arithmatex\">||(\\mathbf z_0||)</marimo-tex>. From this you can compute the initial value for <marimo-tex class=\"arithmatex\">||(\\mathbf x||)</marimo-tex> with <marimo-tex class=\"arithmatex\">||(\\mathbf x_0 = \\mathbf z_0||)</marimo-tex>. If  <marimo-tex class=\"arithmatex\">||(\\mathbf z||)</marimo-tex> is not of the same size, type, and units as <marimo-tex class=\"arithmatex\">||(\\mathbf x||)</marimo-tex>, which is usually the case, we can use our measurement function as follow.</span>\n<span class=\"paragraph\">We know</span>\n<marimo-tex class=\"arithmatex\">||[\\mathbf z = \\mathbf{Hx}||]</marimo-tex><span class=\"paragraph\">Hence,</span>\n<marimo-tex class=\"arithmatex\">||[\\begin{aligned}\n\\mathbf H^{-1}\\mathbf{Hx} &amp;= \\mathbf H^{-1}\\mathbf z \\\\\n\\mathbf x &amp;= \\mathbf H^{-1}\\mathbf z\\end{aligned}||]</marimo-tex><span class=\"paragraph\">Matrix inversion requires a square matrix, but <marimo-tex class=\"arithmatex\">||(\\mathbf H||)</marimo-tex> is rarely square. SciPy will compute the Moore-Penrose pseudo-inverse of a matrix with <code>scipy.linalg.pinv</code>, so your code might look like</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "qJXu",
+      "code_hash": "26fe502fa07c47881b5b68fe0424506c",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "LdJG",
+      "code_hash": "2ad107f9b6bba9d20b3806e0317f0211",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Specialized knowledge of your problem domain may lead you to a different computation, but this is one way to do it. For example, if the state includes velocity you might take the first two measurements of position, compute the difference, and use that as the initial velocity.</span>\n<span class=\"paragraph\">Now we need to compute a value for <marimo-tex class=\"arithmatex\">||(\\mathbf P||)</marimo-tex>. This will vary by problem, but in general you will use the measurement error <marimo-tex class=\"arithmatex\">||(\\mathbf R||)</marimo-tex> for identical terms, and maximum values for the rest of the terms. Maybe that isn't clear. In this chapter we have been tracking and object using position and velocity as the state, and the measurements have been positions. In that case we would initialize <marimo-tex class=\"arithmatex\">||(\\mathbf P||)</marimo-tex> with</span>\n<marimo-tex class=\"arithmatex\">||[\\mathbf P = \\begin{bmatrix}\\mathbf R_0 &amp; 0 \\\\0 &amp; vel_{max}^2\\end{bmatrix}||]</marimo-tex><span class=\"paragraph\">The diagonal of <marimo-tex class=\"arithmatex\">||(\\mathbf P||)</marimo-tex> contains the variance of each state variable, so we populate it with reasonable values. <marimo-tex class=\"arithmatex\">||(\\mathbf R_0||)</marimo-tex> is a reasonable variance for the position, and the maximum velocity squared is a reasonable variance for the velocity. It is squared because variance is squared: <marimo-tex class=\"arithmatex\">||(\\sigma^2||)</marimo-tex>.</span>\n<span class=\"paragraph\">You really need to understand the domain in which you are working and initialize your filter on the best available information. For example, suppose we were trying to track horses in a horse race. The initial measurements might be very bad, and provide you with a position far from the starting gate. We know that the horse must start at the starting gate; initializing the filter to the initial measurement would lead to suboptimal results. In this scenario we would want to always initialize the Kalman filter with the starting gate position of the horse.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "fOSF",
+      "code_hash": "d66a98855febb909852a1cc81d73e42b",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"batch-processing\">Batch Processing</h2>\n<span class=\"paragraph\">The Kalman filter is designed as a recursive algorithm - as new measurements come in we immediately create a new estimate. But it is very common to have a set of data that have been already collected which we want to filter. Kalman filters can be run in a batch mode, where all of the measurements are filtered at once. We have implemented this in <code>KalmanFilter.batch_filter()</code>. Internally, all the function does is loop over the measurements and collect the resulting state and covariance estimates in arrays. It simplifies your logic and conveniently gathers all of the outputs into arrays. I often use this function, but waited until the end of the chapter so you would become very familiar with the predict/update cyle that you must run.</span>\n<span class=\"paragraph\">First collect your measurements into an array or list. Maybe it is in a CSV file:</span>\n<div class=\"language-python codehilite\"><pre><span></span><code><span class=\"n\">zs</span> <span class=\"o\">=</span> <span class=\"n\">read_altitude_from_csv</span><span class=\"p\">(</span><span class=\"s1\">&#39;altitude_data.csv&#39;</span><span class=\"p\">)</span>\n</code></pre></div>\n<span class=\"paragraph\">Or maybe you will generate it using a generator:</span>\n<div class=\"language-python codehilite\"><pre><span></span><code><span class=\"n\">zs</span> <span class=\"o\">=</span> <span class=\"p\">[</span><span class=\"n\">some_func</span><span class=\"p\">(</span><span class=\"n\">i</span><span class=\"p\">)</span> <span class=\"k\">for</span> <span class=\"n\">i</span> <span class=\"ow\">in</span> <span class=\"nb\">range</span><span class=\"p\">(</span><span class=\"mi\">1000</span><span class=\"p\">)]</span>\n</code></pre></div>\n<span class=\"paragraph\">Then call the <code>batch_filter()</code> method.</span>\n<div class=\"language-python codehilite\"><pre><span></span><code><span class=\"n\">Xs</span><span class=\"p\">,</span> <span class=\"n\">Ps</span><span class=\"p\">,</span> <span class=\"n\">Xs_prior</span><span class=\"p\">,</span> <span class=\"n\">Ps_prior</span> <span class=\"o\">=</span> <span class=\"n\">kfilter</span><span class=\"o\">.</span><span class=\"n\">batch_filter</span><span class=\"p\">(</span><span class=\"n\">zs</span><span class=\"p\">)</span>\n</code></pre></div>\n<span class=\"paragraph\">The function takes the list of measurements, filters it, and returns an  NumPy array of state estimates (Xs), covariance matrices (Ps), and the priors for the same (Xs_prior, Ps_prior).</span>\n<span class=\"paragraph\">Here is a complete example.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "gZOs",
+      "code_hash": "1b10f4830f4ea90d17c84d989ce97ecb",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "wtAr",
+      "code_hash": "e9d55f704fe759ce3fb74c219c6e2d13",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">The batch filter takes an optional <code>filterpy.common.Saver</code> object. If provided, all of the filter's attributes will be saved as well. This is useful if you want to inspect values other than the state and covariance. Here I plot the residual to see if it appears like noise centered around 0. This is a quick visual inspection to see if the filter is well designed. If if drifts from zero, or doesn't look like noise, the filter is poorly designed and/or the processes are not Gaussian. We will discuss this in detail in later chapters. For now consider this a demonstration of the <code>Saver</code> class.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "SQfX",
+      "code_hash": "badb8f3e35df9383004840c920ee9122",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "HRKw",
+      "code_hash": "a5df902e3dbcd2f65597c7e26293e788",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"smoothing-the-results\">Smoothing the Results</h2>\n<span class=\"paragraph\">This book includes a chapter on smoothing the results; I will not repeat the information here. However, it is so easy to use, and offers such a profoundly improved output that I will tease you with a few examples. The smoothing chapter is not especially difficult; you are sufficiently prepared to read it now.</span>\n<span class=\"paragraph\">Let's assume that we are tracking a car that has been traveling in a straight line. We get a measurement that implies that the car is starting to turn to the left. The Kalman filter moves the state estimate somewhat towards the measurement, but it cannot judge whether this is a particularly noisy measurement or the true start of a turn.</span>\n<span class=\"paragraph\">However, if we have future measurements we can decide if a turn was made. Suppose the subsequent measurements all continue turning left. We can then be sure that that a turn was initiated. On the other hand, if the subsequent measurements continued on in a straight line we would know that the measurement was noisy and should be mostly ignored. Instead of making an estimate part way between the measurement and prediction the estimate will either fully incorporate the measurement or ignore it, depending on what the future measurements imply about the object's movement.</span>\n<span class=\"paragraph\"><code>KalmanFilter</code> implements a form of this algorithm which is called an <em>RTS smoother</em>, named after the inventors of the algorithm: Rauch, Tung, and Striebel. The method is <code>rts_smoother()</code>. To use it pass in the means and covariances computed from the <code>batch_filter</code> step, and receive back the smoothed means, covariances, and Kalman gain.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "MYoQ",
+      "code_hash": "1c13070aa25a0ddd6ad6d18d36cd9e18",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "BzwM",
+      "code_hash": "b9699ff034dc06734ec0e55ccd52884c",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">This output is fantastic! Two things are very apparent to me in this chart. First, the RTS smoother's output is much smoother than the KF output. Second, it is almost always more accurate than the KF output (we will examine this claim in detail in the <strong>Smoothing</strong> chapter). The improvement in the velocity, which is a hidden variable, is even more dramatic:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "nSRe",
+      "code_hash": "5bcee56b75ec6e298d3ddcb420bcc85e",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "TmyF",
+      "code_hash": "ca414ccb8c5dd3543dfe1ed3246e68e5",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">We will explore why this is so in the next exercise.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "tbSj",
+      "code_hash": "f2f7dedda94ffd2fa505bcaa7f58d549",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"exercise-compare-velocities\">Exercise: Compare Velocities</h2>\n<span class=\"paragraph\">Since we are plotting velocities let's look at what the 'raw' velocity is, which we can compute by subtracting subsequent measurements. i.e the velocity at time 1 can be approximated by <code>xs[1] - xs[0]</code>. Plot the raw value against the values estimated by the Kalman filter and by the RTS filter. Discuss what you see.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "lPrT",
+      "code_hash": "c8eefd80f5ccaa989dde69fb402cfd83",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "KoaX",
+      "code_hash": "a9a8236a4aee4527fb2569f4aa26d669",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"solution\">Solution</h3></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "eLzN",
+      "code_hash": "79de3c1ff54416bbb0d63202b3aafae9",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "JHzP",
+      "code_hash": "fe9e8f7f1a827925a7ec47981cdc0eb6",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">We see that the noise swamps the signal, causing the raw values to be essentially worthless. The filter is maintaining a separate estimate for velocity. The Kalman gain <marimo-tex class=\"arithmatex\">||(\\mathbf K||)</marimo-tex> is multidimensional. For example, it might have the value  <marimo-tex class=\"arithmatex\">||(\\mathbf K = [0.1274, 0.843]^\\mathsf T||)</marimo-tex>. the first value is used to scale the residual of the position, and the second value will scale the residual of the velocity. The covariance matrix tells the filter how correlated the position and velocity are, and each will be optimally filtered.</span>\n<span class=\"paragraph\">I show this to reiterate the importance of using Kalman filters to compute velocities, accelerations, and even higher order values. I use a Kalman filter even when my measurements are so accurate that I am willing to use them unfiltered because it allows me accurate estimates for velocities and accelerations.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "elJp",
+      "code_hash": "619ca810e78749805123b4a7e80e7cd0",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"discussion-and-summary\">Discussion and Summary</h2>\n<span class=\"paragraph\">Multivariate Gaussians allow us to simultaneously handle multiple dimensions, both spacial and others (velocity, etc). We made a key insight: hidden variables have the ability to significantly increase the accuracy of the filter. This is possible because the hidden variables are correlated with the observed variables.</span>\n<span class=\"paragraph\">I gave an intuitive definition of <em>observability</em>. Observability was invented by Dr. Kalman for linear systems, and there is a fair amount of theory behind it. It answers the question of whether a system state can be determined by observing the system's output. For our problems this has been easy to determine, but more complicated systems may require rigorous analysis. Wikipedia's <a href=\"https://en.wikipedia.org/wiki/Observability\" rel=\"noopener noreferrer\" target=\"_blank\">Observability</a> article has an overview; if you need to learn the topic <a href=\"#References\">[2]</a> is a good source.</span>\n<span class=\"paragraph\">There is one important caveat about hidden variables. It is easy to construct a filter that produces estimates for hidden variables. I could write a filter that estimates the color of a tracked car. But there is no way to compute car color from positions, so the estimate for the color will be nonsense. The designer must verify that these variables are being estimated correctly. If you do not have a velocity sensor and yet are estimating velocity, you will need to test that the velocity estimates are correct.; do not trust that they are. For example, suppose the velocity has a periodic component to it - it looks like a sine wave. If your sample time is less than 2 times the frequency you will not be able to accurately estimate the velocity (due to Nyquist's Theorem). Imagine that the sample period is equal to the frequency of the velocity. The filter will report that the velocity is constant because it samples the system at the same point on the sin wave.</span>\n<span class=\"paragraph\">Initialization poses a particularly difficult problem for hidden variables. If you start with a bad initialization the filter can usually recover the observed variables, but may struggle and fail with the hidden one. Estimating hidden variables is a powerful tool, but a dangerous one.</span>\n<span class=\"paragraph\">I established a series of steps for designing a Kalman filter. These are not a usual part of the Kalman filter literature, and are only meant as a guide, not a prescription. Designing for a hard problem is an iterative process. You make a guess at the state vector, work out what your measurement and state models are, run some tests, and then alter the design as necessary.</span>\n<span class=\"paragraph\">The design of <marimo-tex class=\"arithmatex\">||(\\mathbf R||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(\\mathbf Q||)</marimo-tex> is often quite challenging. I've made it appear to be quite scientific. Your sensor has Gaussian noise of <marimo-tex class=\"arithmatex\">||(\\mathcal{N}(0, \\sigma^2)||)</marimo-tex>, so set <marimo-tex class=\"arithmatex\">||(\\mathbf R=\\sigma^2||)</marimo-tex>. Easy! This is a dirty lie. Sensors are not Gaussian. We started the book with a bathroom scale. Suppose <marimo-tex class=\"arithmatex\">||(\\sigma=1||)</marimo-tex> kg, and you try to weigh something that weighs 0.5 kg. Theory tells us we will get negative measurements, but of course the scale will never report weights less than zero. Real world sensors typically have <em>fat tails</em> (known as <em>kurtosis</em>) and <em>skew</em>. In some cases, such as with the scale, one or both tails are truncated.</span>\n<span class=\"paragraph\">The case with <marimo-tex class=\"arithmatex\">||(\\mathbf Q||)</marimo-tex> is more dire. I hope you were skeptical when I blithely assigned a noise matrix to my prediction about the movements of a dog. Who can say what a dog will do next? The Kalman filter in my GPS doesn't know about hills, the outside winds, or my terrible driving skills. Yet the filter requires a precise number to encapsulate all of that information, and it needs to work while I drive off-road in the desert, and when a Formula One champion drives on a track.</span>\n<span class=\"paragraph\">These problems led some researchers and engineers to derogatorily call the Kalman filter a 'ball of mud'. In other words, it doesn't always hold together so well. Another term to know - Kalman filters can become <em>smug</em>. Their estimates are based solely on what you tell it the noises are. Those values can lead to overly confident estimates. <marimo-tex class=\"arithmatex\">||(\\mathbf P||)</marimo-tex> gets smaller and smaller while the filter is actually becoming more and more inaccurate! In the worst case the filter diverges. We will see a lot of that when we start studying nonlinear filters.</span>\n<span class=\"paragraph\">The Kalman filter is a mathematical model of the world. The output is only as accurate as that model. To make the math tractable we had to make some assumptions. We assume that the sensors and motion model have Gaussian noise. We assume that everything is linear. If that is true, the Kalman filter is <em>optimal</em> in a least squares sense. This means that there is no way to make a better estimate than what the filter gives us. However, these assumption are almost never true, and hence the model is necessarily limited, and a working filter is rarely optimal.</span>\n<span class=\"paragraph\">In later chapters we will deal with the problem of nonlinearity. For now I want you to understand that designing the matrices of a linear filter is an experimental procedure more than a mathematical one. Use math to establish the initial values, but then you need to experiment. If there is a lot of unaccounted noise in the world (wind, etc.) you may have to make <marimo-tex class=\"arithmatex\">||(\\mathbf Q||)</marimo-tex> larger. If you make it too large the filter fails to respond quickly to changes. In the <strong>Adaptive Filters</strong> chapter you will learn some alternative techniques that allow you to change the filter design in real time in response to the inputs and performance, but for now you need to find one set of values that works for the conditions your filter will encounter. Noise matrices for an acrobatic plane might be different if the pilot is a student than if the pilot is an expert as the dynamics will be quite different.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "EyBw",
+      "code_hash": "7f292a84e59f0f976328ffd6f1332812",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"references\">References</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "MrKo",
+      "code_hash": "a3e278857e7844c5b4ef0522c4b9be6a",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><ul>\n<li><A name=\"[wiki_article]\">[1]</A> 'Kalman Filters'. Wikipedia\n<a href=\"https://en.wikipedia.org/wiki/Kalman_filter#Details\" rel=\"noopener noreferrer\" target=\"_blank\">https://en.wikipedia.org/wiki/Kalman_filter#Details</a></li>\n<li>[2] Grewal, Mohinder S., Andrews, Angus P. <em>Kalman Filtering: Theory and Practice Using MATLAB</em>. Third Edition. John Wiley &amp; Sons. 2008.</li>\n</ul></span>"
+          }
+        }
+      ],
+      "console": []
+    }
+  ]
+}
