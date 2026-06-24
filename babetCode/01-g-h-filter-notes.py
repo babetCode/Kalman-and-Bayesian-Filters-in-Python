@@ -8,54 +8,21 @@ import marimo
 __generated_with = "0.23.10"
 app = marimo.App(width="full")
 
-
-@app.cell
-def _():
+with app.setup:
     import marimo as mo
-    import io
-    from contextlib import redirect_stdout
-
-    class UserEditor:
-        """
-        Creates an editor for the user to run code in.
-        Example
-        **cell 1**
-        ``ue = UserEditor()
-        run = ue.run``
-        **cell 2**
-        ``_ = run
-        ue.display()``
-        """
-        def __init__(self, code="print('hi')", exec_func=lambda x: x):
-            self.editor = mo.ui.code_editor(value=code)
-            self.run = mo.ui.run_button(label="\>")
-            self.exec_func = exec_func
-
-        def display(self):
-            buf = io.StringIO()
-            code = self.exec_func(self.editor.value)
-            print(code)
-            try:
-                with redirect_stdout(buf):
-                    exec(code, {})
-                output = buf.getvalue()
-            except Exception as e:
-                output = e
-            return mo.vstack([self.run, self.editor, output])
-
-    return UserEditor, mo
+    from chap_note_utils import UserEditor
 
 
 @app.cell(hide_code=True)
-def _(mo):
+def _():
     mo.md(r"""
-    ## Alogithm
+    ## Algorithm
     """)
     return
 
 
 @app.cell(hide_code=True)
-def _(mo):
+def _():
     mo.md(r"""
     **Initialization**
     1. Initialize the state of the filter
@@ -74,7 +41,7 @@ def _(mo):
 
 
 @app.cell(hide_code=True)
-def _(mo):
+def _():
     mo.md(r"""
     ### Exercise: Write generic algorithm
     """)
@@ -98,8 +65,8 @@ def _():
 
 
 @app.cell
-def _(UserEditor, algoritm_exercise):
-    ue = UserEditor(code=algoritm_exercise, exec_func=lambda x: x+r"\n\nprint(foobar)")
+def _(algoritm_exercise):
+    ue = UserEditor(code=algoritm_exercise, exec_func=lambda x: x+"\n\nprint('foobar')")
     run = ue.run
     return run, ue
 
