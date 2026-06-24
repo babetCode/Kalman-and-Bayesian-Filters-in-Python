@@ -1,0 +1,38 @@
+{
+  "type": "grid",
+  "data": {
+    "columns": 48,
+    "rowHeight": 20,
+    "maxWidth": 1400,
+    "bordered": false,
+    "cells": [
+      {
+        "position": null
+      },
+      {
+        "position": null
+      },
+      {
+        "position": null
+      },
+      {
+        "position": [
+          0,
+          0,
+          14,
+          42
+        ],
+        "scrollable": true
+      },
+      {
+        "position": [
+          14,
+          0,
+          34,
+          98
+        ],
+        "scrollable": true
+      }
+    ]
+  }
+}

@@ -1,0 +1,100 @@
+{
+  "version": "1",
+  "metadata": {
+    "marimo_version": "0.23.10",
+    "script_metadata_hash": null
+  },
+  "cells": [
+    {
+      "id": "Hbol",
+      "code_hash": "1d0db38904205bec4d6f6f6a1f6cec3e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "MJUe",
+      "code_hash": "2d8f8d8603959fdd1b1f0523bdfb18c4",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vblA",
+      "code_hash": "47ba7efc063c3fe571bd0115a52b20e0",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "bkHC",
+      "code_hash": "4721216933335383e2416453903111c1",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<marimo-sidebar ><div style='display: flex;flex: 1;flex-direction: column;justify-content: flex-start;align-items: normal;flex-wrap: nowrap;gap: 0.5rem'><marimo-nav-menu data-items='[{&quot;label&quot;:&quot;&#92;u003cspan class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&#92;u003e&#92;u003cspan class=&#92;&quot;paragraph&#92;&quot;&#92;u003eHome&#92;u003c/span&#92;u003e&#92;u003c/span&#92;u003e&quot;,&quot;href&quot;:&quot;#/&quot;,&quot;description&quot;:null},{&quot;label&quot;:&quot;&#92;u003cspan class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&#92;u003e&#92;u003cspan class=&#92;&quot;paragraph&#92;&quot;&#92;u003etest&#92;u003c/span&#92;u003e&#92;u003c/span&#92;u003e&quot;,&quot;href&quot;:&quot;#/test&quot;,&quot;description&quot;:null}]' data-orientation='&quot;vertical&quot;'></marimo-nav-menu></div></marimo-sidebar>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "lEQa",
+      "code_hash": "973c62bf58d819e667958075756f368d",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "PKri",
+      "code_hash": "189bd6b0b4da7dd4b07c4ccb4a852b99",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Xref",
+      "code_hash": "4df93025461d853252f8690c8d1d2509",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<marimo-ui-element object-id='Xref-3' random-id='d5e83eec-4429-98c0-75b4-ff6d63ec7e8a'><marimo-routes data-initial-value='&quot;&quot;' data-label='null' data-routes='[&quot;#/&quot;,&quot;#/test&quot;,&quot;{/*path}&quot;]'><marimo-ui-element object-id='Xref-0' random-id='bcdf9c95-8235-9d9f-2a15-01910d66b2b4'><marimo-lazy data-initial-value='false' data-label='null' data-show-loading-indicator='false'></marimo-lazy></marimo-ui-element><marimo-ui-element object-id='Xref-1' random-id='96931429-f471-2982-e179-d0d0598050bb'><marimo-lazy data-initial-value='false' data-label='null' data-show-loading-indicator='false'></marimo-lazy></marimo-ui-element><marimo-ui-element object-id='Xref-2' random-id='5721946c-e6be-bf9a-33c6-3ec56c2e37c9'><marimo-lazy data-initial-value='false' data-label='null' data-show-loading-indicator='false'></marimo-lazy></marimo-ui-element></marimo-routes></marimo-ui-element>"
+          }
+        }
+      ],
+      "console": []
+    }
+  ]
+}
