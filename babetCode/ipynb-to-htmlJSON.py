@@ -8,12 +8,12 @@ import marimo
 __generated_with = "0.23.10"
 app = marimo.App(width="full")
 
-
-@app.cell
-def _():
+with app.setup:
     import marimo as mo
+    import json
+    from pathlib import Path
 
-    return
+    base = Path(__file__).resolve().parent.parent
 
 
 @app.cell
@@ -35,14 +35,11 @@ def _():
         html_body, _ = html_exporter.from_notebook_node(nb_node)
         return html_body
 
-    return (ipynb_to_html,)
+    return
 
 
 @app.cell
 def _():
-    from pathlib import Path
-
-    base = Path(__file__).resolve().parent.parent
     chapter_paths = [
         "00-Preface.ipynb",
         "01-g-h-filter.ipynb",
@@ -70,23 +67,46 @@ def _():
         "Appendix-I-Analytic-Evaluation-of-Performance.ipynb",
     ]
     all_paths = chapter_paths + appendix_paths
-    return (all_paths,)
+    return
 
 
 @app.cell
-def _(all_paths, ipynb_to_html):
-    my_dict = {
-        p.replace(".ipynb", ""): ipynb_to_html(p) for p in all_paths
-    }
-    return (my_dict,)
+def _():
+    # my_dict = {
+    #     p.replace(".ipynb", ""): ipynb_to_html(p) for p in all_paths
+    # }
+    return
 
 
 @app.cell
-def _(my_dict):
-    import json
+def _():
+    # with open(r"C:\Users\goper\Files\vsCode\Kalman-and-Bayesian-Filters-in-Python\babetCode\chapters-html.json", "w") as f:
+    #     json.dump(my_dict, f, indent=2)
+    return
 
-    with open(r"C:\Users\goper\Files\vsCode\Kalman-and-Bayesian-Filters-in-Python\babetCode\chapters-html.json", "w") as f:
-        json.dump(my_dict, f, indent=2)
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ### Make .html files
+    """)
+    return
+
+
+@app.cell
+def _():
+    with open(base / "babetCode/chapters-html.json", "r") as _f:
+        my_data = json.load(_f)
+    return (my_data,)
+
+
+@app.cell
+def _(my_data):
+    for key, val in my_data.items():
+        _fp = base / f"babetCode/html_files/{key}.html"
+        _fp.parent.mkdir(parents=True, exist_ok=True)
+        with open(base / f"babetCode/html_files/{key}.html", "w") as _f:
+            _f.write(val)
     return
 
 

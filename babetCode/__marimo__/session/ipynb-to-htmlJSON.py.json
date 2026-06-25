@@ -6,8 +6,8 @@
   },
   "cells": [
     {
-      "id": "Hbol",
-      "code_hash": "1d0db38904205bec4d6f6f6a1f6cec3e",
+      "id": "setup",
+      "code_hash": "13454689c306dfd7ec9463ec5a6e6b0a",
       "outputs": [
         {
           "type": "data",
@@ -33,7 +33,7 @@
     },
     {
       "id": "vblA",
-      "code_hash": "2d8f8d8603959fdd1b1f0523bdfb18c4",
+      "code_hash": "bc85bb46dc2f975e1b464f41289835a5",
       "outputs": [
         {
           "type": "data",
@@ -46,7 +46,7 @@
     },
     {
       "id": "bkHC",
-      "code_hash": "ab828107950d60bc2b96f9cfff581458",
+      "code_hash": "bb4957a2f4b235826f35a77b211f7bce",
       "outputs": [
         {
           "type": "data",
@@ -59,7 +59,46 @@
     },
     {
       "id": "lEQa",
-      "code_hash": "a9b6ad4b6113fda7a12640d489ea5dca",
+      "code_hash": "86f0556fc9a9300da591fe1269e59425",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "DOUl",
+      "code_hash": "157762daca5c5cb3e74576835255db4e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"make-html-files\">Make .html files</h3></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "iJwa",
+      "code_hash": "d0b65fad9047c7c5eb8386c8b8941e21",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "JVUL",
+      "code_hash": "570c9c58b54628f96ead80196b66acde",
       "outputs": [
         {
           "type": "data",
