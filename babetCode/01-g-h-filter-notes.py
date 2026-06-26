@@ -99,13 +99,19 @@ def _(run, ue):
 
 
 @app.cell
+def _(solution_str, ue):
+    ue.is_func_equiv("g_h_filter", "g_h_filter_solution", solution_str)
+    return
+
+
+@app.cell
 def _():
-    mo.md("""
+    solution_str = """
     /// details | Solution
         type: info
     ```py
-    def g_h_filter(data, x0, dx, g, h, dt=1.):
-        "\""
+    def g_h_filter_solution(data, x0, dx, g, h, dt=1.):
+        "\"\"
         Performs g-h filter on 1 state variable with a fixed g and h.
         'data' contains the data to be filtered.
         'x0' is the initial value for our state variable
@@ -113,7 +119,7 @@ def _():
         'g' is the g-h's g scale factor
         'h' is the g-h's h scale factor
         'dt' is the length of the time step
-        "\""
+        "\"\"
         x_est = x0
         results = []
         for z in data:
@@ -128,8 +134,10 @@ def _():
             results.append(x_est)
         return np.array(results)
     ```
-    """)
-    return
+    """
+
+    mo.md(solution_str)
+    return (solution_str,)
 
 
 if __name__ == "__main__":

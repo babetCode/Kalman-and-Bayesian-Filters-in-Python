@@ -72,7 +72,7 @@
     },
     {
       "id": "MJUe",
-      "code_hash": "e2339a0bb6e4f71abf41d2f98df3e3e1",
+      "code_hash": "e2ac65dce56356cdb5e48c8614489649",
       "outputs": [
         {
           "type": "data",
@@ -103,7 +103,33 @@
         {
           "type": "data",
           "data": {
-            "text/html": "<div style='display: flex;flex: 1;flex-direction: column;justify-content: flex-start;align-items: normal;flex-wrap: nowrap;gap: 0.5rem'><marimo-ui-element object-id='vblA-1' random-id='3948bedb-8d2f-4abc-d64f-88bcf5c6b477'><marimo-button data-initial-value='0' data-label='&quot;&#92;u003cspan class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&#92;u003e&#92;u003cspan class=&#92;&quot;paragraph&#92;&quot;&#92;u003erun&#92;u003c/span&#92;u003e&#92;u003c/span&#92;u003e&quot;' data-kind='&quot;neutral&quot;' data-disabled='false' data-full-width='false'></marimo-button></marimo-ui-element><marimo-ui-element object-id='vblA-0' random-id='17ea796c-9f00-0084-93c0-44fcc0c4f058'><marimo-code-editor data-initial-value='&quot;print(&#x27;hi&#x27;)&quot;' data-label='null' data-language='&quot;python&quot;' data-placeholder='&quot;&quot;' data-disabled='false' data-show-copy-button='true' data-debounce='false'></marimo-code-editor></marimo-ui-element><span>hi\n</span></div>"
+            "text/html": "<div style='display: flex;flex: 1;flex-direction: column;justify-content: flex-start;align-items: normal;flex-wrap: nowrap;gap: 0.5rem'><marimo-ui-element object-id='vblA-1' random-id='2c937963-b1b8-5d40-97d9-431407014da2'><marimo-button data-initial-value='0' data-label='&quot;&#92;u003cspan class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&#92;u003e&#92;u003cspan class=&#92;&quot;paragraph&#92;&quot;&#92;u003erun&#92;u003c/span&#92;u003e&#92;u003c/span&#92;u003e&quot;' data-kind='&quot;neutral&quot;' data-disabled='false' data-full-width='false'></marimo-button></marimo-ui-element><marimo-ui-element object-id='vblA-0' random-id='38d25801-d2d5-da2a-5bd7-0fc53a2bfe9d'><marimo-code-editor data-initial-value='&quot;print(&#x27;hi&#x27;)&quot;' data-label='null' data-language='&quot;python&quot;' data-placeholder='&quot;&quot;' data-disabled='false' data-show-copy-button='true' data-debounce='false'></marimo-code-editor></marimo-ui-element><span>hi\n</span></div>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "oFSm",
+      "code_hash": "e2c55edf2dd0a54e07c4af3c1dabcaee",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<marimo-ui-element object-id='oFSm-0' random-id='adf2cd10-b824-f07a-d91a-538db80837fc'><marimo-code-editor data-initial-value='&quot;&quot;' data-label='null' data-language='&quot;python&quot;' data-placeholder='&quot;&quot;' data-disabled='false' data-show-copy-button='true' data-debounce='false'></marimo-code-editor></marimo-ui-element>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "zkRR",
+      "code_hash": "6b0800dd22752f8b90f99dca5782444f",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<pre class='text-xs'>&#x27;foobar&#x27;</pre>"
           }
         }
       ],

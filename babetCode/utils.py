@@ -133,12 +133,13 @@ class UserEditor:
             output = e
         return mo.vstack([self.run, self.editor, output])
 
-    def is_func_equiv(self, func_solution:str)->bool:
+    def is_func_equiv(self, func_input_name:str, func_solution_name:str, func_solution:str)->bool:
 
-        def is_equivalent(func1, func2) -> bool:
+        is_equiv_str = '''
+        def is_equiv(func1, func2) -> bool:
             """
-            Blazing fast, 100% thorough function equivalence checker using Hypothesis.
-            Optimized specifically to avoid disk I/O and runner overhead in notebooks.
+            Uses hypothesis to test function equivalence.
+            If functions are equivalent, returns True.
             """
             # 2. Match parameter lengths instantly to avoid slow engine startups
             sig1 = inspect.signature(func1)
@@ -182,14 +183,28 @@ class UserEditor:
                 return False  # Counterexample found! Functions are NOT equivalent.
             except NoSuchExample:
                 return True   # No counterexample found after exhaustive generation.
+        '''
+
+        code = f'''
+        {is_equiv_str}
+
+        {func_solution}
+
+        {self.editor.value}
+
+        result = is_equiv({func_input_name}, {func_solution_name})
+        
+        print(result)
+        '''
         
         buf = io.StringIO()
         try:
             with redirect_stdout(buf):
-                exec(self.editor.value, {})
+                exec(code, {})
             output = buf.getvalue()
         except Exception as e:
             output = e
+        return output
 
 
 @app.cell
@@ -203,6 +218,19 @@ def _():
 def _(run, ue):
     _ = run
     ue.display()
+    return
+
+
+@app.cell
+def _():
+    example_code_edit = mo.ui.code_editor()
+    example_code_edit
+    return (example_code_edit,)
+
+
+@app.cell
+def _(example_code_edit):
+    example_code_edit.value
     return
 
 
