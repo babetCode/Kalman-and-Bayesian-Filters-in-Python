@@ -7,7 +7,7 @@
   "cells": [
     {
       "id": "setup",
-      "code_hash": "7b653d734e67e1eef673717a647baee4",
+      "code_hash": "d272db4f968ced79e9379c9e3149b1a5",
       "outputs": [
         {
           "type": "data",
@@ -71,21 +71,8 @@
       "console": []
     },
     {
-      "id": "lEQa",
-      "code_hash": "06950802515a1eacff345e0d7fd2a1ba",
-      "outputs": [
-        {
-          "type": "data",
-          "data": {
-            "text/plain": ""
-          }
-        }
-      ],
-      "console": []
-    },
-    {
       "id": "PKri",
-      "code_hash": "369fd85ad0d04b9b7979ef7b71b06790",
+      "code_hash": "9a8ccf7537c730bc1fb2ec8a87b75282",
       "outputs": [
         {
           "type": "data",
@@ -98,12 +85,25 @@
     },
     {
       "id": "Xref",
-      "code_hash": "df3c5f17d8bb372aa6a909672a5ad348",
+      "code_hash": "25eebb073a6ee4b62da72b4889feff2c",
       "outputs": [
         {
           "type": "data",
           "data": {
-            "text/html": "<div style='display: flex;flex: 1;flex-direction: column;justify-content: flex-start;align-items: normal;flex-wrap: nowrap;gap: 0.5rem'><marimo-ui-element object-id='PKri-1' random-id='ec20bf4a-8dcb-3308-706e-b3ed46cdc919'><marimo-button data-initial-value='0' data-label='&quot;&#92;u003cspan class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&#92;u003e&#92;u003cspan class=&#92;&quot;paragraph&#92;&quot;&#92;u003erun&#92;u003c/span&#92;u003e&#92;u003c/span&#92;u003e&quot;' data-kind='&quot;neutral&quot;' data-disabled='false' data-full-width='false'></marimo-button></marimo-ui-element><marimo-ui-element object-id='PKri-0' random-id='b69f2539-cbb4-e69b-e33c-db1a94beedf8'><marimo-code-editor data-initial-value='&quot;def g_h_filter(data, x0, dx, g, h, dt):&#92;n    &#92;&quot;&#92;&quot;&#92;&quot;&#92;n    Performs g-h filter on 1 state variable with a fixed g and h.&#92;n&#92;n    &#x27;data&#x27; contains the data to be filtered.&#92;n    &#x27;x0&#x27; is the initial value for our state variable&#92;n    &#x27;dx&#x27; is the initial change rate for our state variable&#92;n    &#x27;g&#x27; is the g-h&#x27;s g scale factor&#92;n    &#x27;h&#x27; is the g-h&#x27;s h scale factor&#92;n    &#x27;dt&#x27; is the length of the time step &#92;n    &#92;&quot;&#92;&quot;&#92;&quot;&quot;' data-label='null' data-language='&quot;python&quot;' data-placeholder='&quot;&quot;' data-disabled='false' data-show-copy-button='true' data-debounce='false'></marimo-code-editor></marimo-ui-element><span>foobar\n</span></div>"
+            "text/html": "<div style='display: flex;flex: 1;flex-direction: column;justify-content: flex-start;align-items: normal;flex-wrap: nowrap;gap: 0.5rem'><marimo-ui-element object-id='PKri-0' random-id='c2f36ecb-7326-95b3-93cf-ad08ee020658'><marimo-code-editor data-initial-value='&quot;def g_h_filter(data, x0, dx, g, h, dt):&#92;n    &#92;&quot;&#92;&quot;&#92;&quot;&#92;n    Performs g-h filter on 1 state variable with a fixed g and h.&#92;n&#92;n    &#x27;data&#x27; contains the data to be filtered.&#92;n    &#x27;x0&#x27; is the initial value for our state variable&#92;n    &#x27;dx&#x27; is the initial change rate for our state variable&#92;n    &#x27;g&#x27; is the g-h&#x27;s g scale factor&#92;n    &#x27;h&#x27; is the g-h&#x27;s h scale factor&#92;n    &#x27;dt&#x27; is the length of the time step &#92;n    &#92;&quot;&#92;&quot;&#92;&quot;&quot;' data-label='null' data-language='&quot;python&quot;' data-placeholder='&quot;&quot;' data-disabled='false' data-show-copy-button='true' data-debounce='false'></marimo-code-editor></marimo-ui-element><marimo-ui-element object-id='PKri-1' random-id='d7e2e72f-f949-da1b-5a13-dd445d384c44'><marimo-button data-initial-value='0' data-label='&quot;&#92;u003cspan class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&#92;u003e&#92;u003cspan class=&#92;&quot;paragraph&#92;&quot;&#92;u003erun&#92;u003c/span&#92;u003e&#92;u003c/span&#92;u003e&quot;' data-kind='&quot;neutral&quot;' data-disabled='false' data-full-width='false'></marimo-button></marimo-ui-element><span></span></div>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "hsls",
+      "code_hash": "5da2b75294f2a3d1c047b6c42bd2734e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "application/json": "[{\"g_h_filter\": \"text/html:<div style='border-radius: 6px; overflow: hidden; background-color: var(--slate-1); display: inline-block; min-width: 0; max-width: 100%;'><div style='padding: 10px 12px 8px 12px; display: flex; align-items: center;'><span style='background-color: var(--green-3); color: var(--green-11);padding: 2px 8px; border-radius: 4px; font-family: monospace; font-size: 0.75rem; font-weight: 600; margin-right: 8px; display: inline-block;'>function</span><span style='font-family: monospace; font-size: 0.875rem; color: var(--slate-12);'>g_h_filter</span></div><div style='height: 1px; background-color: var(--slate-3); margin: 0 12px 8px 12px;'></div><div style='color: var(--slate-11); margin: 0 12px 8px 12px; font-size: 0.75rem; font-family: monospace; padding: 0; white-space: pre-wrap;'>Performs g-h filter on 1 state variable with a fixed g and h.</div><div style='font-family: monospace; font-size: 0.875rem; color: var(--slate-12); margin: 0 12px 8px 12px;'><span>def g_h_filter(data, x0, dx, g, h, dt):</span></div></div>\"}, \"text/html:<marimo-ui-element object-id='PKri-0' random-id='c2f36ecb-7326-95b3-93cf-ad08ee020658'><marimo-code-editor data-initial-value='&quot;def g_h_filter(data, x0, dx, g, h, dt):&#92;n    &#92;&quot;&#92;&quot;&#92;&quot;&#92;n    Performs g-h filter on 1 state variable with a fixed g and h.&#92;n&#92;n    &#x27;data&#x27; contains the data to be filtered.&#92;n    &#x27;x0&#x27; is the initial value for our state variable&#92;n    &#x27;dx&#x27; is the initial change rate for our state variable&#92;n    &#x27;g&#x27; is the g-h&#x27;s g scale factor&#92;n    &#x27;h&#x27; is the g-h&#x27;s h scale factor&#92;n    &#x27;dt&#x27; is the length of the time step &#92;n    &#92;&quot;&#92;&quot;&#92;&quot;&quot;' data-label='null' data-language='&quot;python&quot;' data-placeholder='&quot;&quot;' data-disabled='false' data-show-copy-button='true' data-debounce='false'></marimo-code-editor></marimo-ui-element>\", \"text/html:<marimo-ui-element object-id='PKri-1' random-id='d7e2e72f-f949-da1b-5a13-dd445d384c44'><marimo-button data-initial-value='0' data-label='&quot;&#92;u003cspan class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&#92;u003e&#92;u003cspan class=&#92;&quot;paragraph&#92;&quot;&#92;u003erun&#92;u003c/span&#92;u003e&#92;u003c/span&#92;u003e&quot;' data-kind='&quot;neutral&quot;' data-disabled='false' data-full-width='false'></marimo-button></marimo-ui-element>\", \"\"]"
           }
         }
       ],
@@ -111,12 +111,12 @@
     },
     {
       "id": "SFPL",
-      "code_hash": "944b4e8b9a2fe41b766b38063c6cee3e",
+      "code_hash": "b4e781b4dff7e9f5e8e792a4d784c33f",
       "outputs": [
         {
           "type": "data",
           "data": {
-            "text/html": "<pre class='text-xs'>IndentationError(&#x27;unexpected indent&#x27;, (&#x27;&lt;string&gt;&#x27;, 3, 8, &#x27;        def is_equiv(func1, func2) -&gt; bool:\\n&#x27;, 3, -1))</pre>"
+            "text/html": "<pre class='text-xs'>False</pre>"
           }
         }
       ],
@@ -124,7 +124,33 @@
     },
     {
       "id": "BYtC",
-      "code_hash": "4daee739ea6c9d018fd1acf6aa415bd8",
+      "code_hash": "c4296e32577bb5c2292b8b6ddf176ff9",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<div style='border-radius: 6px; overflow: hidden; background-color: var(--slate-1); display: inline-block; min-width: 0; max-width: 100%;'><div style='padding: 10px 12px 8px 12px; display: flex; align-items: center;'><span style='background-color: var(--green-3); color: var(--green-11);padding: 2px 8px; border-radius: 4px; font-family: monospace; font-size: 0.75rem; font-weight: 600; margin-right: 8px; display: inline-block;'>function</span><span style='font-family: monospace; font-size: 0.875rem; color: var(--slate-12);'>g_h_filter</span></div><div style='height: 1px; background-color: var(--slate-3); margin: 0 12px 8px 12px;'></div><div style='color: var(--slate-11); margin: 0 12px 8px 12px; font-size: 0.75rem; font-family: monospace; padding: 0; white-space: pre-wrap;'>Performs g-h filter on 1 state variable with a fixed g and h.</div><div style='font-family: monospace; font-size: 0.875rem; color: var(--slate-12); margin: 0 12px 8px 12px;'><span>def g_h_filter(data, x0, dx, g, h, dt):</span></div></div>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "RGSE",
+      "code_hash": "09f0b0ff4081f60a1af03affcf3ad4fb",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Kclp",
+      "code_hash": "79c844293327620e9eea78d2c8d445f7",
       "outputs": [
         {
           "type": "data",

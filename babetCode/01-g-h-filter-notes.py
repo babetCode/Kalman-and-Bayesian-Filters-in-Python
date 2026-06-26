@@ -12,6 +12,16 @@ with app.setup:
     import marimo as mo
     import utils
 
+    import inspect
+    from hypothesis import find, strategies as st, settings, Phase
+    from hypothesis.errors import NoSuchExample
+
+    gh_globals = {
+        "inspect": inspect,
+        "find": find, "st": st, "settings": settings, "Phase": Phase, # from hypothesis module
+        "NoSuchExample": NoSuchExample, # from hypothesis.errors
+    }
+
 
 @app.cell(hide_code=True)
 def _():
@@ -81,35 +91,75 @@ def _():
         'h' is the g-h's h scale factor
         'dt' is the length of the time step 
         """'''
-    return (algoritm_exercise,)
 
-
-@app.cell
-def _(algoritm_exercise):
-    ue = utils.UserEditor(code=algoritm_exercise, exec_func=lambda x: x+"\n\nprint('foobar')")
-    run = ue.run
+    ue = utils.UserEditor(code=algoritm_exercise)
+    run = ue.run_button
     return run, ue
 
 
 @app.cell
 def _(run, ue):
     _ = run
-    ue.display()
+
+    ue_output = ue.display(sandbox_globals=gh_globals)
+    ue_locals = ue_output[0]
+    mo.vstack(ue_output[1:])
+    return ue_locals, ue_output
+
+
+@app.cell
+def _(ue_output):
+    ue_output
     return
 
 
 @app.cell
-def _(solution_str, ue):
-    ue.is_func_equiv("g_h_filter", "g_h_filter_solution", solution_str)
+def _(run, ue_locals):
+    _ = run
+    utils.is_equivalent(my_square, list(ue_locals.values())[0])
     return
 
 
 @app.cell
-def _():
+def _(run, ue_locals):
+    _ = run
+    list(ue_locals.values())[0]
+    return
+
+
+@app.function
+def my_square(x):
+    return x**2
+
+
+@app.cell
+def _(np):
+    def g_h_filter_solution(data, x0, dx, g, h, dt=1.):
+        """
+        Performs g-h filter on 1 state variable with a fixed g and h.
+        'data' contains the data to be filtered.
+        'x0' is the initial value for our state variable
+        'dx' is the initial change rate for our state variable
+        'g' is the g-h's g scale factor
+        'h' is the g-h's h scale factor
+        'dt' is the length of the time step
+        """
+        x_est = x0
+        results = []
+        for z in data:
+            # prediction step
+            x_pred = x_est + (dx*dt)
+            dx = dx
+
+            # update step
+            residual = z - x_pred
+            dx = dx + h * (residual) / dt
+            x_est = x_pred + g * residual
+            results.append(x_est)
+        return np.array(results)
+
+
     solution_str = """
-    /// details | Solution
-        type: info
-    ```py
     def g_h_filter_solution(data, x0, dx, g, h, dt=1.):
         "\"\"
         Performs g-h filter on 1 state variable with a fixed g and h.
@@ -133,11 +183,16 @@ def _():
             x_est = x_pred + g * residual
             results.append(x_est)
         return np.array(results)
-    ```
     """
 
-    mo.md(solution_str)
-    return (solution_str,)
+    mo.md(f'''
+    /// details | Solution
+        type: info
+    ```py
+    {solution_str}
+    ```
+    ''')
+    return
 
 
 if __name__ == "__main__":

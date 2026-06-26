@@ -19,7 +19,60 @@
       "console": []
     },
     {
-      "id": "GtUm",
+      "id": "Hbol",
+      "code_hash": "c02e401a536961fbe8162861474a16b4",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"exec-testing\">exec() testing</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "MJUe",
+      "code_hash": "713b1dcc90fcd191f04a9b3fa7377dad",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "dict_keys(['os', 'y', 'greet'])\n10\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "vblA",
+      "code_hash": "f62851512779d4f73a746026518d7600",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "78.53981633974483\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "bkHC",
       "code_hash": "253abee4dd420a5683b4cbbf043fa232",
       "outputs": [
         {
@@ -32,8 +85,8 @@
       "console": []
     },
     {
-      "id": "EAew",
-      "code_hash": "cabcf569bebb0420252d408c6e3ad0f8",
+      "id": "lEQa",
+      "code_hash": "377c6cccef7789495b12e615189067be",
       "outputs": [
         {
           "type": "data",
@@ -45,7 +98,20 @@
       "console": []
     },
     {
-      "id": "NZcq",
+      "id": "PKri",
+      "code_hash": "929f4d23f321e670c61f540a9920d79f",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"test-is_equivalent\">test is_equivalent()</h3></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Xref",
       "code_hash": "2b3db51d674015ac89aaa84fc0d41aa0",
       "outputs": [
         {
@@ -58,7 +124,7 @@
       "console": []
     },
     {
-      "id": "GSmt",
+      "id": "SFPL",
       "code_hash": "c02b72d63f8ab31e0a4e075928e1dcf9",
       "outputs": [
         {
@@ -71,8 +137,8 @@
       "console": []
     },
     {
-      "id": "MJUe",
-      "code_hash": "e2ac65dce56356cdb5e48c8614489649",
+      "id": "BYtC",
+      "code_hash": "ec373cb360f0378b86052da73b5d6e13",
       "outputs": [
         {
           "type": "data",
@@ -84,8 +150,8 @@
       "console": []
     },
     {
-      "id": "vblA",
-      "code_hash": "f955eb9d8a169fc6f2a71c62e666308a",
+      "id": "RGSE",
+      "code_hash": "7c36e58fec1d770a0c12335b0fb6f054",
       "outputs": [
         {
           "type": "data",
@@ -97,39 +163,13 @@
       "console": []
     },
     {
-      "id": "bkHC",
+      "id": "Kclp",
       "code_hash": "df3c5f17d8bb372aa6a909672a5ad348",
       "outputs": [
         {
           "type": "data",
           "data": {
-            "text/html": "<div style='display: flex;flex: 1;flex-direction: column;justify-content: flex-start;align-items: normal;flex-wrap: nowrap;gap: 0.5rem'><marimo-ui-element object-id='vblA-1' random-id='2c937963-b1b8-5d40-97d9-431407014da2'><marimo-button data-initial-value='0' data-label='&quot;&#92;u003cspan class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&#92;u003e&#92;u003cspan class=&#92;&quot;paragraph&#92;&quot;&#92;u003erun&#92;u003c/span&#92;u003e&#92;u003c/span&#92;u003e&quot;' data-kind='&quot;neutral&quot;' data-disabled='false' data-full-width='false'></marimo-button></marimo-ui-element><marimo-ui-element object-id='vblA-0' random-id='38d25801-d2d5-da2a-5bd7-0fc53a2bfe9d'><marimo-code-editor data-initial-value='&quot;print(&#x27;hi&#x27;)&quot;' data-label='null' data-language='&quot;python&quot;' data-placeholder='&quot;&quot;' data-disabled='false' data-show-copy-button='true' data-debounce='false'></marimo-code-editor></marimo-ui-element><span>hi\n</span></div>"
-          }
-        }
-      ],
-      "console": []
-    },
-    {
-      "id": "oFSm",
-      "code_hash": "e2c55edf2dd0a54e07c4af3c1dabcaee",
-      "outputs": [
-        {
-          "type": "data",
-          "data": {
-            "text/html": "<marimo-ui-element object-id='oFSm-0' random-id='adf2cd10-b824-f07a-d91a-538db80837fc'><marimo-code-editor data-initial-value='&quot;&quot;' data-label='null' data-language='&quot;python&quot;' data-placeholder='&quot;&quot;' data-disabled='false' data-show-copy-button='true' data-debounce='false'></marimo-code-editor></marimo-ui-element>"
-          }
-        }
-      ],
-      "console": []
-    },
-    {
-      "id": "zkRR",
-      "code_hash": "6b0800dd22752f8b90f99dca5782444f",
-      "outputs": [
-        {
-          "type": "data",
-          "data": {
-            "text/html": "<pre class='text-xs'>&#x27;foobar&#x27;</pre>"
+            "application/json": "[{}, \"text/html:<marimo-ui-element object-id='RGSE-0' random-id='81ddf0e9-7b12-b867-e457-02c9208d43aa'><marimo-code-editor data-initial-value='&quot;print(&#x27;hello&#x27;)&quot;' data-label='null' data-language='&quot;python&quot;' data-placeholder='&quot;&quot;' data-disabled='false' data-show-copy-button='true' data-debounce='false'></marimo-code-editor></marimo-ui-element>\", \"text/html:<marimo-ui-element object-id='RGSE-1' random-id='3b30c377-233b-29f6-7bb0-bd73adc49df9'><marimo-button data-initial-value='0' data-label='&quot;&#92;u003cspan class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&#92;u003e&#92;u003cspan class=&#92;&quot;paragraph&#92;&quot;&#92;u003erun&#92;u003c/span&#92;u003e&#92;u003c/span&#92;u003e&quot;' data-kind='&quot;neutral&quot;' data-disabled='false' data-full-width='false'></marimo-button></marimo-ui-element>\", \"hello\\n\"]"
           }
         }
       ],
