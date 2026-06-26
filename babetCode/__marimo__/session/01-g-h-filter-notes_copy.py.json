@@ -6,7 +6,7 @@
   },
   "cells": [
     {
-      "id": "Hbol",
+      "id": "setup",
       "code_hash": "370080ed85c82e703e2654f24e1f62ae",
       "outputs": [
         {
@@ -51,7 +51,7 @@
         {
           "type": "data",
           "data": {
-            "text/html": "<div style='display: flex;flex: 1;flex-direction: column;justify-content: flex-start;align-items: normal;flex-wrap: nowrap;gap: 0.5rem'><marimo-ui-element object-id='vblA-1' random-id='c5519e48-c7d7-6590-9acc-606bc52009da'><marimo-button data-initial-value='0' data-label='&quot;&#92;u003cspan class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&#92;u003e&#92;u003cspan class=&#92;&quot;paragraph&#92;&quot;&#92;u003e&amp;gt;&#92;u003c/span&#92;u003e&#92;u003c/span&#92;u003e&quot;' data-kind='&quot;neutral&quot;' data-disabled='false' data-full-width='false'></marimo-button></marimo-ui-element><marimo-ui-element object-id='vblA-0' random-id='861e552f-5924-40fe-93ed-af4af4ec4c6d'><marimo-code-editor data-initial-value='&quot;print(&#x27;hi&#x27;)&quot;' data-label='null' data-language='&quot;python&quot;' data-placeholder='&quot;&quot;' data-disabled='false' data-show-copy-button='true' data-debounce='false'></marimo-code-editor></marimo-ui-element><span>hi\n</span></div>"
+            "text/html": "<div style='display: flex;flex: 1;flex-direction: column;justify-content: flex-start;align-items: normal;flex-wrap: nowrap;gap: 0.5rem'><marimo-ui-element object-id='vblA-1' random-id='daf3e0fa-3817-8f7b-3398-4d79b9745fb2'><marimo-button data-initial-value='0' data-label='&quot;&#92;u003cspan class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&#92;u003e&#92;u003cspan class=&#92;&quot;paragraph&#92;&quot;&#92;u003e&amp;gt;&#92;u003c/span&#92;u003e&#92;u003c/span&#92;u003e&quot;' data-kind='&quot;neutral&quot;' data-disabled='false' data-full-width='false'></marimo-button></marimo-ui-element><marimo-ui-element object-id='vblA-0' random-id='d30397c0-ac78-134e-2590-1489c1af44ad'><marimo-code-editor data-initial-value='&quot;print(&#x27;hi&#x27;)&quot;' data-label='null' data-language='&quot;python&quot;' data-placeholder='&quot;&quot;' data-disabled='false' data-show-copy-button='true' data-debounce='false'></marimo-code-editor></marimo-ui-element><span>hi\n</span></div>"
           }
         }
       ],

@@ -1,0 +1,113 @@
+{
+  "version": "1",
+  "metadata": {
+    "marimo_version": "0.23.10",
+    "script_metadata_hash": "f94825164d0bde9ca61ad3af39b852f5"
+  },
+  "cells": [
+    {
+      "id": "setup",
+      "code_hash": "a1ea4b79b7b1c34dc7c4a85d8c88701a",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "GtUm",
+      "code_hash": "253abee4dd420a5683b4cbbf043fa232",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"is_equivalent\">is_equivalent</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "EAew",
+      "code_hash": "cabcf569bebb0420252d408c6e3ad0f8",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "NZcq",
+      "code_hash": "2b3db51d674015ac89aaa84fc0d41aa0",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<pre class='text-xs'>True</pre>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "GSmt",
+      "code_hash": "c02b72d63f8ab31e0a4e075928e1dcf9",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"usereditor\">UserEditor</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "MJUe",
+      "code_hash": "e2339a0bb6e4f71abf41d2f98df3e3e1",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vblA",
+      "code_hash": "f955eb9d8a169fc6f2a71c62e666308a",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "bkHC",
+      "code_hash": "df3c5f17d8bb372aa6a909672a5ad348",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<div style='display: flex;flex: 1;flex-direction: column;justify-content: flex-start;align-items: normal;flex-wrap: nowrap;gap: 0.5rem'><marimo-ui-element object-id='vblA-1' random-id='3948bedb-8d2f-4abc-d64f-88bcf5c6b477'><marimo-button data-initial-value='0' data-label='&quot;&#92;u003cspan class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&#92;u003e&#92;u003cspan class=&#92;&quot;paragraph&#92;&quot;&#92;u003erun&#92;u003c/span&#92;u003e&#92;u003c/span&#92;u003e&quot;' data-kind='&quot;neutral&quot;' data-disabled='false' data-full-width='false'></marimo-button></marimo-ui-element><marimo-ui-element object-id='vblA-0' random-id='17ea796c-9f00-0084-93c0-44fcc0c4f058'><marimo-code-editor data-initial-value='&quot;print(&#x27;hi&#x27;)&quot;' data-label='null' data-language='&quot;python&quot;' data-placeholder='&quot;&quot;' data-disabled='false' data-show-copy-button='true' data-debounce='false'></marimo-code-editor></marimo-ui-element><span>hi\n</span></div>"
+          }
+        }
+      ],
+      "console": []
+    }
+  ]
+}

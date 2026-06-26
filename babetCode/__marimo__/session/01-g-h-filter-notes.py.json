@@ -6,8 +6,8 @@
   },
   "cells": [
     {
-      "id": "Hbol",
-      "code_hash": "e92573c59b63fdac8e90b10b56e05f88",
+      "id": "setup",
+      "code_hash": "7b653d734e67e1eef673717a647baee4",
       "outputs": [
         {
           "type": "data",
@@ -19,13 +19,26 @@
       "console": []
     },
     {
-      "id": "MJUe",
-      "code_hash": "76ef454d86cb86c3a2e534537e0ef108",
+      "id": "Hbol",
+      "code_hash": "80d4322c4e6f4fd8028e2d04f6644c2f",
       "outputs": [
         {
           "type": "data",
           "data": {
-            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"alogithm\">Alogithm</h2></span>"
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h1 id=\"alpha-beta-filter\"><marimo-tex class=\"arithmatex\">||(\\alpha||)</marimo-tex>-<marimo-tex class=\"arithmatex\">||(\\beta||)</marimo-tex> filter</h1></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "MJUe",
+      "code_hash": "7f4af8924fe9cc55fb46e8b5a0bf0dcb",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"description\">Description</h2></span>"
           }
         }
       ],
@@ -33,12 +46,12 @@
     },
     {
       "id": "vblA",
-      "code_hash": "62884b76467df82a18033ebf5a6a60d9",
+      "code_hash": "842f09c093e6c990e85e6e0869767c0d",
       "outputs": [
         {
           "type": "data",
           "data": {
-            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\"><strong>Initialization</strong></span>\n<ol>\n<li>Initialize the state of the filter</li>\n<li>Initialize our belief in the state</li>\n</ol>\n<span class=\"paragraph\"><strong>Predict</strong></span>\n<ol>\n<li>Use system behavior to predict state at the next time step</li>\n<li>Adjust belief to account for the uncertainty in prediction</li>\n</ol>\n<span class=\"paragraph\"><strong>Update</strong></span>\n<ol>\n<li>Get a measurement and associated belief about its accuracy</li>\n<li>Compute residual between estimated state and measurement</li>\n<li>New estimate is somewhere on the residual line</li>\n</ol></span>"
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">The alpha-beta filter (aka g-h filter) is a simple signal filter.</span>\n<span class=\"paragraph\">The filter uses a prediction (<marimo-tex class=\"arithmatex\">||(x'||)</marimo-tex>) and a measurement (<marimo-tex class=\"arithmatex\">||(z||)</marimo-tex>) to estimate a state (<marimo-tex class=\"arithmatex\">||(x||)</marimo-tex>). The gain (<marimo-tex class=\"arithmatex\">||(g||)</marimo-tex>) determines whether the measurement or the estimate is weighted more heavily:</span>\n<marimo-tex class=\"arithmatex\">||[\n\\text{estimate(}x\\text{)} = \\text{prediction(}x'\\text{)} + \\text{gain(}g\\text{)} \\cdot (\\text{measurement(}z\\text{)} - \\text{prediction(}x'\\text{)}).\n||]</marimo-tex><span class=\"paragraph\">The difference <marimo-tex class=\"arithmatex\">||((\\text{measurement}-\\text{prediction})||)</marimo-tex> is called the residual (<marimo-tex class=\"arithmatex\">||(y||)</marimo-tex>), giving</span>\n<marimo-tex class=\"arithmatex\">||[\nx = x' + g \\cdot y.\n||]</marimo-tex><hr />\n<span class=\"paragraph\">The implementation is as follows:</span>\n<span class=\"paragraph\"><strong>Initialization</strong></span>\n<ol>\n<li>Initialize the state of the filter</li>\n<li>Initialize our belief in the state</li>\n</ol>\n<span class=\"paragraph\"><strong>Predict</strong></span>\n<ol>\n<li>Use system behavior to predict state at the next time step</li>\n<li>Adjust belief to account for the uncertainty in prediction</li>\n</ol>\n<span class=\"paragraph\"><strong>Update</strong></span>\n<ol>\n<li>Get a measurement and associated belief about its accuracy</li>\n<li>Compute residual between estimated state and measurement</li>\n<li>New estimate is somewhere on the residual line</li>\n</ol></span>"
           }
         }
       ],
@@ -71,8 +84,8 @@
       "console": []
     },
     {
-      "id": "Xref",
-      "code_hash": "fc8f5fb600ee737b99f3d214bba4509a",
+      "id": "PKri",
+      "code_hash": "369fd85ad0d04b9b7979ef7b71b06790",
       "outputs": [
         {
           "type": "data",
@@ -84,24 +97,30 @@
       "console": []
     },
     {
-      "id": "tFMB",
+      "id": "Xref",
       "code_hash": "df3c5f17d8bb372aa6a909672a5ad348",
       "outputs": [
         {
           "type": "data",
           "data": {
-            "text/html": "<div style='display: flex;flex: 1;flex-direction: column;justify-content: flex-start;align-items: normal;flex-wrap: nowrap;gap: 0.5rem'><marimo-ui-element object-id='Xref-1' random-id='e9b4b296-5ba6-c479-9e11-5840cd8b9b89'><marimo-button data-initial-value='0' data-label='&quot;&#92;u003cspan class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&#92;u003e&#92;u003cspan class=&#92;&quot;paragraph&#92;&quot;&#92;u003e&amp;gt;&#92;u003c/span&#92;u003e&#92;u003c/span&#92;u003e&quot;' data-kind='&quot;neutral&quot;' data-disabled='false' data-full-width='false'></marimo-button></marimo-ui-element><marimo-ui-element object-id='Xref-0' random-id='e8df938f-6d55-c265-1497-9fc7fce27b0e'><marimo-code-editor data-initial-value='&quot;def g_h_filter(data, x0, dx, g, h, dt):&#92;n    &#92;&quot;&#92;&quot;&#92;&quot;&#92;n    Performs g-h filter on 1 state variable with a fixed g and h.&#92;n&#92;n    &#x27;data&#x27; contains the data to be filtered.&#92;n    &#x27;x0&#x27; is the initial value for our state variable&#92;n    &#x27;dx&#x27; is the initial change rate for our state variable&#92;n    &#x27;g&#x27; is the g-h&#x27;s g scale factor&#92;n    &#x27;h&#x27; is the g-h&#x27;s h scale factor&#92;n    &#x27;dt&#x27; is the length of the time step &#92;n    &#92;&quot;&#92;&quot;&#92;&quot;&quot;' data-label='null' data-language='&quot;python&quot;' data-placeholder='&quot;&quot;' data-disabled='false' data-show-copy-button='true' data-debounce='false'></marimo-code-editor></marimo-ui-element><span>unexpected character after line continuation character (&lt;string&gt;, line 11)</span></div>"
+            "text/html": "<div style='display: flex;flex: 1;flex-direction: column;justify-content: flex-start;align-items: normal;flex-wrap: nowrap;gap: 0.5rem'><marimo-ui-element object-id='PKri-1' random-id='dfc80e45-5cae-5b40-a944-f6cb0f83c07b'><marimo-button data-initial-value='0' data-label='&quot;&#92;u003cspan class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&#92;u003e&#92;u003cspan class=&#92;&quot;paragraph&#92;&quot;&#92;u003erun&#92;u003c/span&#92;u003e&#92;u003c/span&#92;u003e&quot;' data-kind='&quot;neutral&quot;' data-disabled='false' data-full-width='false'></marimo-button></marimo-ui-element><marimo-ui-element object-id='PKri-0' random-id='2c6764de-3eb0-f4d0-6a7b-d673fc8fbe1a'><marimo-code-editor data-initial-value='&quot;def g_h_filter(data, x0, dx, g, h, dt):&#92;n    &#92;&quot;&#92;&quot;&#92;&quot;&#92;n    Performs g-h filter on 1 state variable with a fixed g and h.&#92;n&#92;n    &#x27;data&#x27; contains the data to be filtered.&#92;n    &#x27;x0&#x27; is the initial value for our state variable&#92;n    &#x27;dx&#x27; is the initial change rate for our state variable&#92;n    &#x27;g&#x27; is the g-h&#x27;s g scale factor&#92;n    &#x27;h&#x27; is the g-h&#x27;s h scale factor&#92;n    &#x27;dt&#x27; is the length of the time step &#92;n    &#92;&quot;&#92;&quot;&#92;&quot;&quot;' data-label='null' data-language='&quot;python&quot;' data-placeholder='&quot;&quot;' data-disabled='false' data-show-copy-button='true' data-debounce='false'></marimo-code-editor></marimo-ui-element><span>foobar\n</span></div>"
           }
         }
       ],
-      "console": [
+      "console": []
+    },
+    {
+      "id": "SFPL",
+      "code_hash": "488f703076c6f78df40e1843052f8d1e",
+      "outputs": [
         {
-          "type": "stream",
-          "name": "stdout",
-          "text": "def g_h_filter(data, x0, dx, g, h, dt):\n    \"\"\"\n    Performs g-h filter on 1 state variable with a fixed g and h.\n\n    'data' contains the data to be filtered.\n    'x0' is the initial value for our state variable\n    'dx' is the initial change rate for our state variable\n    'g' is the g-h's g scale factor\n    'h' is the g-h's h scale factor\n    'dt' is the length of the time step \n    \"\"\"\\n\\nprint(foobar)\n",
-          "mimetype": "text/plain"
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><details class=\"info\">\n<summary>Solution</summary>\n<div class=\"language-py codehilite\"><pre><span></span><code><span class=\"k\">def</span><span class=\"w\"> </span><span class=\"nf\">g_h_filter</span><span class=\"p\">(</span><span class=\"n\">data</span><span class=\"p\">,</span> <span class=\"n\">x0</span><span class=\"p\">,</span> <span class=\"n\">dx</span><span class=\"p\">,</span> <span class=\"n\">g</span><span class=\"p\">,</span> <span class=\"n\">h</span><span class=\"p\">,</span> <span class=\"n\">dt</span><span class=\"o\">=</span><span class=\"mf\">1.</span><span class=\"p\">):</span>\n<span class=\"w\">    </span><span class=\"sd\">&quot;&quot;&quot;</span>\n<span class=\"sd\">    Performs g-h filter on 1 state variable with a fixed g and h.</span>\n<span class=\"sd\">    &#39;data&#39; contains the data to be filtered.</span>\n<span class=\"sd\">    &#39;x0&#39; is the initial value for our state variable</span>\n<span class=\"sd\">    &#39;dx&#39; is the initial change rate for our state variable</span>\n<span class=\"sd\">    &#39;g&#39; is the g-h&#39;s g scale factor</span>\n<span class=\"sd\">    &#39;h&#39; is the g-h&#39;s h scale factor</span>\n<span class=\"sd\">    &#39;dt&#39; is the length of the time step</span>\n<span class=\"sd\">    &quot;&quot;&quot;</span>\n    <span class=\"n\">x_est</span> <span class=\"o\">=</span> <span class=\"n\">x0</span>\n    <span class=\"n\">results</span> <span class=\"o\">=</span> <span class=\"p\">[]</span>\n    <span class=\"k\">for</span> <span class=\"n\">z</span> <span class=\"ow\">in</span> <span class=\"n\">data</span><span class=\"p\">:</span>\n        <span class=\"c1\"># prediction step</span>\n        <span class=\"n\">x_pred</span> <span class=\"o\">=</span> <span class=\"n\">x_est</span> <span class=\"o\">+</span> <span class=\"p\">(</span><span class=\"n\">dx</span><span class=\"o\">*</span><span class=\"n\">dt</span><span class=\"p\">)</span>\n        <span class=\"n\">dx</span> <span class=\"o\">=</span> <span class=\"n\">dx</span>\n\n        <span class=\"c1\"># update step</span>\n        <span class=\"n\">residual</span> <span class=\"o\">=</span> <span class=\"n\">z</span> <span class=\"o\">-</span> <span class=\"n\">x_pred</span>\n        <span class=\"n\">dx</span> <span class=\"o\">=</span> <span class=\"n\">dx</span> <span class=\"o\">+</span> <span class=\"n\">h</span> <span class=\"o\">*</span> <span class=\"p\">(</span><span class=\"n\">residual</span><span class=\"p\">)</span> <span class=\"o\">/</span> <span class=\"n\">dt</span>\n        <span class=\"n\">x_est</span> <span class=\"o\">=</span> <span class=\"n\">x_pred</span> <span class=\"o\">+</span> <span class=\"n\">g</span> <span class=\"o\">*</span> <span class=\"n\">residual</span>\n        <span class=\"n\">results</span><span class=\"o\">.</span><span class=\"n\">append</span><span class=\"p\">(</span><span class=\"n\">x_est</span><span class=\"p\">)</span>\n    <span class=\"k\">return</span> <span class=\"n\">np</span><span class=\"o\">.</span><span class=\"n\">array</span><span class=\"p\">(</span><span class=\"n\">results</span><span class=\"p\">)</span>\n</code></pre></div>\n</details></span>"
+          }
         }
-      ]
+      ],
+      "console": []
     }
   ]
 }
