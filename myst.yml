@@ -6,12 +6,16 @@ project:
   description: Kalman Filter book using Jupyter Notebook.
   exclude:
     - experiments/**
+    - pdf/**
+    - README.md
+    - contributing.md
   # keywords: []
   # authors: [Roger]
   github: https://github.com/babetCode/Kalman-and-Bayesian-Filters-in-Python
   # To autogenerate a Table of Contents, run "jupyter book init --write-toc"
 site:
   template: book-theme
-  # options:
+  options:
   #   favicon: favicon.ico
-  #   logo: site_logo.png
+    logo: site_logo.png
+    hide_title_block: true
