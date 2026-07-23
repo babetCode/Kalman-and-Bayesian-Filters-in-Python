@@ -18,6 +18,24 @@ uv run jupyter notebook
 
 Apart from these features, everything is preserved. Labbe's original readme is below.
 
+# Kalman and Bayesian Filters in Python
+
+
+Introductory text for Kalman and Bayesian filters. All code is written in Python, and the book itself is written using Jupyter Notebook so that you can run and modify the code in your browser. What better way to learn?
+
+
+**"Kalman and Bayesian Filters in Python" looks amazing! ... your book is just what I needed** - Allen Downey, Professor and O'Reilly author.
+
+**Thanks for all your work on publishing your introductory text on Kalman Filtering, as well as the Python Kalman Filtering libraries. We’ve been using it internally to teach some key state estimation concepts to folks and it’s been a huge help.** - Sam Rodkey, SpaceX
+
+Start reading online now by clicking the binder or Azure badge below:
+
+
+[![Binder](http://mybinder.org/badge.svg)](https://beta.mybinder.org/v2/gh/rlabbe/Kalman-and-Bayesian-Filters-in-Python/master)
+
+
+![alt tag](https://raw.githubusercontent.com/rlabbe/Kalman-and-Bayesian-Filters-in-Python/master/animations/05_dog_track.gif)
+
 What are Kalman and Bayesian Filters?
 -----
 
