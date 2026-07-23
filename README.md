@@ -1,3 +1,28 @@
+## My Changes
+
+<details>
+<summary><h3>Added uv version control</h3></summary>
+    
+Run:
+```
+uv init --bare --python 3.11 --pin-python
+```
+Edit `pyproject.toml`:  
+```diff
+[project]
+name = "kalman-and-bayesian-filters-in-python"
+version = "0.1.0"
+- requires-python = ">=3.11"
++ requires-python = "~=3.11.0"
+dependencies = []
+```
+
+Run:
+```
+uv add -r requirements.txt
+```
+</details>
+
 # [Kalman and Bayesian Filters in Python](https://github.com/rlabbe/Kalman-and-Bayesian-Filters-in-Python)
 
 
