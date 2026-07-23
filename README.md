@@ -1,59 +1,22 @@
-## My Changes
+# My Changes
 
-<details>
-<summary><h3>Added uv version control</h3></summary>
-    
-Run:
-```
-uv init --bare --python 3.11 --pin-python
-```
-Edit `pyproject.toml`:  
-```diff
-[project]
-name = "kalman-and-bayesian-filters-in-python"
-version = "0.1.0"
-- requires-python = ">=3.11"
-+ requires-python = "~=3.11.0"
-dependencies = []
-```
+This fork of *Kalman and Bayesian Filters in Python* by Roger Labbe makes a couple small chages:
+- Faster, simpler dependecy management with uv.
+- Publishing to github pages with jupyter-book.
 
-Run:
-```
-uv add -r requirements.txt
-```
-</details>
+## Usage
+Notebooks are published to github pages at: https://babetcode.github.io/Kalman-and-Bayesian-Filters-in-Python/
 
-<details>
-<summary><h3>Added jupyter-book</h3></summary>
-    
-Run:
+If you wish to run the code locally:
+```bash
+git clone https://github.com/babetCode/Kalman-and-Bayesian-Filters-in-Python.git
 ```
-uv add "jupyter-book"
+cd to the cloned repository, run:
+```bash
+uv run jupyter notebook
 ```
 
-Run:
-```
-jupyter-book init --gh-pages
-```
-</details>
-
-# [Kalman and Bayesian Filters in Python](https://github.com/rlabbe/Kalman-and-Bayesian-Filters-in-Python)
-
-
-Introductory text for Kalman and Bayesian filters. All code is written in Python, and the book itself is written using Jupyter Notebook so that you can run and modify the code in your browser. What better way to learn?
-
-
-**"Kalman and Bayesian Filters in Python" looks amazing! ... your book is just what I needed** - Allen Downey, Professor and O'Reilly author.
-
-**Thanks for all your work on publishing your introductory text on Kalman Filtering, as well as the Python Kalman Filtering libraries. We’ve been using it internally to teach some key state estimation concepts to folks and it’s been a huge help.** - Sam Rodkey, SpaceX
-
-Start reading online now by clicking the binder or Azure badge below:
-
-
-[![Binder](http://mybinder.org/badge.svg)](https://beta.mybinder.org/v2/gh/rlabbe/Kalman-and-Bayesian-Filters-in-Python/master)
-
-
-![alt tag](https://raw.githubusercontent.com/rlabbe/Kalman-and-Bayesian-Filters-in-Python/master/animations/05_dog_track.gif)
+Apart from these features, everything is preserved. Labbe's original readme is below.
 
 What are Kalman and Bayesian Filters?
 -----
