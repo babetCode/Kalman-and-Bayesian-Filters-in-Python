@@ -23,6 +23,20 @@ uv add -r requirements.txt
 ```
 </details>
 
+<details>
+<summary><h3>Added jupyter-book</h3></summary>
+    
+Run:
+```
+uv add "jupyter-book"
+```
+
+Run:
+```
+jupyter-book init --gh-pages
+```
+</details>
+
 # [Kalman and Bayesian Filters in Python](https://github.com/rlabbe/Kalman-and-Bayesian-Filters-in-Python)
 
 

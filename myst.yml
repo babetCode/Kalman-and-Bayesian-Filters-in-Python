@@ -1,0 +1,15 @@
+# See docs at: https://mystmd.org/guide/frontmatter
+version: 1
+project:
+  id: 40580879-2011-4ef1-bc51-ae901d4938cf
+  title: Kalman-and-Bayesian-Filters-in-Python
+  description: Kalman Filter book using Jupyter Notebook.
+  # keywords: []
+  # authors: [Roger]
+  github: https://github.com/babetCode/Kalman-and-Bayesian-Filters-in-Python
+  # To autogenerate a Table of Contents, run "jupyter book init --write-toc"
+site:
+  template: book-theme
+  # options:
+  #   favicon: favicon.ico
+  #   logo: site_logo.png
