@@ -4,6 +4,8 @@ project:
   id: 40580879-2011-4ef1-bc51-ae901d4938cf
   title: Kalman-and-Bayesian-Filters-in-Python
   description: Kalman Filter book using Jupyter Notebook.
+  exclude:
+    - experiments/**
   # keywords: []
   # authors: [Roger]
   github: https://github.com/babetCode/Kalman-and-Bayesian-Filters-in-Python
