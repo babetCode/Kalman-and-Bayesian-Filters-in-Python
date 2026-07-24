@@ -11,12 +11,12 @@ If you wish to run the code locally:
 ```bash
 git clone https://github.com/babetCode/Kalman-and-Bayesian-Filters-in-Python.git
 ```
-cd to the cloned repository, run:
+cd to the cloned repository, then run:
 ```bash
 uv run jupyter notebook
 ```
 
-Apart from these features, everything is preserved. Labbe's original readme is below.
+Apart from adding these features, everything else is preserved. Labbe's original readme is below.
 
 # Kalman and Bayesian Filters in Python
 
