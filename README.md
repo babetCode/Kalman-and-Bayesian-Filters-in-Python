@@ -4,7 +4,7 @@ This fork of *Kalman and Bayesian Filters in Python* by Roger Labbe makes a coup
 - Faster, simpler dependecy management with uv.
 - Publishing to github pages with jupyter-book.
 
-## Usage
+### Usage
 Notebooks are published to github pages at: https://babetcode.github.io/Kalman-and-Bayesian-Filters-in-Python/
 
 If you wish to run the code locally:
