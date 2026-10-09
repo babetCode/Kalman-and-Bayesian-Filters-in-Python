@@ -17,5 +17,5 @@ site:
   template: book-theme
   options:
   #   favicon: favicon.ico
-    logo: site_logo.png
+    logo_text: Kalman and Bayesian Filters in Python
     hide_title_block: true
